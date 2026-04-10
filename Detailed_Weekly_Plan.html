@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Detailed Weekly Execution Plan — AWS Infrastructure Modernisation</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:#EEF2F7;color:#1a1a1a;font-size:13px;min-width:960px}
+
+/* ── Top bar ── */
+.topbar{background:#0D2137;padding:0 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:60;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+.brand{font-size:13px;font-weight:700;color:#A8DDB5;padding:13px 20px 13px 0;border-right:1px solid rgba(255,255,255,.1);white-space:nowrap}
+.phase-tabs{display:flex;gap:0}
+.ptab{font-size:12px;font-weight:600;color:rgba(255,255,255,.5);padding:13px 16px;cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;white-space:nowrap}
+.ptab:hover{color:rgba(255,255,255,.8)}
+.ptab.active{color:#fff;border-bottom-color:#3DB56C}
+.tr{margin-left:auto;display:flex;align-items:center;gap:8px}
+.chip{font-size:10px;font-weight:600;padding:3px 9px;border-radius:4px}
+.c-navy{background:#185FA5;color:#fff}
+.c-green{background:#3DB56C;color:#fff}
+.c-amber{background:#F59E0B;color:#fff}
+.c-purple{background:#533AB7;color:#fff}
+
+/* ── Layout ── */
+.layout{display:grid;grid-template-columns:220px 1fr;gap:0;min-height:calc(100vh - 46px)}
+
+/* ── Sidebar ── */
+.sidebar{background:#fff;border-right:0.5px solid #D3D1C7;padding:14px 0;position:sticky;top:46px;height:calc(100vh - 46px);overflow-y:auto}
+.sb-section{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#B4B2A9;padding:10px 16px 4px}
+.sb-week{display:flex;align-items:center;gap:8px;padding:7px 16px;cursor:pointer;transition:background .12s;border-left:3px solid transparent}
+.sb-week:hover{background:#F4F7F4}
+.sb-week.active{background:#EEF2F7;border-left-color:#3DB56C}
+.sb-week.active .sb-wlbl{color:#0D2137;font-weight:700}
+.sb-wnum{width:26px;height:26px;border-radius:50%;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
+.sb-wlbl{font-size:12px;color:#64748B}
+.sb-wsub{font-size:10px;color:#B4B2A9;margin-top:1px}
+.sb-bast{font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;margin-top:2px;display:inline-block}
+.sb-progress{height:3px;background:#E8EDF2;border-radius:2px;margin:4px 16px 6px;overflow:hidden}
+.sb-fill{height:100%;border-radius:2px;transition:width .4s ease}
+.sb-done-count{font-size:10px;color:#B4B2A9;padding:0 16px 8px;text-align:right}
+
+/* ── Main content ── */
+.main{padding:20px;overflow-y:auto}
+.wpage{display:none}
+.wpage.active{display:block}
+
+/* ── Week header ── */
+.whdr{border-radius:10px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:flex-start;justify-content:space-between}
+.whdr-left h2{font-size:22px;font-weight:700;color:#fff;margin-bottom:3px}
+.whdr-left p{font-size:12px;color:rgba(255,255,255,.72);line-height:1.5}
+.whdr-right{text-align:right}
+.whdr-right .big-num{font-size:28px;font-weight:700;color:#fff}
+.whdr-right small{display:block;font-size:10px;color:rgba(255,255,255,.6)}
+.whdr-badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.whdr-badge{font-size:10px;padding:3px 9px;border-radius:4px;background:rgba(255,255,255,.15);color:#fff;font-weight:600}
+
+/* ── Summary row ── */
+.summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.scard{background:#fff;border-radius:8px;border:0.5px solid #D3D1C7;padding:12px;text-align:center}
+.scard-num{font-size:24px;font-weight:700;margin-bottom:2px}
+.scard-lbl{font-size:10px;color:#64748B}
+
+/* ── Prereq / objective blocks ── */
+.prereq-block{border-left:3px solid #F59E0B;background:#FFFBF5;border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:10px}
+.prereq-block.blue{border-left-color:#185FA5;background:#EFF6FF}
+.prereq-block.green{border-left-color:#3DB56C;background:#F0FBF7}
+.prereq-block.red{border-left-color:#E74C3C;background:#FFF5F5}
+.pb-title{font-size:11px;font-weight:700;color:#854F0B;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.pb-title.blue{color:#185FA5}
+.pb-title.green{color:#0F6E56}
+.pb-title.red{color:#A32D2D}
+.pb-item{font-size:11px;color:#633806;margin-bottom:3px;display:flex;gap:6px;line-height:1.5}
+.pb-item.blue{color:#0C447C}
+.pb-item.green{color:#085041}
+.pb-item.red{color:#791F1F}
+.pb-item::before{content:'→';flex-shrink:0}
+
+/* ── Day table ── */
+.day-table{background:#fff;border-radius:10px;border:0.5px solid #D3D1C7;overflow:hidden;margin-bottom:12px}
+.day-hdr{background:#F4F7F4;padding:10px 16px;display:flex;align-items:center;gap:10px;border-bottom:0.5px solid #E8EDF2;cursor:pointer}
+.day-hdr:hover{background:#EEF2F7}
+.day-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.day-name{font-size:13px;font-weight:700;color:#0D2137;min-width:90px}
+.day-focus{font-size:11px;color:#64748B;flex:1}
+.day-meta{display:flex;gap:6px;align-items:center}
+.day-hrs{font-size:11px;font-weight:600;color:#888780}
+.day-chevron{font-size:11px;color:#B4B2A9;transition:transform .2s;margin-left:6px}
+.day-open .day-chevron{transform:rotate(180deg)}
+.day-body{display:none;padding:0}
+.day-open .day-body{display:block}
+
+/* ── Task rows ── */
+.task-row{display:grid;grid-template-columns:36px 1fr 80px 80px 70px;align-items:start;padding:9px 16px;border-bottom:0.5px solid #F1EFE8;transition:background .1s}
+.task-row:last-child{border-bottom:none}
+.task-row:hover{background:#FAFCFA}
+.task-check{width:18px;height:18px;border-radius:4px;border:1.5px solid #D3D1C7;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;margin-top:1px}
+.task-check.done{background:#3DB56C;border-color:#3DB56C}
+.task-check.done::after{content:'✓';color:#fff;font-size:11px;font-weight:700}
+.task-main{display:flex;flex-direction:column;gap:3px}
+.task-title{font-size:12px;color:#1a1a1a;line-height:1.45}
+.task-title.done-txt{color:#B4B2A9;text-decoration:line-through}
+.task-dep{font-size:10px;color:#B4B2A9}
+.task-dep::before{content:'↳ Needs: ';font-style:italic}
+.otag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;text-align:center;white-space:nowrap}
+.ot-x{background:#E6F1FB;color:#185FA5}
+.ot-c{background:#EAF3DE;color:#3B6D11}
+.ot-b{background:#F1EFE8;color:#5F5E5A}
+.ot-sa{background:#F5F3FF;color:#533AB7}
+.ptag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;text-align:center;white-space:nowrap}
+.pt-blocker{background:#FCEBEB;color:#A32D2D}
+.pt-high{background:#FAEEDA;color:#854F0B}
+.pt-norm{background:#F4F7F4;color:#5F5E5A}
+.pt-review{background:#EAF3DE;color:#3B6D11}
+.hrs-badge{font-size:10px;color:#888780;text-align:right;white-space:nowrap}
+
+/* ── Section divider inside day ── */
+.task-section{padding:6px 16px 3px;background:#F8FAFB;font-size:10px;font-weight:700;color:#888780;text-transform:uppercase;letter-spacing:.06em;border-bottom:0.5px solid #F1EFE8}
+
+/* ── BAST milestone banner ── */
+.bast-banner{background:#0D2137;color:#fff;border-radius:8px;padding:14px 18px;margin-bottom:12px;display:flex;align-items:center;gap:16px}
+.bast-icon{font-size:28px}
+.bast-info h3{font-size:14px;font-weight:700;color:#A8DDB5;margin-bottom:3px}
+.bast-info p{font-size:11px;color:rgba(255,255,255,.7);line-height:1.6}
+.bast-pct{font-size:32px;font-weight:700;color:#3DB56C;margin-left:auto;text-align:right}
+.bast-pct small{display:block;font-size:10px;color:rgba(255,255,255,.5);font-weight:400}
+
+/* ── Success criteria ── */
+.sc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.sc-item{background:#F0FBF7;border:0.5px solid #5DCAA5;border-radius:6px;padding:9px 12px;display:flex;gap:8px;align-items:flex-start}
+.sc-check{width:20px;height:20px;border-radius:50%;background:#3DB56C;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;flex-shrink:0}
+.sc-text{font-size:11px;color:#085041;line-height:1.5}
+.sc-metric{font-size:10px;font-weight:700;color:#0F6E56;margin-top:2px}
+
+/* ── Effort summary ── */
+.effort-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.ef-item{background:#fff;border:0.5px solid #D3D1C7;border-radius:6px;padding:8px 14px;font-size:11px;display:flex;gap:8px;align-items:center}
+.ef-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ef-lbl{color:#64748B}
+.ef-val{font-weight:700;color:#0D2137}
+
+/* ── Tooltip ── */
+.tt{position:fixed;pointer-events:none;background:#0D2137;color:#fff;border-radius:7px;padding:8px 12px;font-size:11px;max-width:220px;z-index:99;opacity:0;transition:opacity .1s;line-height:1.6}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="brand">Weekly Execution Plan</span>
+  <div class="phase-tabs">
+    <span class="ptab active" onclick="showPhase('m1')">Month 1 — Foundation</span>
+    <span class="ptab" onclick="showPhase('m2')">Month 2 — Build</span>
+    <span class="ptab" onclick="showPhase('m3')">Month 3 — Deliver</span>
+  </div>
+  <div class="tr">
+    <span class="chip c-navy">PT Customer</span>
+    <span class="chip c-green">6 Apps</span>
+    <span class="chip c-amber">12 Weeks</span>
+    <span id="global-progress" class="chip" style="background:#F4F7F4;color:#64748B">0 / 0 tasks done</span>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar"></div>
+
+  <!-- Main -->
+  <div class="main" id="main"></div>
+</div>
+
+<div class="tt" id="tt"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════════════════════════════
+const PHASES = {
+  m1: { label: 'Month 1 — Foundation', color: '#0D2137', bast: '30%', weeks: [1,2,3,4] },
+  m2: { label: 'Month 2 — Build',      color: '#0F6E56', bast: '30%', weeks: [5,6,7,8] },
+  m3: { label: 'Month 3 — Deliver',    color: '#533AB7', bast: '40%', weeks: [9,10,11,12] },
+};
+
+const WEEKS = {
+  1: {
+    title: 'Week 1 — Environment Discovery & Audit',
+    focus: 'No changes made to production. Assess, document, and understand every existing AWS resource, application dependency, and network configuration.',
+    phase: 'm1', color: '#0D2137',
+    prereqs: [
+      'PO issued and received by Xtremax — engagement clock starts Day 1',
+      'AWS account credentials for all 5 accounts provided to Xtremax engineer',
+      '6 sample apps confirmed — app owners scheduled for W1 discovery interviews',
+      'Shadow engineer(s) available from Day 1 of Week 1',
+      'Communication channel (Teams/Slack) + daily standup time agreed',
+    ],
+    objectives: [
+      'Complete AWS environment audit across all 5 accounts',
+      'Document all existing SCPs, guardrails, IAM configuration',
+      'Inventory all 6 app server environments and dependencies',
+      'Produce W1 Discovery Report shared with Customer IT lead by Friday',
+    ],
+    days: [
+      { name: 'Monday', focus: 'Kick-off & account access validation', color:'#0D2137', hours: 8,
+        tasks: [
+          { title:'Run formal project kick-off meeting — present execution plan, agree RACI and escalation path', owner:'b', priority:'high', hrs:'2h', dep:null },
+          { title:'Verify access to all 5 AWS accounts (Mgmt, Prod, Dev/UAT, Security, Log Archive) — fix any access issues before end of day', owner:'x', priority:'blocker', hrs:'2h', dep:'AWS credentials from Customer' },
+          { title:'Set up shared project workspace (Confluence/Notion) — task tracker, document library, weekly log', owner:'x', priority:'norm', hrs:'1h', dep:null },
+          { title:'Shadow engineer onboarding: walk through all 5 AWS accounts — console navigation, naming conventions, who owns what', owner:'x', priority:'high', hrs:'2h', dep:null },
+          { title:'Agree daily standup structure: what was done, what is planned, any blockers', owner:'b', priority:'norm', hrs:'0.5h', dep:null },
+        ]
+      },
+      { name: 'Tuesday', focus: 'Landing Zone & security services audit', color:'#0D2137', hours: 8,
+        tasks: [
+          { title:'Export all existing SCPs from AWS Organizations — categorise: preventive, detective, custom, missing', owner:'x', priority:'high', hrs:'2h', dep:'Account access from Day 1' },
+          { title:'Audit Control Tower: OU structure, enrolled accounts, guardrail status (enabled/disabled/drifted)', owner:'x', priority:'high', hrs:'2h', dep:null },
+          { title:'Audit IAM across all accounts: users, roles, policies — flag shared accounts, root usage, missing MFA', owner:'x', priority:'high', hrs:'2h', dep:null },
+          { title:'Check GuardDuty, Security Hub, Config, CloudTrail status per account — document gaps in spreadsheet', owner:'x', priority:'high', hrs:'1.5h', dep:null },
+          { title:'Shadow: observe and document IAM audit process — learn how to read IAM Access Analyzer findings', owner:'c', priority:'norm', hrs:'2h', dep:null },
+        ]
+      },
+      { name: 'Wednesday', focus: 'Network topology & VPC audit', color:'#0D2137', hours: 8,
+        tasks: [
+          { title:'Map existing VPC topology: CIDR blocks, subnets (public/private/data), route tables, internet/NAT gateways — export as diagram', owner:'x', priority:'high', hrs:'2.5h', dep:null },
+          { title:'Review Security Groups across all accounts — identify overly permissive rules (0.0.0.0/0 inbound)', owner:'x', priority:'high', hrs:'1.5h', dep:null },
+          { title:'Validate Transit Gateway attachment and on-premises VPN connectivity — document routing table', owner:'b', priority:'high', hrs:'1.5h', dep:'Customer to provide VPN config docs' },
+          { title:'Review existing ALBs and target groups — list all listeners, SSL certificates, health check configs', owner:'x', priority:'norm', hrs:'1h', dep:null },
+          { title:'Check VPC endpoints: which services are accessible privately vs via internet — document gaps', owner:'x', priority:'norm', hrs:'1h', dep:null },
+        ]
+      },
+      { name: 'Thursday', focus: 'Application dependency assessment (Apps 1–6)', color:'#0D2137', hours: 8,
+        tasks: [
+          { title:'Interview app owner for Apps 1 & 2 (30 min each): purpose, users, peak load, external APIs, DB dependencies', owner:'b', priority:'high', hrs:'1.5h', dep:'App owners available' },
+          { title:'Interview app owner for Apps 3 & 4 (30 min each): same as above', owner:'b', priority:'high', hrs:'1.5h', dep:'App owners available' },
+          { title:'Interview app owner for Apps 5 & 6 (30 min each): same as above', owner:'b', priority:'high', hrs:'1.5h', dep:'App owners available' },
+          { title:'Run PowerShell inventory script on all 6 Windows Server environments — capture OS version, installed packages, IIS config, .NET versions', owner:'x', priority:'high', hrs:'2h', dep:'EC2 access to existing Windows servers' },
+          { title:'Document Windows-specific dependencies per app (IIS, COM objects, .NET Framework, Windows-only libs) — flag risk level', owner:'x', priority:'high', hrs:'1h', dep:null },
+        ]
+      },
+      { name: 'Friday', focus: 'Report compilation & Week 2 planning', color:'#0D2137', hours: 8,
+        tasks: [
+          { title:'Compile W1 Discovery Report: network diagram, SCP inventory, IAM audit summary, security gaps, app dependency matrix', owner:'x', priority:'high', hrs:'3h', dep:'All W1 findings complete' },
+          { title:'Present W1 Discovery Report to Customer IT lead — review findings, prioritise remediation list together', owner:'b', priority:'high', hrs:'1.5h', dep:'W1 report complete' },
+          { title:'SA review call: share audit findings with Solution Architect — discuss Landing Zone enforcement plan for W2', owner:'sa', priority:'review', hrs:'1h', dep:null },
+          { title:'Plan Week 2 task breakdown — confirm which SCPs to add first, agree network changes window', owner:'b', priority:'norm', hrs:'1h', dep:null },
+          { title:'Shadow engineer weekly recap: what did they learn? Can they explain what an SCP does? What IAM Access Analyzer shows?', owner:'x', priority:'norm', hrs:'0.5h', dep:null },
+        ]
+      },
+    ],
+    success: [
+      { text: 'W1 Discovery Report delivered to Customer IT lead', metric: 'By Friday EOD' },
+      { text: 'All 5 AWS accounts fully accessible by Xtremax engineer', metric: 'Day 1 — BLOCKER' },
+      { text: 'All 6 app dependency matrices completed', metric: '6 / 6 apps' },
+      { text: 'Network diagram exported and reviewed with Customer', metric: 'Validated diagram' },
+    ]
+  },
+
+  2: {
+    title: 'Week 2 — Landing Zone Enforcement & Network Build',
+    focus: 'Apply all security guardrails, fix compliance gaps found in W1, and build production network components. First changes to production — all changes go through Customer IT approval.',
+    phase: 'm1', color: '#0D2137',
+    prereqs: [
+      'W1 Discovery Report reviewed and approved by Customer IT lead',
+      'Remediation priorities agreed — Customer IT lead sign-off on planned SCP additions',
+      'Change window agreed for network modifications (off-peak hours)',
+      'Shadow engineers assigned as watchers on all changes this week',
+    ],
+    objectives: [
+      'Landing Zone guardrails fully enforced (preventive + detective)',
+      'GuardDuty and Security Hub active in all 5 accounts',
+      'CloudTrail org-wide aggregation flowing to Log Archive',
+      'Production VPC built: subnets, NAT GW, VPC Endpoints',
+    ],
+    days: [
+      { name: 'Monday', focus: 'SCP enforcement & IAM remediation', color:'#0D2137', hours: 8,
+        tasks: [
+          { title:'Apply missing mandatory SCPs: prevent root account usage, require MFA, disallow S3 public access, require EBS encryption', owner:'x', priority:'blocker', hrs:'2.5h', dep:'Customer IT approval of SCP plan from W1' },
+          { title:'Enable AWS Config in all accounts — apply CIS AWS Benchmark conformance pack', owner:'x', priority:'high', hrs:'1.5h', dep:null },
+          { title:'Enable CloudTrail organisation-wide data events — confirm events flowing to Log Archive S3 bucket', owner:'x', priority:'high', hrs:'1.5h', dep:null },
+          { title:'Enforce MFA on all IAM users — remove any shared IAM user accounts, replace with SSO assignments', owner:'b', priority:'high', hrs:'2h', dep:'Customer IT to identify valid IAM users to keep' },
+          { title:'Shadow: watch and document every SCP addition — learn what each SCP prevents and why', owner:'c', priority:'norm', hrs:'2h', dep:null },
+        ]
+      },
+      { name: 'Tuesday', focus: 'GuardDuty, Security Hub & logging activation', color:'#0D2137', hours: 8,
+        tasks: [
+          { title:'Enable GuardDuty in all 5 accounts via delegated admin from Security Account — confirm aggregation in Security Account', owner:'x', priority:'high', hrs:'2h', dep:null },
+          { title:'Enable Security Hub with FSBP (Foundational Security Best Practices) standard — validate findings visible in Security Account', owner:'x', priority:'high', hrs:'1.5h', dep:'GuardDuty enabled' },
+          { title:'Configure VPC Flow Logs for Production account VPC — send to Log Archive S3 with Athena partition projection', owner:'x', priority:'high', hrs:'1.5h', dep:null },
+          { title:'Configure IAM Access Analyzer in all accounts — review any externally-accessible resources flagged', owner:'x', priority:'norm', hrs:'1h', dep:null },
+          { title:'Run Security Hub FSBP report — capture baseline compliance score (this becomes our Week 4 comparison)', owner:'x', priority:'review', hrs:'0.5h', dep:'Security Hub enabled' },
+          { title:'Shadow: run Security Hub report themselves — explain each failing check and its remediation', owner:'c', priority:'norm', hrs:'1h', dep:null },
+        ]
+      },
+      { name: 'Wednesday', focus: 'Production VPC & subnet build', color:'#0D2137', hours: 8,
+        tasks: [
+          { title:'Create/verify Production VPC: CIDR /16 — ensure no overlap with on-prem or other VPCs', owner:'x', priority:'blocker', hrs:'1.5h', dep:'CIDR range confirmed with Customer network team' },
+          { title:'Create public subnets in 2 AZs (1a, 1b) — for ALBs and NAT Gateways only', owner:'x', priority:'high', hrs:'1h', dep:'VPC confirmed' },
+          { title:'Create private app subnets in 2 AZs — for EKS nodes and application pods', owner:'x', priority:'high', hrs:'1h', dep:'VPC confirmed' },
+          { title:'Create private data subnets in 2 AZs — isolated subnet for RDS, ElastiCache, no internet routing', owner:'x', priority:'high', hrs:'1h', dep:'VPC confirmed' },
+          { title:'Deploy Internet Gateway + 2 NAT Gateways (one per AZ) — configure route tables for all subnet types', owner:'x', priority:'high', hrs:'1.5h', dep:'All subnets created' },
+          { title:'Validate end-to-end routing: public subnet → internet, private subnet → NAT → internet, data subnet → no internet route', owner:'b', priority:'high', hrs:'1h', dep:'NAT Gateways deployed' },
+        ]
+      },
+      { name: 'Thursday', focus: 'VPC Endpoints & Transit Gateway validation', color:'#0D2137', hours: 8,
+        tasks: [
+          { title:'Create VPC Interface Endpoints: S3, ECR.api, ECR.dkr, Secrets Manager, Systems Manager — attach to app and data subnets', owner:'x', priority:'high', hrs:'2.5h', dep:'App and data subnets created' },
+          { title:'Update Security Groups: endpoints accessible only from app subnet CIDR, block all other inbound', owner:'x', priority:'high', hrs:'1h', dep:'Endpoints created' },
+          { title:'Validate Transit Gateway routing: test connectivity from Production VPC to on-premises (ping test, traceroute)', owner:'b', priority:'high', hrs:'1.5h', dep:'Customer to confirm on-prem test host IP' },
+          { title:'Create security groups for: ALB, EKS nodes, RDS, ElastiCache — least-privilege rules only', owner:'x', priority:'high', hrs:'2h', dep:'VPC structure complete' },
+          { title:'Tag all resources with mandatory tags: Environment, Project, Owner, CostCentre — establish tagging policy', owner:'x', priority:'norm', hrs:'1h', dep:null },
+        ]
+      },
+      { name: 'Friday', focus: 'RHEL instance provisioning & OS prep', color:'#0D2137', hours: 8,
+        tasks: [
+          { title:'Launch RHEL 8.x EC2 instances in Dev/UAT for each of the 6 apps — size based on W1 load assessment', owner:'x', priority:'high', hrs:'2h', dep:'Dev/UAT account network ready' },
+          { title:'Apply OS hardening baseline: disable root SSH login, configure firewalld, apply CIS RHEL Level 1 benchmark', owner:'x', priority:'high', hrs:'2h', dep:'RHEL instances running' },
+          { title:'Install runtime dependencies: Node.js LTS, npm, required build tools — match versions from W1 inventory', owner:'x', priority:'high', hrs:'1.5h', dep:'RHEL instances hardened' },
+          { title:'Verify SSM Agent installed on all instances — confirm Systems Manager can reach all 6 RHEL hosts', owner:'x', priority:'norm', hrs:'0.5h', dep:null },
+          { title:'Week 2 review: present network topology to Customer IT lead — confirm VPC design is approved before W3 migration', owner:'b', priority:'review', hrs:'1h', dep:'Network build complete' },
+          { title:'Shadow: independently review Security Hub compliance score — can they explain what changed vs Day 1?', owner:'c', priority:'norm', hrs:'1h', dep:null },
+        ]
+      },
+    ],
+    success: [
+      { text: 'Security Hub FSBP baseline score captured', metric: 'Score documented' },
+      { text: 'GuardDuty active in all 5 accounts', metric: '5 / 5 accounts' },
+      { text: 'CloudTrail events flowing to Log Archive S3', metric: 'Athena query validated' },
+      { text: 'Production VPC with all subnet types + NAT GWs created', metric: 'Network diagram updated' },
+    ]
+  },
+
+  3: {
+    title: 'Week 3 — OS Migration Execution & Application Validation',
+    focus: 'Migrate all 6 applications from Windows Server/IIS to Red Hat Enterprise Linux. Validate each app with its owner before marking complete. Write migration runbook per app.',
+    phase: 'm1', color: '#0D2137',
+    prereqs: [
+      'RHEL instances provisioned, hardened, and Node.js runtime installed',
+      'App owners for all 6 apps available for validation sessions (30 min per app)',
+      'App smoke test checklist agreed per app (from W1 discovery)',
+      'Dev/UAT network confirmed — RHEL instances accessible',
+      'Change management notification sent to relevant teams',
+    ],
+    objectives: [
+      'All 6 apps deployed and functional on RHEL in Dev/UAT',
+      'Load test results ≥ Windows baseline for all apps',
+      'Migration runbook written per app (deploy + rollback)',
+      'App owners sign off on each migrated app',
+    ],
+    days: [
+      { name: 'Monday', focus: 'Migrate Apps 1 & 2 to RHEL', color:'#0D2137', hours: 8,
+        tasks: [
+          { title:'Deploy App 1 to RHEL: copy application code, configure environment variables, start Node.js process', owner:'b', priority:'high', hrs:'2.5h', dep:'RHEL instance ready, app code accessible' },
+          { title:'Run App 1 functional smoke test with app owner: login, core user flows, database queries — sign off if passed', owner:'b', priority:'blocker', hrs:'1h', dep:'App 1 deployed' },
+          { title:'Deploy App 2 to RHEL: same process — env vars, startup, config', owner:'b', priority:'high', hrs:'2h', dep:null },
+          { title:'Run App 2 functional smoke test with app owner', owner:'b', priority:'blocker', hrs:'1h', dep:'App 2 deployed' },
+          { title:'Fix any deployment issues (path separators, env var format, missing system libs) for Apps 1 & 2', owner:'x', priority:'high', hrs:'1.5h', dep:null },
+        ]
+      },
+      { name: 'Tuesday', focus: 'Migrate Apps 3 & 4 to RHEL', color:'#0D2137', hours: 8,
+        tasks: [
+          { title:'Deploy App 3 to RHEL — note: PHP stack, may require php-fpm + nginx instead of IIS', owner:'b', priority:'high', hrs:'2.5h', dep:'App 3 dependency list from W1' },
+          { title:'Run App 3 smoke test with app owner — validate core features, DB connection, file upload/download', owner:'b', priority:'blocker', hrs:'1h', dep:'App 3 deployed' },
+          { title:'Deploy App 4 to RHEL', owner:'b', priority:'high', hrs:'2h', dep:null },
+          { title:'Run App 4 smoke test with app owner', owner:'b', priority:'blocker', hrs:'1h', dep:'App 4 deployed' },
+          { title:'Document RHEL-specific fixes applied to Apps 3 & 4 — add to migration runbook template', owner:'x', priority:'norm', hrs:'1h', dep:null },
+        ]
+      },
+      { name: 'Wednesday', focus: 'Migrate Apps 5 & 6 + load testing', color:'#0D2137', hours: 8,
+        tasks: [
+          { title:'Deploy App 5 to RHEL (utility service)', owner:'b', priority:'high', hrs:'1.5h', dep:null },
+          { title:'Deploy App 6 to RHEL', owner:'b', priority:'high', hrs:'1.5h', dep:null },
+          { title:'Run smoke tests for Apps 5 & 6 with app owners', owner:'b', priority:'blocker', hrs:'1h', dep:'Apps 5 & 6 deployed' },
+          { title:'Run load test (k6) on Apps 1 & 2 on RHEL — compare response time p50/p95/p99 vs Windows baseline', owner:'x', priority:'high', hrs:'2h', dep:'Apps 1 & 2 validated' },
+          { title:'Run load test on Apps 3 & 4 on RHEL — confirm throughput ≥ Windows baseline', owner:'x', priority:'high', hrs:'2h', dep:'Apps 3 & 4 validated' },
+        ]
+      },
+      { name: 'Thursday', focus: 'Runbook writing & remaining load tests', color:'#0D2137', hours: 8,
+        tasks: [
+          { title:'Run load test on Apps 5 & 6 on RHEL', owner:'x', priority:'high', hrs:'1.5h', dep:'Apps 5 & 6 validated' },
+          { title:'Write migration runbook for Apps 1 & 2: exact deploy steps, env var list, rollback procedure, validation checklist', owner:'x', priority:'high', hrs:'2h', dep:'Apps 1 & 2 load tested' },
+          { title:'Write migration runbook for Apps 3 & 4', owner:'x', priority:'high', hrs:'2h', dep:'Apps 3 & 4 load tested' },
+          { title:'Write migration runbook for Apps 5 & 6', owner:'x', priority:'high', hrs:'1.5h', dep:'Apps 5 & 6 load tested' },
+          { title:'Shadow: write the App 5 or 6 runbook themselves — Xtremax reviews and corrects', owner:'c', priority:'norm', hrs:'1.5h', dep:null },
+        ]
+      },
+      { name: 'Friday', focus: 'Final validation & W4 preparation', color:'#0D2137', hours: 8,
+        tasks: [
+          { title:'Run Security Hub FSBP compliance report — target ≥80% pass rate (compare vs W2 baseline)', owner:'x', priority:'review', hrs:'1h', dep:null },
+          { title:'Compile OS migration test results summary: pass/fail per app, load test comparison table, issues found and resolved', owner:'x', priority:'high', hrs:'2h', dep:'All 6 apps tested' },
+          { title:'SA architecture review: validate network topology and security posture with Solution Architect', owner:'sa', priority:'review', hrs:'1.5h', dep:null },
+          { title:'Present migration results to Customer IT lead — app owner sign-offs collected, any outstanding items flagged', owner:'b', priority:'high', hrs:'1h', dep:'Test results compiled' },
+          { title:'Prepare BAST 1 documentation outline — confirm all required evidence exists (screenshots, reports, sign-offs)', owner:'x', priority:'high', hrs:'1.5h', dep:null },
+          { title:'Shadow: independently run Security Hub and explain the FSBP score to Xtremax', owner:'c', priority:'norm', hrs:'0.5h', dep:null },
+        ]
+      },
+    ],
+    success: [
+      { text: 'All 6 apps functional on RHEL, signed off by app owners', metric: '6 / 6 apps' },
+      { text: 'Load test p99 ≥ Windows baseline for all apps', metric: 'Load test report' },
+      { text: 'Migration runbook written for all 6 apps', metric: '6 runbooks' },
+      { text: 'Security Hub score ≥ 80% FSBP', metric: 'Score ≥ 80%' },
+    ]
+  },
+
+  4: {
+    title: 'Week 4 — BAST 1 Documentation, Sign-off & Month 2 Prep',
+    focus: 'Finalise and present all BAST 1 documentation. Get Customer sign-off. Issue invoice. Begin preparing Month 2 technical prerequisites.',
+    phase: 'm1', color: '#0D2137',
+    prereqs: [
+      'All 6 apps validated on RHEL with app owner sign-offs collected',
+      'Security Hub FSBP score ≥ 80% confirmed',
+      'CloudTrail validated in Log Archive (Athena query confirms data)',
+      'W3 migration runbooks reviewed by SA',
+    ],
+    objectives: [
+      'BAST 1 documentation package compiled and presented',
+      'BAST 1 formally signed — 30% invoice submitted',
+      'EKS node sizing and ECR naming convention agreed for Month 2',
+      'GitHub repository structure created for IaC and CI/CD',
+    ],
+    bastMilestone: { label: 'BAST 1', pct: '30%', items: ['Landing Zone Governance Report', 'OS Migration Documentation (6 apps)', 'App owner sign-off evidence', 'Security Hub FSBP compliance report'] },
+    days: [
+      { name: 'Monday', focus: 'Documentation compilation', color:'#E74C3C', hours: 8,
+        tasks: [
+          { title:'Write Landing Zone Governance Report: OU structure, SCP inventory (before/after), guardrail status, Security Hub score, IAM remediation summary', owner:'x', priority:'high', hrs:'4h', dep:'All W2 & W3 findings' },
+          { title:'Compile OS Migration Documentation: cover page, executive summary, migration runbook index (6 apps), load test results table', owner:'x', priority:'high', hrs:'3h', dep:'All 6 runbooks complete' },
+          { title:'Collect all app owner sign-off emails/messages — compile as appendix to migration doc', owner:'b', priority:'high', hrs:'1h', dep:'All 6 app owners signed off in W3' },
+        ]
+      },
+      { name: 'Tuesday', focus: 'Documentation review & BAST package finalisation', color:'#E74C3C', hours: 8,
+        tasks: [
+          { title:'Internal review: Xtremax engineer + SA review both documents — fix any gaps, add missing screenshots', owner:'sa', priority:'high', hrs:'2h', dep:'Docs compiled Day 1' },
+          { title:'Add supporting evidence appendices: CloudTrail Athena query screenshot, GuardDuty findings dashboard, Security Hub FSBP report export', owner:'x', priority:'high', hrs:'2h', dep:null },
+          { title:'Format final BAST 1 document package — consistent headings, page numbers, version numbering', owner:'x', priority:'norm', hrs:'1.5h', dep:null },
+          { title:'Prepare BAST 1 presentation deck (5 slides): what we did, evidence, metrics, next steps', owner:'x', priority:'high', hrs:'2h', dep:null },
+          { title:'Share BAST 1 package with Customer IT lead 24 hours before sign-off meeting', owner:'x', priority:'high', hrs:'0.5h', dep:'Docs finalised' },
+        ]
+      },
+      { name: 'Wednesday', focus: 'BAST 1 sign-off meeting & invoice', color:'#E74C3C', hours: 6,
+        tasks: [
+          { title:'BAST 1 presentation meeting with Customer stakeholders — walkthrough of all deliverables (1.5 hr)', owner:'b', priority:'blocker', hrs:'1.5h', dep:'Docs shared 24 hrs prior' },
+          { title:'Address any questions or revision requests from Customer — resolve same day if possible', owner:'b', priority:'blocker', hrs:'1.5h', dep:null },
+          { title:'Customer signs BAST 1 document — Xtremax countersigns', owner:'b', priority:'blocker', hrs:'0.5h', dep:'All questions resolved' },
+          { title:'Submit BAST 1 invoice (30% of contract value) — payment per contract on next Thursday', owner:'x', priority:'high', hrs:'0.5h', dep:'BAST 1 signed' },
+          { title:'Update project tracker: BAST 1 milestone marked complete, all W1–W4 tasks closed', owner:'x', priority:'norm', hrs:'0.5h', dep:null },
+        ]
+      },
+      { name: 'Thursday', focus: 'Month 2 technical preparation', color:'#E74C3C', hours: 8,
+        tasks: [
+          { title:'Agree EKS cluster configuration: version (1.30), node group sizes, instance types per tier (m5.xl, m5.2xl, m5.4xl)', owner:'b', priority:'high', hrs:'1.5h', dep:'BAST 1 signed' },
+          { title:'Define ECR repository naming convention: ptcustomer/{app-name}:{env}-{git-sha} — agree image lifecycle policy', owner:'b', priority:'high', hrs:'1h', dep:null },
+          { title:'Create GitHub organisation + repositories: terraform-modules, app-01 through app-06, cicd-templates', owner:'x', priority:'high', hrs:'2h', dep:'GitHub access provided by Customer' },
+          { title:'Define Terraform module structure: /modules/vpc, /modules/eks, /modules/rds, /modules/app — create folders and README stubs', owner:'x', priority:'high', hrs:'2h', dep:'GitHub repos created' },
+          { title:'Set up Terraform remote state: S3 bucket + DynamoDB lock table in Management account', owner:'x', priority:'high', hrs:'1h', dep:null },
+        ]
+      },
+      { name: 'Friday', focus: 'Month 1 retrospective & Month 2 kickoff', color:'#E74C3C', hours: 6,
+        tasks: [
+          { title:'Month 1 retrospective with Customer IT team: what went well, what was harder than expected, lessons for Month 2', owner:'b', priority:'review', hrs:'1h', dep:null },
+          { title:'Share Month 2 week-by-week plan with Customer IT lead — confirm app owner availability for W5–W8', owner:'b', priority:'high', hrs:'1h', dep:null },
+          { title:'Shadow engineer Month 1 knowledge assessment: can they explain Landing Zone, SCP purpose, CloudTrail flow?', owner:'x', priority:'norm', hrs:'0.5h', dep:null },
+          { title:'Confirm Dockerfile base images with dev team: node:20-alpine for Node.js apps, php:8-fpm-alpine for PHP', owner:'b', priority:'high', hrs:'1h', dep:'Dev team available' },
+          { title:'Week 4 wrap-up email to all stakeholders: BAST 1 complete, Month 2 starting Monday', owner:'x', priority:'norm', hrs:'0.5h', dep:null },
+        ]
+      },
+    ],
+    success: [
+      { text: 'BAST 1 signed by Customer — 30% invoice submitted', metric: 'Day 3 (Wednesday)' },
+      { text: 'GitHub repos and Terraform remote state created', metric: 'Ready for W5' },
+      { text: 'EKS config and ECR naming agreed', metric: 'Confirmed in writing' },
+      { text: 'Month 2 plan shared and confirmed', metric: 'Stakeholder email sent' },
+    ]
+  },
+
+  5: {
+    title: 'Week 5 — EKS Cluster Deployment & First 2 Apps Containerised',
+    focus: 'Build the production EKS cluster. Containerise Apps 1 and 2 as the pilot — establish the Docker and Helm patterns that all remaining apps will follow.',
+    phase: 'm2', color: '#0F6E56',
+    prereqs: [
+      'BAST 1 signed and confirmed',
+      'EKS IAM service role and node instance profile created in Production account',
+      'ECR repositories created for all 6 apps with lifecycle policies applied',
+      'GitHub repositories set up with initial branch protection rules',
+      'Terraform remote state S3 bucket + DynamoDB lock confirmed',
+      'Docker base images agreed (node:20-alpine, php:8-fpm-alpine)',
+    ],
+    objectives: [
+      'Production EKS cluster running in 2 AZs with 3 node groups',
+      'Apps 1 & 2 containerised: Docker image built, pushed to ECR, deployed to EKS',
+      'Apps 1 & 2 accessible via HTTPS through ALB + CloudFront',
+      'Terraform vpc and eks-cluster modules written and applied',
+    ],
+    days: [
+      { name: 'Monday', focus: 'EKS cluster creation & node groups', color:'#0F6E56', hours: 8,
+        tasks: [
+          { title:'Write Terraform module eks-cluster: cluster resource, OIDC provider, node groups (3 tiers), add-ons, log group', owner:'x', priority:'blocker', hrs:'3h', dep:'Terraform remote state ready, VPC complete' },
+          { title:'Apply Terraform eks-cluster module to Production account — monitor cluster creation (takes ~15 min)', owner:'x', priority:'high', hrs:'1h', dep:'Module written' },
+          { title:'Install required EKS add-ons: CoreDNS, kube-proxy, VPC CNI, EBS CSI driver — verify all in Running state', owner:'x', priority:'high', hrs:'1.5h', dep:'EKS cluster active' },
+          { title:'Install AWS Load Balancer Controller via Helm — configure with IRSA role for ALB provisioning', owner:'x', priority:'high', hrs:'1.5h', dep:'EKS cluster active, OIDC provider configured' },
+          { title:'Verify worker nodes: confirm IMDSv2 enforced, no public IP, SSM agent running, correct security group attached', owner:'x', priority:'high', hrs:'1h', dep:'Node groups active' },
+        ]
+      },
+      { name: 'Tuesday', focus: 'App 1 containerisation: Dockerfile → ECR → EKS', color:'#0F6E56', hours: 8,
+        tasks: [
+          { title:'Write Dockerfile for App 1 (Node.js): multi-stage build — build stage (npm install + build) → runtime stage (node:20-alpine)', owner:'b', priority:'high', hrs:'2h', dep:'App code accessible in GitHub' },
+          { title:'Build App 1 Docker image locally — run Trivy scan on image, fix any HIGH/CRITICAL vulnerabilities', owner:'x', priority:'high', hrs:'1.5h', dep:'Dockerfile complete' },
+          { title:'Push App 1 image to ECR — verify ECR scan on push shows no new critical vulnerabilities', owner:'x', priority:'high', hrs:'0.5h', dep:'Image built and scanned' },
+          { title:'Write Helm chart for App 1: Deployment, Service, Ingress, HPA, ConfigMap, ServiceAccount with IRSA', owner:'x', priority:'high', hrs:'2.5h', dep:'Image in ECR' },
+          { title:'Deploy App 1 Helm chart to EKS — configure ALB ingress with HTTPS, validate pod reaches Running state', owner:'x', priority:'high', hrs:'1.5h', dep:'Helm chart written' },
+        ]
+      },
+      { name: 'Wednesday', focus: 'App 2 containerisation + CloudFront + Secrets', color:'#0F6E56', hours: 8,
+        tasks: [
+          { title:'Write Dockerfile for App 2 — build, scan, push to ECR', owner:'b', priority:'high', hrs:'2h', dep:null },
+          { title:'Write Helm chart for App 2 — deploy to EKS, expose via ALB', owner:'x', priority:'high', hrs:'2h', dep:'App 2 image in ECR' },
+          { title:'Configure CloudFront distribution in front of ALB for Apps 1 & 2 — set up caching rules, custom headers, HTTPS only', owner:'x', priority:'high', hrs:'2h', dep:'ALB active for both apps' },
+          { title:'Configure Secrets Manager: create secrets for DB credentials, API keys for Apps 1 & 2 — update app code to read from Secrets Manager SDK', owner:'b', priority:'high', hrs:'1.5h', dep:'App owners provide secret values' },
+          { title:'Validate Apps 1 & 2 end-to-end: CloudFront → ALB → EKS pod → Secrets Manager → works', owner:'b', priority:'review', hrs:'1h', dep:'All components deployed' },
+        ]
+      },
+      { name: 'Thursday', focus: 'HPA, app owner validation & Terraform vpc module', color:'#0F6E56', hours: 8,
+        tasks: [
+          { title:'Configure HPA for Apps 1 & 2: scale up at CPU 70%, memory 80%, min 2 pods, max 10 pods', owner:'x', priority:'high', hrs:'1h', dep:'Apps 1 & 2 running on EKS' },
+          { title:'Run load test on App 1 on EKS — confirm HPA triggers at configured threshold, pods scale up', owner:'x', priority:'high', hrs:'1.5h', dep:'HPA configured' },
+          { title:'App 1 sign-off session with app owner: validate all core flows work on EKS, app owner signs acceptance', owner:'b', priority:'blocker', hrs:'1h', dep:'Load test passed' },
+          { title:'App 2 sign-off session with app owner', owner:'b', priority:'blocker', hrs:'1h', dep:'App 2 deployed and HPA tested' },
+          { title:'Write Terraform module vpc: encapsulate VPC, subnets, NAT GW, route tables, VPC endpoints — apply over existing manual resources', owner:'x', priority:'high', hrs:'2.5h', dep:'Existing VPC resources match module design' },
+        ]
+      },
+      { name: 'Friday', focus: 'SA review + Week 5 consolidation', color:'#0F6E56', hours: 7,
+        tasks: [
+          { title:'SA architecture review: validate EKS cluster config, network design, security groups, IRSA roles, Helm chart standards', owner:'sa', priority:'review', hrs:'2h', dep:'Apps 1 & 2 deployed' },
+          { title:'Apply SA feedback — update EKS config, Helm charts, or security groups as directed', owner:'x', priority:'high', hrs:'1.5h', dep:'SA review complete' },
+          { title:'Document EKS cluster config: node groups, add-ons, OIDC, IRSA, security group rules — save to project wiki', owner:'x', priority:'high', hrs:'1.5h', dep:null },
+          { title:'Shadow: deploy a test pod to EKS independently using kubectl — confirm they understand pod, service, ingress concepts', owner:'c', priority:'norm', hrs:'1h', dep:null },
+          { title:'Week 5 status update to Customer IT lead: Apps 1 & 2 live on EKS, EKS cluster deployed', owner:'x', priority:'norm', hrs:'0.5h', dep:null },
+        ]
+      },
+    ],
+    success: [
+      { text: 'EKS cluster running in 2 AZs with 3 node groups', metric: 'All nodes Ready' },
+      { text: 'Apps 1 & 2 containerised and accessible via CloudFront/HTTPS', metric: 'App owner sign-off' },
+      { text: 'Terraform vpc + eks-cluster modules written and applied', metric: 'State file clean' },
+      { text: 'HPA confirmed scaling for Apps 1 & 2', metric: 'Load test evidence' },
+    ]
+  },
+
+  6: {
+    title: 'Week 6 — Containerise Apps 3–6 & Build CI/CD Pipeline',
+    focus: 'Apply the containerisation pattern established in Week 5 to all remaining apps. Build the full CI/CD pipeline end-to-end so deployments are automated from Week 7 onwards.',
+    phase: 'm2', color: '#0F6E56',
+    prereqs: [
+      'Apps 1 & 2 validated on EKS with app owner sign-offs',
+      'EKS cluster fully operational — all add-ons Running',
+      'Terraform vpc and eks-cluster modules applied — state clean',
+      'App owners for Apps 3–6 available for validation sessions',
+      'CodePipeline, CodeBuild, CodeDeploy IAM roles pre-created',
+    ],
+    objectives: [
+      'All 6 apps containerised, deployed to EKS, signed off by app owners',
+      'CI/CD pipeline: GitHub push → CodeBuild (SAST) → ECR → CodeDeploy active',
+      'SonarQube quality gate integrated — pipeline fails on quality gate failure',
+      'Terraform rds module written',
+    ],
+    days: [
+      { name: 'Monday', focus: 'Containerise Apps 3 & 4', color:'#0F6E56', hours: 8,
+        tasks: [
+          { title:'Write Dockerfile for App 3 (PHP stack): php:8-fpm-alpine base, nginx sidecar pattern, handle php-fpm socket', owner:'b', priority:'high', hrs:'2.5h', dep:'App 3 code in GitHub' },
+          { title:'Build, scan, and push App 3 image to ECR — resolve any PHP-specific issues (extensions, phar)', owner:'x', priority:'high', hrs:'1.5h', dep:'App 3 Dockerfile done' },
+          { title:'Write Helm chart for App 3 — deploy to EKS, configure HPA and ALB ingress', owner:'x', priority:'high', hrs:'2h', dep:'App 3 image in ECR' },
+          { title:'Write Dockerfile + Helm chart for App 4 — build, scan, push, deploy to EKS', owner:'b', priority:'high', hrs:'2h', dep:null },
+          { title:'Quick smoke test Apps 3 & 4 — fix any startup failures before app owner session', owner:'x', priority:'high', hrs:'0.5h', dep:'Apps 3 & 4 deployed' },
+        ]
+      },
+      { name: 'Tuesday', focus: 'Containerise Apps 5 & 6 + app owner sign-offs', color:'#0F6E56', hours: 8,
+        tasks: [
+          { title:'Write Dockerfile + Helm chart for App 5 (utility/notification service) — deploy to EKS', owner:'b', priority:'high', hrs:'2h', dep:null },
+          { title:'Write Dockerfile + Helm chart for App 6 — deploy to EKS', owner:'b', priority:'high', hrs:'2h', dep:null },
+          { title:'App 3 sign-off session with app owner (45 min)', owner:'b', priority:'blocker', hrs:'0.75h', dep:'App 3 on EKS' },
+          { title:'App 4 sign-off session with app owner (45 min)', owner:'b', priority:'blocker', hrs:'0.75h', dep:'App 4 on EKS' },
+          { title:'App 5 & 6 sign-off sessions with app owners (45 min each)', owner:'b', priority:'blocker', hrs:'1.5h', dep:'Apps 5 & 6 on EKS' },
+          { title:'Confirm all 6 apps on EKS and all 6 app owners have signed off — update tracker', owner:'x', priority:'review', hrs:'0.5h', dep:null },
+        ]
+      },
+      { name: 'Wednesday', focus: 'CI/CD pipeline: CodePipeline + CodeBuild setup', color:'#0F6E56', hours: 8,
+        tasks: [
+          { title:'Create CodePipeline for App 1 as template: Source (GitHub) → Build (CodeBuild) → Deploy (CodeDeploy)', owner:'x', priority:'high', hrs:'2.5h', dep:'GitHub repo connected to CodePipeline via connection' },
+          { title:'Write CodeBuild buildspec.yml: npm install, npm test, Docker build, Trivy scan, ECR push — fail on critical vulnerability', owner:'x', priority:'high', hrs:'2h', dep:'CodePipeline created' },
+          { title:'Integrate SonarQube quality gate in CodeBuild: run sonar-scanner, call API to check gate status, fail build if gate fails', owner:'x', priority:'high', hrs:'2h', dep:'SonarQube instance accessible from CodeBuild VPC' },
+          { title:'Configure Parameter Store injection into CodeBuild: DB_HOST, API_KEYS from Parameter Store — no secrets in buildspec', owner:'x', priority:'high', hrs:'1h', dep:null },
+          { title:'Test pipeline end-to-end for App 1: push a code change to GitHub → verify deployment to EKS completes automatically', owner:'b', priority:'review', hrs:'0.5h', dep:'Pipeline complete' },
+        ]
+      },
+      { name: 'Thursday', focus: 'Replicate CI/CD to all 6 apps + CodeDeploy', color:'#0F6E56', hours: 8,
+        tasks: [
+          { title:'Replicate CodePipeline + CodeBuild configs to Apps 2–6 — parameterise by app name to reduce duplication', owner:'x', priority:'high', hrs:'3h', dep:'App 1 pipeline confirmed working' },
+          { title:'Configure CodeDeploy blue-green deployment group for each app — EKS deployment config, traffic shifting 10%→50%→100%', owner:'x', priority:'high', hrs:'2.5h', dep:'All pipelines created' },
+          { title:'Test pipeline for Apps 2 & 3: push code change → confirm blue-green deploy triggers, traffic shifts, new pods healthy', owner:'b', priority:'high', hrs:'1.5h', dep:'Pipelines all created' },
+          { title:'Verify SonarQube quality gate blocks a deliberately bad commit — test that pipeline fails as expected', owner:'x', priority:'review', hrs:'1h', dep:null },
+        ]
+      },
+      { name: 'Friday', focus: 'Terraform rds module + pipeline testing for remaining apps', color:'#0F6E56', hours: 8,
+        tasks: [
+          { title:'Test pipelines for Apps 4, 5, 6 — end-to-end push-to-deploy for all remaining apps', owner:'b', priority:'high', hrs:'2h', dep:'Pipelines for 4–6 created' },
+          { title:'Write Terraform module rds: Aurora PostgreSQL cluster (writer + reader), RDS instances, subnet groups, parameter groups, Secrets Manager integration', owner:'x', priority:'high', hrs:'3h', dep:null },
+          { title:'Week 6 progress summary: 6/6 apps on EKS ✓, 6/6 CI/CD pipelines ✓ — share with Customer IT lead', owner:'x', priority:'norm', hrs:'0.5h', dep:null },
+          { title:'Shadow: deploy a code change via CI/CD to App 5 or 6 independently — confirm they can use GitHub → CodePipeline flow', owner:'c', priority:'norm', hrs:'1.5h', dep:null },
+          { title:'Plan Week 7 database migration approach: DMS vs pg_dump, which apps first, parallel run duration', owner:'b', priority:'high', hrs:'1h', dep:null },
+        ]
+      },
+    ],
+    success: [
+      { text: 'All 6 apps containerised and on EKS — all app owners signed off', metric: '6 / 6 apps' },
+      { text: 'CI/CD pipeline end-to-end for all 6 apps', metric: '6 / 6 pipelines' },
+      { text: 'SonarQube quality gate blocks bad commits', metric: 'Test evidence' },
+      { text: 'Terraform rds module written', metric: 'Module in GitHub' },
+    ]
+  },
+
+  7: {
+    title: 'Week 7 — Database Migration & Terraform IaC Completion',
+    focus: 'Migrate all application databases to Aurora PostgreSQL and RDS. Complete all Terraform modules and apply them to all 6 apps. After this week, no resource in Production should be unmanaged.',
+    phase: 'm2', color: '#0F6E56',
+    prereqs: [
+      'All 6 apps on EKS with CI/CD pipelines confirmed working end-to-end',
+      'Terraform rds module written and reviewed by SA',
+      'Database migration approach agreed (DMS with CDC or pg_dump)',
+      'App owners briefed on database cutover window — scheduled for Thursday',
+      'Aurora PostgreSQL and RDS instance sizing confirmed based on W1 load assessment',
+      'AWS DMS (Database Migration Service) replication instance created',
+    ],
+    objectives: [
+      'Aurora PostgreSQL cluster deployed and all relevant apps connected',
+      'RDS instances ×3 deployed for specialised apps',
+      'All app databases migrated with data integrity validated',
+      'All Terraform modules written, applied, and documented',
+      'Zero manual (unmanaged) resources in Production account',
+    ],
+    days: [
+      { name: 'Monday', focus: 'Aurora & RDS deployment via Terraform', color:'#0F6E56', hours: 8,
+        tasks: [
+          { title:'Apply Terraform rds module to Production account: Aurora PostgreSQL (db.r5.2xlarge, writer + reader, Multi-AZ, ap-southeast-1a/1b)', owner:'x', priority:'high', hrs:'2.5h', dep:'Terraform rds module reviewed by SA' },
+          { title:'Apply Terraform rds module: RDS instances ×3 for specialised apps (db.t3.large, Multi-AZ)', owner:'x', priority:'high', hrs:'1.5h', dep:'Aurora deployed and healthy' },
+          { title:'Configure parameter groups for Aurora: max_connections=500, work_mem=64MB — tuned for app workload', owner:'x', priority:'high', hrs:'1h', dep:'Aurora cluster active' },
+          { title:'Create Secrets Manager secrets for all DB credentials — link to Aurora/RDS endpoints', owner:'x', priority:'high', hrs:'1h', dep:'All DB instances active' },
+          { title:'Update app Helm values.yaml: DB_HOST now reads from Secrets Manager, not hardcoded — deploy updated charts', owner:'b', priority:'high', hrs:'2h', dep:'Secrets created' },
+        ]
+      },
+      { name: 'Tuesday', focus: 'Database migration setup & parallel run', color:'#0F6E56', hours: 8,
+        tasks: [
+          { title:'Configure AWS DMS replication instance in data subnet — create source endpoint (existing DB) and target endpoint (Aurora)', owner:'x', priority:'high', hrs:'2h', dep:'DMS replication instance created' },
+          { title:'Create DMS full-load + CDC task for Apps 1 & 2 databases — start migration, monitor for errors', owner:'x', priority:'high', hrs:'2h', dep:'DMS endpoints configured' },
+          { title:'Validate App 1 & 2 data on Aurora: row count comparison, checksum on critical tables, referential integrity check', owner:'b', priority:'high', hrs:'1.5h', dep:'DMS full-load complete for Apps 1 & 2' },
+          { title:'Create DMS tasks for Apps 3 & 4 databases — start migration', owner:'x', priority:'high', hrs:'1.5h', dep:null },
+          { title:'Create DMS tasks for Apps 5 & 6 databases — start migration', owner:'x', priority:'high', hrs:'1h', dep:null },
+        ]
+      },
+      { name: 'Wednesday', focus: 'Data validation & Terraform app-deployment module', color:'#0F6E56', hours: 8,
+        tasks: [
+          { title:'Validate Apps 3 & 4 data on Aurora/RDS: row counts, checksums, sample query comparison between source and target', owner:'b', priority:'high', hrs:'2h', dep:'DMS tasks for 3 & 4 complete' },
+          { title:'Validate Apps 5 & 6 data — confirm CDC is in sync (lag < 1 second)', owner:'b', priority:'high', hrs:'1.5h', dep:'DMS tasks for 5 & 6 complete' },
+          { title:'Write Terraform module app-deployment: ECR repo, IAM role (IRSA), Helm release, ALB, CloudFront distribution — parameterised per app', owner:'x', priority:'high', hrs:'3h', dep:null },
+          { title:'Test Terraform app-deployment module against App 1 — ensure it idempotent (re-apply produces no changes)', owner:'x', priority:'high', hrs:'1h', dep:'Module written' },
+          { title:'Write Terraform module secrets: Secrets Manager secret with rotation policy — apply for all 6 apps', owner:'x', priority:'norm', hrs:'1h', dep:null },
+        ]
+      },
+      { name: 'Thursday', focus: 'Database cutover & app connection switch', color:'#0F6E56', hours: 8,
+        tasks: [
+          { title:'DB cutover window (agreed with app owners): stop DMS CDC, freeze source DB, do final validation, switch app connection to Aurora/RDS', owner:'b', priority:'blocker', hrs:'2h', dep:'App owners present, cutover window agreed' },
+          { title:'Switch all 6 app Helm releases to use new Aurora/RDS endpoints — rolling update, no pod restart spike', owner:'x', priority:'high', hrs:'1.5h', dep:'DB cutover complete' },
+          { title:'Monitor apps for 1 hour post-cutover: no DB connection errors in CloudWatch logs, query latency normal', owner:'b', priority:'high', hrs:'1h', dep:'Apps switched to Aurora/RDS' },
+          { title:'Apply Terraform app-deployment module to all 6 apps — validate all 6 are now fully managed by Terraform', owner:'x', priority:'high', hrs:'2.5h', dep:'Module complete, DB cutover done' },
+          { title:'Verify Terraform state: run `terraform plan` in Production — output should show zero planned changes', owner:'x', priority:'review', hrs:'0.5h', dep:'All modules applied' },
+        ]
+      },
+      { name: 'Friday', focus: 'Terraform documentation & W8 preparation', color:'#0F6E56', hours: 7,
+        tasks: [
+          { title:'Write README for each Terraform module: inputs, outputs, example usage, naming conventions, known limitations', owner:'x', priority:'high', hrs:'3h', dep:'All modules applied' },
+          { title:'Write module index document: overview of all 4 modules, dependency order, how to add a new app using the modules', owner:'x', priority:'high', hrs:'1.5h', dep:'All READMEs written' },
+          { title:'SA review: validate Terraform module structure, RDS config, app connection to Secrets Manager', owner:'sa', priority:'review', hrs:'1h', dep:null },
+          { title:'Share DB migration results with Customer IT lead: validation reports, row counts, cutover time achieved', owner:'b', priority:'norm', hrs:'0.5h', dep:null },
+          { title:'Shadow: run `terraform plan` independently, explain what each resource in the plan represents', owner:'c', priority:'norm', hrs:'1h', dep:null },
+        ]
+      },
+    ],
+    success: [
+      { text: 'All 6 app databases migrated to Aurora/RDS — data integrity validated', metric: 'Row count + checksum' },
+      { text: 'Zero manual resources in Production account', metric: 'terraform plan = 0 changes' },
+      { text: 'All 4 Terraform modules with READMEs in GitHub', metric: '4 modules documented' },
+      { text: 'All apps reading DB credentials from Secrets Manager', metric: 'No hardcoded secrets' },
+    ]
+  },
+
+  8: {
+    title: 'Week 8 — Load Testing, Security Review & BAST 2 Sign-off',
+    focus: 'Validate everything built in Weeks 5–7. Run thorough performance and security tests. Compile BAST 2 documentation. Get Customer sign-off on Month 2 deliverables.',
+    phase: 'm2', color: '#0F6E56',
+    prereqs: [
+      'All 6 apps on EKS with CI/CD, Terraform, and databases all complete',
+      'All 6 app owners have signed off on Month 2 functionality',
+      'Terraform state: `terraform plan` shows zero planned changes in Production',
+      'No hardcoded secrets remaining in any app codebase (Secrets Manager used)',
+    ],
+    bastMilestone: { label: 'BAST 2', pct: '30%', items: ['EKS Architecture & Production Environment Documentation', 'Terraform Modules Repository (4 modules with READMEs)', 'Containerization & Deployment Pattern Documentation', 'CI/CD Pipeline guide for all 6 apps'] },
+    objectives: [
+      'Performance: all 6 apps pass load test (HPA scales, latency within SLO)',
+      'Security: zero critical/high vulnerabilities in ECR scan for all images',
+      'BAST 2 documentation compiled, presented, and signed',
+      '30% invoice submitted',
+    ],
+    days: [
+      { name: 'Monday', focus: 'Load testing all 6 apps on EKS', color:'#0F6E56', hours: 8,
+        tasks: [
+          { title:'Run k6 load test on Apps 1 & 2: ramp to 200 concurrent users over 5 min, hold 10 min — measure p50/p95/p99 latency and error rate', owner:'x', priority:'high', hrs:'2h', dep:'Apps 1 & 2 on EKS, HPA configured' },
+          { title:'Run k6 load test on Apps 3 & 4: ramp to 150 concurrent users — verify HPA triggers scale-up and latency stays within SLO', owner:'x', priority:'high', hrs:'2h', dep:null },
+          { title:'Run k6 load test on Apps 5 & 6: ramp to 100 concurrent users', owner:'x', priority:'high', hrs:'1.5h', dep:null },
+          { title:'Compile load test report: p50/p95/p99 latency per app, error rate, max concurrent users handled, HPA trigger evidence', owner:'x', priority:'high', hrs:'2h', dep:'All 6 load tests complete' },
+          { title:'Fix any performance regressions found — tune HPA thresholds, add caching, or rightsize pods', owner:'x', priority:'high', hrs:'0.5h', dep:null },
+        ]
+      },
+      { name: 'Tuesday', focus: 'Security testing & Kubernetes RBAC review', color:'#0F6E56', hours: 8,
+        tasks: [
+          { title:'Run ECR image scan results review for all 6 apps — confirm zero CRITICAL vulnerabilities, document any HIGH findings with remediation plan', owner:'x', priority:'high', hrs:'1.5h', dep:null },
+          { title:'Review Kubernetes RBAC: check all ServiceAccounts use IRSA (no node-level IAM), RBAC roles least-privilege', owner:'x', priority:'high', hrs:'1.5h', dep:null },
+          { title:'Review Network Policies: confirm pods can only communicate on required ports, not open between namespaces', owner:'x', priority:'high', hrs:'1.5h', dep:null },
+          { title:'Run Security Hub FSBP report — compare score vs W4 baseline, confirm score has not regressed', owner:'x', priority:'high', hrs:'0.5h', dep:null },
+          { title:'Run Checkov static analysis on all Terraform modules — fix any HIGH-severity IaC security findings', owner:'x', priority:'high', hrs:'2h', dep:'All Terraform modules in GitHub' },
+          { title:'Document security test results: image scan, RBAC review, Security Hub score, Checkov results — all as appendix to BAST 2', owner:'x', priority:'norm', hrs:'1h', dep:null },
+        ]
+      },
+      { name: 'Wednesday', focus: 'BAST 2 documentation compilation', color:'#0F6E56', hours: 8,
+        tasks: [
+          { title:'Write EKS Architecture & Production Environment Document: cluster config, node groups, add-ons, networking, ingress, IRSA, security groups', owner:'x', priority:'high', hrs:'3h', dep:'All W5–W7 work complete' },
+          { title:'Write Containerization & Deployment Pattern Guide: Dockerfile standards, Helm chart structure, ECR naming, image lifecycle, blue-green deployment config', owner:'x', priority:'high', hrs:'2.5h', dep:null },
+          { title:'Write CI/CD Pipeline Guide: CodePipeline stages, CodeBuild buildspec, SonarQube gate, CodeDeploy config — one guide covering all 6 apps', owner:'x', priority:'high', hrs:'2.5h', dep:null },
+        ]
+      },
+      { name: 'Thursday', focus: 'BAST 2 review, presentation prep & sign-off meeting', color:'#0F6E56', hours: 7,
+        tasks: [
+          { title:'SA review: review all 3 BAST 2 documents, Terraform module README index — add SA sign-off comments', owner:'sa', priority:'review', hrs:'2h', dep:'All docs compiled' },
+          { title:'Prepare BAST 2 presentation: demo CI/CD pipeline live, show all 6 apps on EKS, Terraform plan = 0 changes', owner:'x', priority:'high', hrs:'1.5h', dep:'SA review complete' },
+          { title:'BAST 2 presentation meeting with Customer stakeholders — live demo + document walkthrough', owner:'b', priority:'blocker', hrs:'1.5h', dep:'Presentation ready' },
+          { title:'Customer signs BAST 2 — Xtremax countersigns', owner:'b', priority:'blocker', hrs:'0.5h', dep:'All questions resolved' },
+          { title:'Submit BAST 2 invoice (30% of contract value)', owner:'x', priority:'high', hrs:'0.5h', dep:'BAST 2 signed' },
+        ]
+      },
+      { name: 'Friday', focus: 'Month 2 retrospective & Month 3 prerequisites setup', color:'#0F6E56', hours: 7,
+        tasks: [
+          { title:'Month 2 retrospective: what worked well, what was difficult, lessons for Month 3', owner:'b', priority:'review', hrs:'1h', dep:null },
+          { title:'Agree SLO thresholds per app for Month 3 monitoring: p99 latency target, error rate ceiling, availability target', owner:'b', priority:'high', hrs:'1h', dep:'App owners available' },
+          { title:'Agree blue-green rollback criteria per app: what condition triggers automatic rollback (error rate spike, health check failure)', owner:'b', priority:'high', hrs:'1h', dep:null },
+          { title:'Reduce Cloudflare DNS TTL to 60 seconds on all records — this must happen 48 hrs before DNS cutover in W11', owner:'b', priority:'blocker', hrs:'0.5h', dep:'Customer has Cloudflare access' },
+          { title:'Share Month 3 plan with all stakeholders — confirm DNS cutover window approved by management', owner:'b', priority:'high', hrs:'0.5h', dep:null },
+          { title:'Shadow: present Month 2 accomplishments to IT lead independently — what was built, why each decision was made', owner:'c', priority:'norm', hrs:'1h', dep:null },
+        ]
+      },
+    ],
+    success: [
+      { text: 'BAST 2 signed and 30% invoice submitted', metric: 'Thursday EOD' },
+      { text: 'All 6 apps pass load test within agreed SLO', metric: 'Load test report' },
+      { text: 'Zero CRITICAL ECR vulnerabilities', metric: 'Scan results' },
+      { text: 'Cloudflare DNS TTL reduced to 60s', metric: 'TTL confirmed Friday' },
+    ]
+  },
+
+  9: {
+    title: 'Week 9 — Blue-Green Deployment & X-Ray APM',
+    focus: 'Implement blue-green deployment with traffic shifting for all 6 apps. Install X-Ray tracing. Begin CloudWatch observability setup. All drills must be timed and documented.',
+    phase: 'm3', color: '#533AB7',
+    prereqs: [
+      'BAST 2 signed — all 6 apps on EKS with CI/CD confirmed',
+      'SLO thresholds agreed per app (latency p99, error rate, availability)',
+      'Blue-green rollback criteria documented per app',
+      'App owners available for rollout and rollback drills this week',
+      'X-Ray SDK added to app code (or Lambda layer for sidecar approach confirmed)',
+    ],
+    objectives: [
+      'Blue-green deployment with traffic shifting configured for all 6 apps',
+      'Rollout and rollback drills completed and timed for all 6 apps',
+      'X-Ray DaemonSet installed on EKS — all 6 apps sending traces',
+      'CloudWatch Container Insights active on EKS cluster',
+    ],
+    days: [
+      { name: 'Monday', focus: 'Blue-green config for Apps 1–3 & X-Ray setup', color:'#533AB7', hours: 8,
+        tasks: [
+          { title:'Install X-Ray DaemonSet on EKS cluster via Helm — configure to send traces to X-Ray service endpoint', owner:'x', priority:'high', hrs:'1.5h', dep:null },
+          { title:'Add X-Ray SDK to App 1 codebase (aws-xray-sdk-node) — instrument HTTP clients and DB calls', owner:'b', priority:'high', hrs:'2h', dep:'App 1 dev team available' },
+          { title:'Add X-Ray SDK to Apps 2 & 3', owner:'b', priority:'high', hrs:'2h', dep:null },
+          { title:'Enable CloudWatch Container Insights on EKS — confirm pod, node, cluster metrics appearing in CloudWatch', owner:'x', priority:'high', hrs:'1h', dep:'X-Ray DaemonSet running' },
+          { title:'Configure blue-green deployment in CodeDeploy for Apps 1–3: 10% traffic for 2 min → 50% for 5 min → 100%', owner:'x', priority:'high', hrs:'1.5h', dep:null },
+        ]
+      },
+      { name: 'Tuesday', focus: 'Blue-green drills for Apps 1–3', color:'#533AB7', hours: 8,
+        tasks: [
+          { title:'Run blue-green ROLLOUT drill for App 1 with app owner present: deploy new version, watch traffic shift 10→50→100%, confirm app healthy', owner:'b', priority:'blocker', hrs:'1.5h', dep:'Blue-green config for App 1 done' },
+          { title:'Run blue-green ROLLBACK drill for App 1: trigger rollback at 50% traffic, confirm traffic returns to original version, time the rollback', owner:'b', priority:'blocker', hrs:'1h', dep:'Rollout drill passed' },
+          { title:'Run rollout + rollback drills for App 2', owner:'b', priority:'blocker', hrs:'1.5h', dep:'Blue-green config for App 2 done' },
+          { title:'Run rollout + rollback drills for App 3', owner:'b', priority:'blocker', hrs:'1.5h', dep:null },
+          { title:'Validate X-Ray service map for Apps 1–3: confirm traces show app → DB → external API chain', owner:'x', priority:'high', hrs:'1h', dep:'X-Ray SDK added to Apps 1–3' },
+          { title:'Document drill results: rollout time, rollback time, traffic split confirmation — add screenshots', owner:'x', priority:'high', hrs:'0.5h', dep:null },
+        ]
+      },
+      { name: 'Wednesday', focus: 'X-Ray for Apps 4–6 & blue-green config for Apps 4–6', color:'#533AB7', hours: 8,
+        tasks: [
+          { title:'Add X-Ray SDK to Apps 4, 5, 6 — deploy updated images via CI/CD', owner:'b', priority:'high', hrs:'2.5h', dep:'App 4–6 dev team available' },
+          { title:'Configure blue-green deployment for Apps 4–6 in CodeDeploy', owner:'x', priority:'high', hrs:'2h', dep:null },
+          { title:'Validate X-Ray service map for Apps 4–6', owner:'x', priority:'high', hrs:'1h', dep:'X-Ray added to 4–6' },
+          { title:'Configure X-Ray groups and sampling rules: 5% sampling for normal traffic, 100% for errors', owner:'x', priority:'norm', hrs:'1.5h', dep:'X-Ray flowing for all 6 apps' },
+          { title:'Open CloudWatch ServiceLens — verify it shows end-to-end latency map using X-Ray + CloudWatch data', owner:'x', priority:'norm', hrs:'1h', dep:null },
+        ]
+      },
+      { name: 'Thursday', focus: 'Blue-green drills for Apps 4–6 & CloudWatch logs', color:'#533AB7', hours: 8,
+        tasks: [
+          { title:'Run rollout + rollback drills for App 4 with app owner', owner:'b', priority:'blocker', hrs:'1.5h', dep:'Blue-green config for App 4 done' },
+          { title:'Run rollout + rollback drills for App 5', owner:'b', priority:'blocker', hrs:'1.5h', dep:null },
+          { title:'Run rollout + rollback drills for App 6', owner:'b', priority:'blocker', hrs:'1.5h', dep:null },
+          { title:'Configure CloudWatch log groups for all 6 apps: Fluent Bit DaemonSet ships pod logs to CloudWatch, 30-day retention', owner:'x', priority:'high', hrs:'2h', dep:null },
+          { title:'Create metric filters on app logs: extract error count and latency as custom CloudWatch metrics', owner:'x', priority:'high', hrs:'1h', dep:'Log groups created' },
+        ]
+      },
+      { name: 'Friday', focus: 'Blue-green documentation & SA review', color:'#533AB7', hours: 7,
+        tasks: [
+          { title:'Compile Blue-Green Drill Results Report: rollout time per app, rollback time per app (target <5 min), traffic split evidence, any issues found', owner:'x', priority:'high', hrs:'2h', dep:'All 6 app drills complete' },
+          { title:'SA review: validate X-Ray tracing completeness, blue-green config, CloudWatch log setup', owner:'sa', priority:'review', hrs:'1.5h', dep:null },
+          { title:'Apply SA feedback from review', owner:'x', priority:'high', hrs:'1h', dep:'SA review done' },
+          { title:'Shadow: run a blue-green rollout for App 5 independently — Xtremax observes only', owner:'c', priority:'norm', hrs:'1.5h', dep:'Blue-green trained in drills' },
+          { title:'Week 9 update to Customer IT lead: all 6 apps with blue-green + X-Ray tracing active', owner:'x', priority:'norm', hrs:'0.5h', dep:null },
+        ]
+      },
+    ],
+    success: [
+      { text: 'Blue-green rollback < 5 min for all 6 apps — timed and evidenced', metric: 'Drill report' },
+      { text: 'X-Ray service map showing traces for all 6 apps', metric: 'ServiceLens screenshot' },
+      { text: 'CloudWatch log groups active with metric filters', metric: '6 log groups' },
+      { text: 'All 6 app owners attended and confirmed rollout drill', metric: 'Sign-off record' },
+    ]
+  },
+
+  10: {
+    title: 'Week 10 — CloudWatch Dashboards, Alarms & Backup',
+    focus: 'Build comprehensive observability: dashboards, alarms, SNS alerts. Define and test backup policies for all resource types. DR cross-region replication activated.',
+    phase: 'm3', color: '#533AB7',
+    prereqs: [
+      'X-Ray DaemonSet running, all 6 apps sending traces',
+      'CloudWatch Container Insights active on EKS',
+      'CloudWatch log groups created for all 6 apps',
+      'Metric filters extracting error count and latency per app',
+      'AWS Backup vault pre-created in Production and Log Archive accounts',
+      'SNS topic endpoint (Teams/Slack webhook or email) confirmed with Customer IT',
+    ],
+    objectives: [
+      '≥20 CloudWatch alarms covering latency, error rate, pod health, DB, ALB',
+      'Per-app dashboards + infra dashboard in CloudWatch',
+      'SNS alerting routing to Teams/Slack + email',
+      'AWS Backup plan: EBS, RDS, S3 — 30-day retention, restore tested',
+      'Cross-region replication to ap-southeast-3 confirmed',
+    ],
+    days: [
+      { name: 'Monday', focus: 'CloudWatch dashboards — per-app and infrastructure', color:'#533AB7', hours: 8,
+        tasks: [
+          { title:'Create per-app CloudWatch dashboard for Apps 1 & 2: widgets for latency p99, error rate, pod count, HTTP 5xx, DB connections', owner:'x', priority:'high', hrs:'2.5h', dep:'Metric filters from W9' },
+          { title:'Create per-app dashboards for Apps 3, 4, 5, 6 — replicate template, customise per app metrics', owner:'x', priority:'high', hrs:'3h', dep:null },
+          { title:'Create infrastructure dashboard: EKS node CPU/memory per node group, RDS IOPS, Aurora replica lag, ALB request rate, CloudFront cache hit rate', owner:'x', priority:'high', hrs:'2h', dep:'CloudWatch Container Insights active' },
+          { title:'Shadow: create the App 5 dashboard independently — Xtremax reviews and refines', owner:'c', priority:'norm', hrs:'1h', dep:null },
+        ]
+      },
+      { name: 'Tuesday', focus: 'CloudWatch alarms (≥20) & SNS integration', color:'#533AB7', hours: 8,
+        tasks: [
+          { title:'Create app-level alarms: p99 latency > 2s (per app × 6 = 6 alarms), error rate > 1% (per app × 6 = 6 alarms)', owner:'x', priority:'high', hrs:'2.5h', dep:'Per-app dashboards done' },
+          { title:'Create EKS alarms: pod OOMKilled (any pod), node CPU > 80%, node memory > 85%, pending pods > 0 for 10 min', owner:'x', priority:'high', hrs:'1.5h', dep:null },
+          { title:'Create RDS/Aurora alarms: CPU > 80%, FreeStorageSpace < 20GB, ReplicaLag > 30s, DatabaseConnections > 400', owner:'x', priority:'high', hrs:'1h', dep:null },
+          { title:'Create ALB alarms: TargetResponseTime > 3s, HTTP5xxCount > 10/min, UnhealthyHostCount > 0', owner:'x', priority:'high', hrs:'1h', dep:null },
+          { title:'Configure SNS topic: subscribe Customer IT email + Teams webhook — test alarm → SNS → Teams notification end-to-end', owner:'b', priority:'high', hrs:'1.5h', dep:'SNS endpoint provided by Customer' },
+          { title:'Confirm final alarm count ≥ 20 — document all alarms in spreadsheet with description and action required', owner:'x', priority:'review', hrs:'0.5h', dep:'All alarms created' },
+        ]
+      },
+      { name: 'Wednesday', focus: 'AWS Backup policies & EBS/RDS restore test', color:'#533AB7', hours: 8,
+        tasks: [
+          { title:'Create AWS Backup plan: daily EBS snapshots (EKS persistent volumes), 30-day retention, backup window 02:00–04:00 SGT', owner:'x', priority:'high', hrs:'1.5h', dep:'AWS Backup vault created' },
+          { title:'Create AWS Backup plan: daily RDS automated backups for Aurora + 3 RDS instances, 30-day retention', owner:'x', priority:'high', hrs:'1.5h', dep:null },
+          { title:'Create AWS Backup plan: S3 versioning enabled + cross-region replication to ap-southeast-3 for critical buckets', owner:'x', priority:'high', hrs:'1.5h', dep:null },
+          { title:'Execute RDS restore test: restore Aurora snapshot to a new DB instance in ap-southeast-1 — record time taken', owner:'x', priority:'blocker', hrs:'1.5h', dep:'Backup plan running for at least 1 cycle' },
+          { title:'Validate restored Aurora instance: run app row count queries, compare vs production — confirm data integrity', owner:'b', priority:'high', hrs:'1h', dep:'Restore test complete' },
+          { title:'Document RTO achieved (target ≤ 2 hours): start time → restore complete → validation passed', owner:'x', priority:'high', hrs:'0.5h', dep:null },
+        ]
+      },
+      { name: 'Thursday', focus: 'EBS restore test, cross-region DR & Alarm testing', color:'#533AB7', hours: 8,
+        tasks: [
+          { title:'Execute EBS restore test: restore EKS persistent volume snapshot, mount to a test pod — confirm app reads data correctly', owner:'x', priority:'high', hrs:'2h', dep:'EBS backup plan running' },
+          { title:'Validate cross-region replication: confirm S3 objects appearing in ap-southeast-3 bucket, check replication lag < 15 min', owner:'x', priority:'high', hrs:'1h', dep:'S3 replication configured' },
+          { title:'Test alarm end-to-end: artificially trigger a p99 latency alarm (inject delay), confirm SNS fires → Teams/email received within 2 min', owner:'b', priority:'review', hrs:'1.5h', dep:'Alarms + SNS configured' },
+          { title:'Test OOMKilled alarm: deploy a memory-leaking pod, confirm alarm fires within 5 min', owner:'x', priority:'review', hrs:'1h', dep:null },
+          { title:'Document all restore test results: time taken, steps performed, data validation method, RPO/RTO achieved', owner:'x', priority:'high', hrs:'2h', dep:'All restore tests complete' },
+        ]
+      },
+      { name: 'Friday', focus: 'Observability validation & W11 DNS prep', color:'#533AB7', hours: 7,
+        tasks: [
+          { title:'Full observability walkthrough with Customer IT lead: show dashboards, alarms, X-Ray service map, SNS alert — confirm they understand each', owner:'b', priority:'review', hrs:'2h', dep:null },
+          { title:'Verify DNS records in Cloudflare — confirm TTL is still 60s (set in W8), lower to 30s if 48 hrs to cutover', owner:'b', priority:'blocker', hrs:'0.5h', dep:'DNS cutover scheduled W11' },
+          { title:'Export all Cloudflare DNS records (flarectl export) — save raw export file to project wiki', owner:'b', priority:'high', hrs:'0.5h', dep:'Cloudflare access confirmed' },
+          { title:'Create Route 53 hosted zones (one per domain) — import records from Cloudflare export, validate all present', owner:'x', priority:'high', hrs:'2h', dep:'DNS export saved' },
+          { title:'Shadow: review all 20+ alarms independently, explain to Xtremax what each alarm monitors and what action is required', owner:'c', priority:'norm', hrs:'1.5h', dep:null },
+          { title:'Week 10 status update: monitoring active, backups tested, Route 53 zones ready for cutover', owner:'x', priority:'norm', hrs:'0.5h', dep:null },
+        ]
+      },
+    ],
+    success: [
+      { text: '≥ 20 CloudWatch alarms active — alarm → SNS → Teams tested', metric: 'Alarm list + test evidence' },
+      { text: 'RTO ≤ 2 hours demonstrated via RDS restore test', metric: 'Restore report' },
+      { text: 'Cross-region replication to ap-southeast-3 confirmed', metric: 'S3 object in DR region' },
+      { text: 'Route 53 hosted zones ready — all records imported', metric: 'Record count matches Cloudflare' },
+    ]
+  },
+
+  11: {
+    title: 'Week 11 — DNS & WAF Migration from Cloudflare to AWS',
+    focus: 'Execute the DNS cutover from Cloudflare to Route 53. Migrate all firewall rules to AWS WAF + Shield. This is the highest-risk operation — execute during agreed maintenance window with rollback ready.',
+    phase: 'm3', color: '#533AB7',
+    prereqs: [
+      'Route 53 hosted zones with all records validated (from W10)',
+      'DNS TTL at 60s or lower on all Cloudflare records for at least 24 hrs',
+      'DNS cutover maintenance window formally approved by Customer management',
+      'Rollback plan documented: how to switch NS records back to Cloudflare within 5 minutes',
+      'On-call contact list confirmed: who to notify if cutover causes issues',
+      'AWS WAF WebACL and rules designed based on Cloudflare firewall export',
+    ],
+    objectives: [
+      'DNS fully migrated to Route 53 — zero user-impacting downtime',
+      'AWS WAF rules covering all Cloudflare firewall rules + AWS Managed Rule Groups',
+      'AWS Shield Standard active on all CloudFront distributions',
+      'Route 53 health checks monitoring all 6 app endpoints',
+      'SA final architecture review completed',
+    ],
+    days: [
+      { name: 'Monday', focus: 'Route 53 validation & WAF rule design', color:'#533AB7', hours: 8,
+        tasks: [
+          { title:'Validate all Route 53 records match Cloudflare export: use comparison script to diff A, CNAME, MX, TXT, SRV records', owner:'x', priority:'blocker', hrs:'2h', dep:'Route 53 zones from W10' },
+          { title:'Configure Route 53 health checks for all 6 app endpoints (HTTP/HTTPS check every 10 sec from 3 regions)', owner:'x', priority:'high', hrs:'1.5h', dep:'Route 53 records validated' },
+          { title:'Design AWS WAF WebACLs: map each Cloudflare firewall rule to AWS WAF equivalent — IP sets, rate-based rules, geo-blocking', owner:'x', priority:'high', hrs:'2h', dep:'Cloudflare firewall rule export' },
+          { title:'Enable AWS Managed Rule Groups in WAF: AWSManagedRulesCommonRuleSet, AWSManagedRulesKnownBadInputsRuleSet', owner:'x', priority:'high', hrs:'1h', dep:null },
+          { title:'Run pre-cutover test via hosts file: override DNS on test machine to point to Route 53 endpoints, validate all 6 apps respond correctly', owner:'b', priority:'blocker', hrs:'1.5h', dep:'Route 53 records validated' },
+        ]
+      },
+      { name: 'Tuesday', focus: 'WAF rule implementation & pre-cutover full dry-run', color:'#533AB7', hours: 8,
+        tasks: [
+          { title:'Create AWS WAF WebACLs for each app domain — attach to CloudFront distributions', owner:'x', priority:'high', hrs:'2.5h', dep:'WAF rule design from Monday' },
+          { title:'Add rate-based rules: 1000 requests/5min per IP — test that rate limiting triggers without blocking legitimate traffic', owner:'x', priority:'high', hrs:'1.5h', dep:'WebACLs created' },
+          { title:'Enable AWS Shield Standard on all CloudFront distributions — confirm DDoS protection active in console', owner:'x', priority:'high', hrs:'0.5h', dep:null },
+          { title:'Full dry-run: change NS records to Route 53 on a test subdomain — confirm DNS propagation via `dig` from multiple locations', owner:'x', priority:'review', hrs:'1h', dep:null },
+          { title:'Prepare DNS cutover runbook: exact commands to execute, verification steps, rollback commands — review with Customer IT lead', owner:'b', priority:'blocker', hrs:'2h', dep:'All pre-cutover checks passed' },
+          { title:'Confirm cutover window with Customer management — get written approval (email/message is sufficient)', owner:'b', priority:'blocker', hrs:'0.5h', dep:null },
+        ]
+      },
+      { name: 'Wednesday', focus: 'DNS CUTOVER (maintenance window)', color:'#533AB7', hours: 6,
+        tasks: [
+          { title:'PRE-CUTOVER: confirm all health checks passing, all 6 apps responding, Cloudflare WAF still active', owner:'b', priority:'blocker', hrs:'0.5h', dep:'Maintenance window started' },
+          { title:'Execute DNS cutover: update NS records at domain registrar to Route 53 name servers', owner:'x', priority:'blocker', hrs:'0.5h', dep:'Go/no-go confirmed by Customer IT lead' },
+          { title:'Monitor DNS propagation: run `dig @8.8.8.8` and `dig @1.1.1.1` every 5 min — confirm resolving to Route 53 within 30 min', owner:'x', priority:'blocker', hrs:'1h', dep:'NS records updated' },
+          { title:'Validate all 6 apps responding via Route 53 + CloudFront + AWS WAF — confirm HTTPS works, no error spike', owner:'b', priority:'blocker', hrs:'1h', dep:'DNS propagated' },
+          { title:'Monitor for 2 hours post-cutover: CloudWatch ALB error rate, WAF blocked requests, Route 53 health check status', owner:'b', priority:'high', hrs:'2h', dep:'Cutover complete' },
+          { title:'Declare cutover SUCCESS or execute rollback (revert NS to Cloudflare, diagnose)', owner:'b', priority:'blocker', hrs:'0.5h', dep:'2 hr monitoring passed' },
+        ]
+      },
+      { name: 'Thursday', focus: 'Post-cutover validation & SA final review', color:'#533AB7', hours: 8,
+        tasks: [
+          { title:'24-hour post-cutover review: check CloudWatch for any latency increase, WAF false positives, health check failures overnight', owner:'x', priority:'high', hrs:'1.5h', dep:'Cutover from Wednesday' },
+          { title:'Tune WAF rules: review blocked requests in WAF logs — remove any false positives, tighten any gaps', owner:'x', priority:'high', hrs:'1.5h', dep:'24hr WAF log review' },
+          { title:'Disable Cloudflare proxy on migrated domains (change to DNS-only) — keep Cloudflare account active for 7 days as fallback', owner:'b', priority:'high', hrs:'0.5h', dep:'All validation passed' },
+          { title:'SA final architecture review: full 30-min walkthrough of entire environment — Landing Zone, EKS, Terraform, CI/CD, monitoring, backup, DNS', owner:'sa', priority:'review', hrs:'2h', dep:'All components complete' },
+          { title:'Apply SA feedback from final review — last architectural adjustments', owner:'x', priority:'high', hrs:'1.5h', dep:'SA review done' },
+          { title:'Compile DNS & WAF Migration Report: cutover timeline, WAF rule migration table, Route 53 health check status, post-cutover validation evidence', owner:'x', priority:'high', hrs:'1h', dep:null },
+        ]
+      },
+      { name: 'Friday', focus: 'Final documentation prep & W12 preparation', color:'#533AB7', hours: 7,
+        tasks: [
+          { title:'Compile complete BAST 3 documentation index: list all 5 documents with status (complete/in progress)', owner:'x', priority:'high', hrs:'1h', dep:null },
+          { title:'Confirm shadow engineer sign-off test for W12: what will they demonstrate? (deploy via CI/CD + respond to a CloudWatch alarm)', owner:'b', priority:'high', hrs:'0.5h', dep:null },
+          { title:'Begin Operations Guide: table of contents, how to deploy a new app using Terraform modules + CI/CD', owner:'x', priority:'high', hrs:'3h', dep:null },
+          { title:'Prepare BAST 3 presentation structure: confirm which stakeholders will attend, what live demos to show', owner:'b', priority:'norm', hrs:'1h', dep:null },
+          { title:'Week 11 update to all stakeholders: DNS cutover successful, entering final closure week', owner:'x', priority:'norm', hrs:'0.5h', dep:null },
+          { title:'Shadow: independently check Route 53 health check status + WAF blocked requests dashboard — present findings', owner:'c', priority:'norm', hrs:'1h', dep:null },
+        ]
+      },
+    ],
+    success: [
+      { text: 'DNS cutover complete — zero user-impacting downtime', metric: 'CloudWatch error rate unchanged' },
+      { text: 'AWS WAF rules fully migrated from Cloudflare', metric: 'WAF log review' },
+      { text: 'Route 53 health checks active for all 6 apps', metric: '6 health checks green' },
+      { text: 'SA final architecture review completed and sign-off obtained', metric: 'SA sign-off' },
+    ]
+  },
+
+  12: {
+    title: 'Week 12 — Final Documentation, Handover & BAST 3 Sign-off',
+    focus: 'Complete all remaining documentation. Validate shadow engineer independence. Execute formal handover. Get BAST 3 signed and close the engagement professionally.',
+    phase: 'm3', color: '#533AB7',
+    prereqs: [
+      'DNS cutover successful — Route 53 + WAF active with no issues for 48 hrs',
+      'All 20+ CloudWatch alarms active and tested',
+      'All restore tests passed with evidence (RDS, EBS)',
+      'Blue-green rollback drills completed for all 6 apps',
+      'SA final architecture sign-off obtained in W11',
+      'Shadow engineers have been participating in all activities since W1',
+    ],
+    bastMilestone: { label: 'BAST 3', pct: '40%', items: ['Blue-Green Deployment Report & Rollback Test Results', 'Monitoring & APM Dashboard Configuration Guide', 'Backup & Restore Test Report (RTO/RPO evidence)', 'DNS & WAF Migration Report', 'Full Operations Handover Guide'] },
+    objectives: [
+      'All 5 BAST 3 documents compiled, reviewed, and submitted',
+      'BAST 3 formally signed — 40% final invoice submitted',
+      'Shadow engineers pass independence test',
+      'All AWS access transferred back to Customer ownership',
+      'First post-program SA consultation scheduled',
+    ],
+    days: [
+      { name: 'Monday', focus: 'Final document compilation sprint', color:'#533AB7', hours: 8,
+        tasks: [
+          { title:'Finalise Blue-Green Deployment Report: add W9 drill results, rollback times table, CodeDeploy traffic shift config screenshots', owner:'x', priority:'high', hrs:'2h', dep:'All W9 drill results documented' },
+          { title:'Finalise Monitoring & APM Guide: dashboard screenshots, full alarm list (≥20), X-Ray service map screenshots, SNS test evidence', owner:'x', priority:'high', hrs:'2h', dep:'All W10 work complete' },
+          { title:'Finalise Backup & Restore Test Report: backup plan config, restore test steps, RTO/RPO achieved, cross-region replication evidence', owner:'x', priority:'high', hrs:'1.5h', dep:'All W10 restore tests documented' },
+          { title:'Finalise DNS & WAF Migration Report: pre/post comparison, cutover timeline, WAF rule table, 24hr post-cutover validation', owner:'x', priority:'high', hrs:'2h', dep:'W11 DNS report draft' },
+          { title:'Compile shared document folder: all 8 deliverable documents in structured folder, consistent version numbering', owner:'x', priority:'norm', hrs:'0.5h', dep:null },
+        ]
+      },
+      { name: 'Tuesday', focus: 'Operations Guide & shadow engineer sign-off test', color:'#533AB7', hours: 8,
+        tasks: [
+          { title:'Complete Operations Guide Chapter 1: How to deploy a new application using Terraform modules + CI/CD pipeline (step-by-step with screenshots)', owner:'x', priority:'high', hrs:'2h', dep:null },
+          { title:'Complete Operations Guide Chapter 2: How to manage EKS (scale nodes, update add-ons, check cluster health, rolling restart)', owner:'x', priority:'high', hrs:'1.5h', dep:null },
+          { title:'Complete Operations Guide Chapter 3: How to respond to CloudWatch alarms — runbook per alarm type', owner:'x', priority:'high', hrs:'1.5h', dep:null },
+          { title:'SHADOW ENGINEER INDEPENDENCE TEST: deploy a code change to App 5 from GitHub → CI/CD → EKS WITHOUT any Xtremax help — Xtremax observes only', owner:'c', priority:'blocker', hrs:'2h', dep:'Shadow engineer prepared since W1' },
+          { title:'If shadow passes: document sign-off. If not: identify gaps, provide 1-hr coaching, retest same day', owner:'b', priority:'blocker', hrs:'0.5h', dep:'Independence test complete' },
+        ]
+      },
+      { name: 'Wednesday', focus: 'Access handover & internal review', color:'#533AB7', hours: 8,
+        tasks: [
+          { title:'Remove all Xtremax IAM roles and access from all 5 AWS accounts — replace with Customer-owned SSO assignments', owner:'b', priority:'blocker', hrs:'2h', dep:'Customer confirms SSO access is working for their admins' },
+          { title:'Transfer GitHub repository ownership: add Customer IT GitHub org as owner, remove Xtremax access', owner:'b', priority:'high', hrs:'0.5h', dep:null },
+          { title:'Final Terraform state handover: confirm Customer IT can run `terraform plan` independently — walk them through the workflow', owner:'x', priority:'high', hrs:'1.5h', dep:'Access transfer complete' },
+          { title:'Internal BAST 3 document review: Xtremax engineer + SA review all 5 documents — final quality check', owner:'sa', priority:'review', hrs:'2h', dep:'All 5 docs finalised Day 1–2' },
+          { title:'Prepare BAST 3 presentation: live demo script — show CI/CD deploy, CloudWatch dashboard, X-Ray trace, AWS WAF log, Route 53 health check', owner:'x', priority:'high', hrs:'2h', dep:'Review complete' },
+        ]
+      },
+      { name: 'Thursday', focus: 'BAST 3 presentation, sign-off & invoice', color:'#533AB7', hours: 6,
+        tasks: [
+          { title:'BAST 3 presentation to Customer stakeholders (management + IT lead): document walkthrough + live demo of all major capabilities (1.5 hr)', owner:'b', priority:'blocker', hrs:'1.5h', dep:'Presentation prepared' },
+          { title:'Address any final questions or minor revisions from Customer — resolve same day', owner:'b', priority:'blocker', hrs:'1h', dep:null },
+          { title:'Customer signs BAST 3 — both parties countersign', owner:'b', priority:'blocker', hrs:'0.5h', dep:'All questions resolved' },
+          { title:'Submit BAST 3 final invoice (40% of contract value)', owner:'x', priority:'high', hrs:'0.5h', dep:'BAST 3 signed' },
+          { title:'Send formal engagement closure confirmation email to Customer management', owner:'x', priority:'high', hrs:'0.5h', dep:'Invoice submitted' },
+          { title:'Update project tracker: all 12 weeks complete, all deliverables closed, BAST 3 signed', owner:'x', priority:'norm', hrs:'0.5h', dep:null },
+        ]
+      },
+      { name: 'Friday', focus: 'Program close & post-program planning', color:'#533AB7', hours: 5,
+        tasks: [
+          { title:'Final program retrospective with Customer IT team: what worked well, what they will scale to remaining 144 apps, lessons learned', owner:'b', priority:'review', hrs:'1.5h', dep:null },
+          { title:'Schedule Month 4 post-program SA consultation (first of 3 months, 5 days/month per contract)', owner:'b', priority:'high', hrs:'0.5h', dep:'BAST 3 signed' },
+          { title:'Provide Customer with recommended next steps for 3-year IT Blueprint: AD/SSO integration (Year 2), FinOps automation (Year 2–3)', owner:'x', priority:'norm', hrs:'1h', dep:null },
+          { title:'Xtremax internal project debrief: what went well, what to improve for future engagements', owner:'x', priority:'norm', hrs:'1h', dep:null },
+          { title:'Archive all project documentation to Customer-owned storage — Xtremax retains no Customer data per contract Pasal 10', owner:'b', priority:'high', hrs:'0.5h', dep:null },
+          { title:'Thank you message to all stakeholders — program officially closed', owner:'x', priority:'norm', hrs:'0.5h', dep:null },
+        ]
+      },
+    ],
+    success: [
+      { text: 'BAST 3 signed and final 40% invoice submitted', metric: 'Thursday EOD' },
+      { text: 'Shadow engineer passes independence test', metric: 'Live deployment observed' },
+      { text: 'All Xtremax access removed from all 5 AWS accounts', metric: 'IAM audit clean' },
+      { text: 'Post-program SA consultation scheduled', metric: 'Calendar invite sent' },
+    ]
+  }
+};
+
+// ══════════════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════════════
+let currentPhase = 'm1';
+let currentWeek = 1;
+let taskStates = {}; // weekNum_dayIdx_taskIdx -> done/not
+
+// ══════════════════════════════════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════════════════════════════════
+function getWeekTasks(wn) {
+  const w = WEEKS[wn];
+  if (!w) return { total: 0, done: 0 };
+  let total = 0, done = 0;
+  w.days.forEach((d, di) => {
+    d.tasks.forEach((t, ti) => {
+      total++;
+      if (taskStates[`${wn}_${di}_${ti}`]) done++;
+    });
+  });
+  return { total, done };
+}
+
+function getAllProgress() {
+  let total = 0, done = 0;
+  Object.keys(WEEKS).forEach(wn => {
+    const r = getWeekTasks(parseInt(wn));
+    total += r.total; done += r.done;
+  });
+  return { total, done };
+}
+
+function renderSidebar() {
+  const sb = document.getElementById('sidebar');
+  sb.innerHTML = '';
+  const phases = ['m1', 'm2', 'm3'];
+  const phaseLabels = { m1: 'Month 1 — Foundation', m2: 'Month 2 — Build', m3: 'Month 3 — Deliver' };
+  const phaseColors = { m1: '#0D2137', m2: '#0F6E56', m3: '#533AB7' };
+  const bastColors = { m1: '#0D2137', m2: '#0F6E56', m3: '#533AB7' };
+
+  phases.forEach(ph => {
+    const phaseDiv = document.createElement('div');
+    const lbl = document.createElement('div');
+    lbl.className = 'sb-section';
+    lbl.textContent = phaseLabels[ph];
+    phaseDiv.appendChild(lbl);
+
+    PHASES[ph].weeks.forEach(wn => {
+      const w = WEEKS[wn];
+      const { total, done } = getWeekTasks(wn);
+      const pct = total > 0 ? Math.round(done / total * 100) : 0;
+      const isActive = wn === currentWeek;
+      const div = document.createElement('div');
+      div.className = 'sb-week' + (isActive ? ' active' : '');
+      div.onclick = () => showWeek(wn);
+      div.innerHTML = `
+        <div class="sb-wnum" style="background:${phaseColors[ph]}">${wn}</div>
+        <div style="flex:1;min-width:0">
+          <div class="sb-wlbl">${w.title.split(' — ').slice(1).join(' — ').substring(0, 28)}${w.title.length > 38 ? '…' : ''}</div>
+          <div style="display:flex;align-items:center;gap:5px;margin-top:2px">
+            <div style="height:3px;flex:1;background:#E8EDF2;border-radius:2px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${phaseColors[ph]};border-radius:2px"></div></div>
+            <div style="font-size:9px;color:#B4B2A9;white-space:nowrap">${done}/${total}</div>
+          </div>
+        </div>
+      `;
+      phaseDiv.appendChild(div);
+    });
+
+    sb.appendChild(phaseDiv);
+  });
+}
+
+function renderWeek(wn) {
+  const main = document.getElementById('main');
+  main.innerHTML = '';
+  const w = WEEKS[wn];
+  if (!w) return;
+  const ph = PHASES[w.phase];
+  const phColor = { m1: '#0D2137', m2: '#0F6E56', m3: '#533AB7' }[w.phase];
+
+  // BAST banner if applicable
+  if (w.bastMilestone) {
+    const b = w.bastMilestone;
+    const bb = document.createElement('div');
+    bb.className = 'bast-banner';
+    bb.innerHTML = `
+      <div class="bast-icon">📋</div>
+      <div class="bast-info">
+        <h3>${b.label} — BAST Sign-off This Week</h3>
+        <p>${b.items.map(i => '✓ ' + i).join('&nbsp;&nbsp;')}</p>
+      </div>
+      <div class="bast-pct">${b.pct}<small>of contract value</small></div>
+    `;
+    main.appendChild(bb);
+  }
+
+  // Week header
+  const hdr = document.createElement('div');
+  hdr.className = 'whdr';
+  hdr.style.background = `linear-gradient(135deg, ${phColor} 0%, ${phColor}CC 100%)`;
+  const { total, done } = getWeekTasks(wn);
+  const totalHrs = w.days.reduce((s, d) => s + d.hours, 0);
+  hdr.innerHTML = `
+    <div class="whdr-left">
+      <h2>${w.title}</h2>
+      <p style="max-width:700px">${w.focus}</p>
+      <div class="whdr-badges">
+        <span class="whdr-badge">${ph.label}</span>
+        <span class="whdr-badge">Week ${wn} of 12</span>
+        <span class="whdr-badge">${total} tasks</span>
+        <span class="whdr-badge">${totalHrs} hrs effort</span>
+      </div>
+    </div>
+    <div class="whdr-right">
+      <div class="big-num">${done}/${total}</div>
+      <small>tasks done</small>
+    </div>
+  `;
+  main.appendChild(hdr);
+
+  // Two-column top: prereqs + objectives
+  const topGrid = document.createElement('div');
+  topGrid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px';
+
+  // Prerequisites
+  const prereqCard = document.createElement('div');
+  prereqCard.style.cssText = 'background:#fff;border-radius:10px;border:0.5px solid #D3D1C7;padding:14px';
+  prereqCard.innerHTML = `<div style="font-size:12px;font-weight:700;color:#854F0B;margin-bottom:8px;display:flex;align-items:center;gap:5px">⚡ Prerequisites — Must exist before this week starts</div>`;
+  w.prereqs.forEach(p => {
+    const pb = document.createElement('div');
+    pb.className = 'prereq-block'; pb.style.marginBottom = '5px';
+    pb.innerHTML = `<div class="pb-item">${p}</div>`;
+    prereqCard.appendChild(pb);
+  });
+  topGrid.appendChild(prereqCard);
+
+  // Objectives + success criteria
+  const objCard = document.createElement('div');
+  objCard.style.cssText = 'background:#fff;border-radius:10px;border:0.5px solid #D3D1C7;padding:14px';
+  objCard.innerHTML = `<div style="font-size:12px;font-weight:700;color:#0F6E56;margin-bottom:8px">✦ Week Objectives</div>`;
+  w.objectives.forEach(o => {
+    const od = document.createElement('div');
+    od.style.cssText = 'font-size:11px;color:#085041;margin-bottom:4px;display:flex;gap:6px';
+    od.innerHTML = `<span style="color:#3DB56C;flex-shrink:0">→</span>${o}`;
+    objCard.appendChild(od);
+  });
+  if (w.success && w.success.length > 0) {
+    const sl = document.createElement('div');
+    sl.style.cssText = 'font-size:11px;font-weight:700;color:#888780;text-transform:uppercase;letter-spacing:.05em;margin:10px 0 6px';
+    sl.textContent = 'Week success criteria';
+    objCard.appendChild(sl);
+    w.success.forEach(sc => {
+      const si = document.createElement('div');
+      si.style.cssText = 'display:flex;gap:8px;align-items:flex-start;margin-bottom:4px;padding:6px;background:#F0FBF7;border-radius:5px;border:0.5px solid #5DCAA5';
+      si.innerHTML = `<div style="width:18px;height:18px;border-radius:50%;background:#3DB56C;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;flex-shrink:0">✓</div><div><div style="font-size:11px;color:#085041">${sc.text}</div><div style="font-size:10px;font-weight:700;color:#0F6E56;margin-top:2px">${sc.metric}</div></div>`;
+      objCard.appendChild(si);
+    });
+  }
+  topGrid.appendChild(objCard);
+  main.appendChild(topGrid);
+
+  // Day tables
+  const OWNER_LABELS = { x: 'Xtremax', c: 'Customer', b: 'Both', sa: 'SA' };
+  const OWNER_CLASSES = { x: 'ot-x', c: 'ot-c', b: 'ot-b', sa: 'ot-sa' };
+  const PRIO_LABELS = { blocker: 'BLOCKER', high: 'HIGH', norm: '', review: 'REVIEW' };
+  const PRIO_CLASSES = { blocker: 'pt-blocker', high: 'pt-high', norm: 'pt-norm', review: 'pt-review' };
+  const DAY_COLORS = ['#185FA5', '#3B6D11', '#533AB7', '#854F0B', '#A32D2D'];
+
+  w.days.forEach((day, di) => {
+    const dt = document.createElement('div');
+    dt.className = 'day-table';
+    dt.id = `day-${wn}-${di}`;
+
+    const { total: dtotal, done: ddone } = (() => {
+      let t = 0, d2 = 0;
+      day.tasks.forEach((_, ti) => { t++; if (taskStates[`${wn}_${di}_${ti}`]) d2++; });
+      return { total: t, done: d2 };
+    })();
+
+    const hdrEl = document.createElement('div');
+    hdrEl.className = 'day-hdr';
+    hdrEl.onclick = () => toggleDay(wn, di);
+    hdrEl.innerHTML = `
+      <div class="day-dot" style="background:${DAY_COLORS[di]}"></div>
+      <div class="day-name">${day.name}</div>
+      <div class="day-focus">${day.focus}</div>
+      <div class="day-meta">
+        <span style="font-size:10px;padding:2px 6px;border-radius:3px;background:#F0FBF7;color:#0F6E56;font-weight:700">${ddone}/${dtotal}</span>
+        <span class="day-hrs">${day.hours}h</span>
+      </div>
+      <span class="day-chevron">▼</span>
+    `;
+    dt.appendChild(hdrEl);
+
+    const body = document.createElement('div');
+    body.className = 'day-body';
+    day.tasks.forEach((task, ti) => {
+      const isDone = !!taskStates[`${wn}_${di}_${ti}`];
+      const tr = document.createElement('div');
+      tr.className = 'task-row';
+      const pLabel = PRIO_LABELS[task.priority];
+      tr.innerHTML = `
+        <div class="task-check${isDone ? ' done' : ''}" onclick="toggleTask(${wn},${di},${ti},this)"></div>
+        <div class="task-main">
+          <div class="task-title${isDone ? ' done-txt' : ''}">${task.title}</div>
+          ${task.dep ? `<div class="task-dep">${task.dep}</div>` : ''}
+        </div>
+        <span class="otag ${OWNER_CLASSES[task.owner]}">${OWNER_LABELS[task.owner]}</span>
+        ${pLabel ? `<span class="ptag ${PRIO_CLASSES[task.priority]}">${pLabel}</span>` : '<span></span>'}
+        <div class="hrs-badge">${task.hrs}</div>
+      `;
+      body.appendChild(tr);
+    });
+    dt.appendChild(body);
+    main.appendChild(dt);
+  });
+
+  // Scroll to top
+  main.scrollTop = 0;
+}
+
+function toggleDay(wn, di) {
+  const el = document.getElementById(`day-${wn}-${di}`);
+  if (el) el.classList.toggle('day-open');
+}
+
+function toggleTask(wn, di, ti, el) {
+  const key = `${wn}_${di}_${ti}`;
+  taskStates[key] = !taskStates[key];
+  el.classList.toggle('done');
+  const txt = el.closest('.task-row').querySelector('.task-title');
+  if (txt) txt.classList.toggle('done-txt');
+  renderSidebar();
+  updateGlobalProgress();
+}
+
+function updateGlobalProgress() {
+  const { total, done } = getAllProgress();
+  document.getElementById('global-progress').textContent = `${done} / ${total} tasks done`;
+}
+
+function showWeek(wn) {
+  currentWeek = wn;
+  // Find phase
+  Object.keys(PHASES).forEach(ph => {
+    if (PHASES[ph].weeks.includes(wn)) currentPhase = ph;
+  });
+  renderSidebar();
+  renderWeek(wn);
+  updateGlobalProgress();
+}
+
+function showPhase(ph) {
+  currentPhase = ph;
+  document.querySelectorAll('.ptab').forEach((t, i) => {
+    t.classList.toggle('active', ['m1','m2','m3'][i] === ph);
+  });
+  showWeek(PHASES[ph].weeks[0]);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════════════
+showWeek(1);
+// Open first day by default
+setTimeout(() => {
+  const first = document.getElementById('day-1-0');
+  if (first) first.classList.add('day-open');
+}, 50);
+</script>
+</body>
+</html>
