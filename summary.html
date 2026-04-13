@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Meeting Summary — AWS Infrastructure Modernisation</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:#EEF2F7;color:#1a1a1a;font-size:13px}
+
+/* ── Top bar ── */
+.topbar{background:#0D2137;padding:0 24px;display:flex;align-items:center;gap:12px;height:52px;position:sticky;top:0;z-index:60;box-shadow:0 2px 10px rgba(0,0,0,.3)}
+.brand{font-size:14px;font-weight:700;color:#A8DDB5;padding-right:20px;border-right:1px solid rgba(255,255,255,.1);white-space:nowrap}
+.brand small{display:block;font-size:10px;font-weight:400;color:rgba(255,255,255,.45);margin-top:1px}
+.chip{font-size:10px;font-weight:600;padding:3px 9px;border-radius:4px;white-space:nowrap}
+.c-green{background:#3DB56C;color:#fff}.c-amber{background:#F59E0B;color:#fff}
+.c-navy{background:#185FA5;color:#fff}.c-purple{background:#533AB7;color:#fff}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.current-week-badge{font-size:11px;font-weight:700;padding:4px 12px;border-radius:4px;background:rgba(61,181,108,.2);color:#A8DDB5;border:1px solid rgba(61,181,108,.3)}
+
+/* ── Page layout ── */
+.page{max-width:1160px;margin:0 auto;padding:24px 20px}
+
+/* ── Controls ── */
+.controls{background:#fff;border-radius:10px;border:0.5px solid #D3D1C7;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.ctrl-label{font-size:11px;font-weight:700;color:#888780;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+.week-btns{display:flex;gap:4px;flex-wrap:wrap}
+.wbtn{font-size:11px;font-weight:600;padding:5px 12px;border-radius:6px;border:1.5px solid #E8EDF2;cursor:pointer;background:#fff;color:#64748B;transition:all .12s;white-space:nowrap}
+.wbtn:hover{border-color:#0D2137;color:#0D2137}
+.wbtn.selected{background:#0D2137;color:#fff;border-color:#0D2137}
+.wbtn.past{border-color:#D3D1C7;color:#888780}
+.wbtn.current{border-color:#3DB56C;color:#3DB56C;background:#F0FBF7}
+.wbtn.current.selected{background:#3DB56C;color:#fff}
+.sep{width:1px;height:28px;background:#E8EDF2}
+.view-btns{display:flex;gap:4px}
+.vbtn{font-size:11px;font-weight:600;padding:5px 12px;border-radius:6px;border:1.5px solid #E8EDF2;cursor:pointer;background:#fff;color:#64748B;transition:all .12s}
+.vbtn:hover{border-color:#0D2137;color:#0D2137}
+.vbtn.active{background:#533AB7;color:#fff;border-color:#533AB7}
+.ctrl-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.print-btn{font-size:11px;font-weight:600;padding:5px 14px;border-radius:6px;border:1.5px solid #D3D1C7;cursor:pointer;background:#fff;color:#64748B;display:flex;align-items:center;gap:5px}
+.print-btn:hover{background:#0D2137;color:#fff;border-color:#0D2137}
+
+/* ── Single Week View ── */
+.meeting-card{background:#fff;border-radius:12px;border:0.5px solid #D3D1C7;overflow:hidden;margin-bottom:20px}
+
+/* Phase banner */
+.phase-banner{padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+.phase-banner h2{font-size:20px;font-weight:700;color:#fff}
+.phase-banner .sub{font-size:11px;color:rgba(255,255,255,.7);margin-top:3px}
+.bast-pill{font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3)}
+
+/* Sections inside meeting card */
+.mc-body{padding:0}
+.mc-section{padding:16px 20px;border-bottom:0.5px solid #F1EFE8}
+.mc-section:last-child{border-bottom:none}
+.mc-sec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.mc-sec-icon{width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+
+/* Focus statement */
+.focus-box{background:#F4F7F4;border-radius:7px;padding:12px 14px;border-left:3px solid;font-size:12px;line-height:1.7;color:#1a1a1a}
+
+/* Key activities table */
+.activities-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.day-card{border-radius:7px;border:0.5px solid #E8EDF2;overflow:hidden}
+.day-card-hdr{padding:7px 10px;font-size:10px;font-weight:700;color:#fff;text-align:center}
+.day-card-body{padding:8px 10px;font-size:11px;color:#444;line-height:1.6;background:#fff;min-height:60px}
+.day-activity{display:flex;gap:5px;margin-bottom:4px;align-items:flex-start;font-size:11px}
+.day-activity::before{content:'·';color:#B4B2A9;flex-shrink:0;margin-top:1px}
+
+/* Objectives */
+.obj-list{display:flex;flex-direction:column;gap:6px}
+.obj-item{display:flex;align-items:flex-start;gap:8px;padding:8px 12px;background:#F4F7F4;border-radius:6px}
+.obj-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+.obj-text{font-size:12px;color:#1a1a1a;line-height:1.5;flex:1}
+
+/* Success criteria */
+.sc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sc-item{display:flex;align-items:flex-start;gap:8px;padding:9px 12px;border-radius:6px;border:0.5px solid}
+.sc-check-icon{font-size:13px;flex-shrink:0;margin-top:1px}
+.sc-main{flex:1}
+.sc-text{font-size:11px;line-height:1.5}
+.sc-metric{font-size:10px;font-weight:700;margin-top:3px;padding:1px 6px;border-radius:3px;display:inline-block}
+
+/* Prereqs */
+.prereq-list{display:flex;flex-direction:column;gap:5px}
+.prereq-item{display:flex;align-items:flex-start;gap:8px;padding:7px 12px;background:#FFFBF5;border-radius:6px;border:0.5px solid #FAC775;font-size:11px;color:#633806;line-height:1.5}
+.prereq-item::before{content:'⚡';flex-shrink:0}
+
+/* BAST milestone */
+.bast-box{background:#0D2137;border-radius:8px;padding:14px 18px;display:flex;align-items:center;gap:16px}
+.bast-pct{font-size:32px;font-weight:700;color:#3DB56C;flex-shrink:0}
+.bast-info h4{font-size:13px;font-weight:700;color:#A8DDB5;margin-bottom:6px}
+.bast-deliverable{font-size:11px;color:rgba(255,255,255,.7);margin-bottom:3px;display:flex;align-items:flex-start;gap:6px}
+.bast-deliverable::before{content:'✓';color:#3DB56C;flex-shrink:0}
+
+/* ── Timeline view (all 12 weeks) ── */
+.timeline{display:flex;flex-direction:column;gap:0}
+.tl-phase-hdr{padding:10px 18px;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.07em;border-radius:8px 8px 0 0;margin-bottom:0}
+.tl-row{display:grid;grid-template-columns:60px 1fr 2.5fr 1fr;gap:0;border-bottom:0.5px solid #F1EFE8;background:#fff;cursor:pointer;transition:background .1s}
+.tl-row:hover{background:#F8FAFC}
+.tl-row.tl-current{background:#F0FBF7}
+.tl-row.tl-past{opacity:.75}
+.tl-row.tl-bast .tl-week{font-weight:700}
+.tl-cell{padding:10px 14px;font-size:12px;align-self:stretch;display:flex;align-items:flex-start;flex-direction:column;justify-content:center}
+.tl-week{font-size:13px;font-weight:700;color:#0D2137;display:flex;align-items:center;gap:5px}
+.tl-focus{font-size:12px;color:#1a1a1a;font-weight:600;margin-bottom:3px}
+.tl-sub{font-size:11px;color:#64748B;line-height:1.5}
+.tl-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;white-space:nowrap;align-self:flex-start;margin-top:2px}
+.tl-bast-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;color:#fff;white-space:nowrap}
+.tl-phase-tag{font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;color:#fff;align-self:flex-start;margin-bottom:4px}
+.tl-hdr-row{display:grid;grid-template-columns:60px 1fr 2.5fr 1fr;gap:0;background:#F4F7F4;border-bottom:0.5px solid #E8EDF2}
+.tl-hdr-cell{padding:8px 14px;font-size:10px;font-weight:700;color:#888780;text-transform:uppercase;letter-spacing:.05em}
+.tl-group{background:#fff;border-radius:10px;border:0.5px solid #D3D1C7;overflow:hidden;margin-bottom:14px}
+
+/* ── Status chips ── */
+.status-planned{background:#F4F7F4;color:#64748B}
+.status-current{background:#EAF3DE;color:#3B6D11}
+.status-past{background:#E6F1FB;color:#185FA5}
+.status-bast{background:#0D2137;color:#A8DDB5}
+
+/* ── Print styles ── */
+@media print {
+  body{background:#fff;font-size:11px}
+  .topbar,.controls,.print-btn{display:none!important}
+  .page{padding:0;max-width:100%}
+  .meeting-card{box-shadow:none;border:1px solid #ddd;break-inside:avoid;margin-bottom:16px}
+  .activities-grid{grid-template-columns:repeat(5,1fr)}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    AWS Modernisation
+    <small>Weekly Meeting Summary</small>
+  </div>
+  <span class="chip c-navy">PT Customer × Xtremax</span>
+  <span class="chip c-green">6 Apps · 12 Weeks</span>
+  <div class="topbar-right">
+    <span class="current-week-badge" id="current-week-indicator">Week — of 12</span>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- Controls -->
+  <div class="controls">
+    <span class="ctrl-label">View</span>
+    <div class="view-btns">
+      <button class="vbtn active" id="vbtn-single" onclick="setView('single')">Single week</button>
+      <button class="vbtn" id="vbtn-all" onclick="setView('all')">All 12 weeks</button>
+    </div>
+    <div class="sep"></div>
+    <span class="ctrl-label">Week</span>
+    <div class="week-btns" id="week-btns"></div>
+    <div class="ctrl-right">
+      <button class="print-btn" onclick="window.print()">🖨 Print</button>
+    </div>
+  </div>
+
+  <!-- Single Week View -->
+  <div id="view-single"></div>
+
+  <!-- All Weeks Timeline View -->
+  <div id="view-all" style="display:none"></div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════
+// DATA — extracted from the detailed weekly plan
+// ══════════════════════════════════════════════════════════════════════════
+const PHASE_COLORS = { m1:'#0D2137', m2:'#0F6E56', m3:'#533AB7' };
+const PHASE_LABELS = { m1:'Month 1 — Foundation', m2:'Month 2 — Build', m3:'Month 3 — Deliver' };
+
+const WEEKS = [
+  {
+    week:1, phase:'m1', title:'Environment Discovery, Audit & RHEL Preparation',
+    focus:'No changes to production. Assess, document, and understand every existing AWS resource, app dependency, and network configuration. In parallel, provision and harden all 6 RHEL target environments by Friday so OS migration execution can begin in Week 2.',
+    dayFocus:[
+      { day:'Mon', act:['Kick-off meeting — present plan, agree RACI','Verify access to all 5 AWS accounts (BLOCKER)','Shadow engineer onboarding: console navigation, naming conventions'] },
+      { day:'Tue', act:['Export all SCPs — categorise by type','Audit Control Tower, OU structure, guardrails','Review IAM across all accounts: users, MFA, roles'] },
+      { day:'Wed', act:['Map full VPC topology: CIDR, subnets, routes','Review Security Groups for overly permissive rules','Validate Transit Gateway + on-prem VPN routing'] },
+      { day:'Thu', act:['App owner interviews for all 6 apps (30 min each)','Run PowerShell inventory on all 6 Windows servers','Provision RHEL 8.x EC2 instances in Dev/UAT for all 6 apps','Apply OS hardening: disable root SSH, firewalld, CIS RHEL L1'] },
+      { day:'Fri', act:['Install Node.js LTS + build tools on all RHEL instances','Verify SSM Agent reachable on all 6 RHEL hosts','Compile & present W1 Discovery Report to Customer IT lead','SA call: review findings, plan W2 enforcement'] },
+    ],
+    objectives:['Complete AWS environment audit across all 5 accounts','Document all SCPs, guardrails, and IAM configuration','Inventory all 6 app server environments and dependencies','Provision, harden, and runtime-ready all 6 RHEL instances — ready for migration in W2','Produce W1 Discovery Report shared with Customer IT lead by Friday'],
+    success:[
+      { text:'W1 Discovery Report delivered to Customer IT lead', metric:'By Friday EOD' },
+      { text:'All 5 AWS accounts fully accessible', metric:'Day 1 — BLOCKER' },
+      { text:'All 6 app dependency matrices completed', metric:'6 / 6 apps' },
+      { text:'All 6 RHEL instances provisioned, hardened, and runtime-ready', metric:'SSM reachable — Friday EOD' },
+    ],
+    prereqs:['PO issued — engagement clock starts Day 1','AWS account credentials for all 5 accounts provided','6 sample apps confirmed with app owners introduced','Shadow engineers assigned and available from Day 1','Dev/UAT account EC2 quotas and AMI access pre-confirmed'],
+    effort:'45h',
+    bast: null,
+  },
+  {
+    week:2, phase:'m1', title:'Landing Zone Enforcement, Network Build & OS Migration Begins',
+    focus:'Apply all security guardrails from W1 audit. Fix compliance gaps. Build production VPC, subnets, NAT Gateways, and VPC Endpoints. Begin OS migration execution — Apps 1 & 2 deploy to RHEL by Friday. All network and security changes go through Customer IT approval.',
+    dayFocus:[
+      { day:'Mon', act:['Apply missing SCPs: prevent root usage, enforce MFA, disable S3 public access','Enable AWS Config + CIS conformance pack across all accounts','Enable org-wide CloudTrail → Log Archive S3'] },
+      { day:'Tue', act:['Enable GuardDuty in all 5 accounts via delegated admin','Enable Security Hub with FSBP standard','Configure VPC Flow Logs → Log Archive; capture baseline compliance score'] },
+      { day:'Wed', act:['Create Production VPC: CIDR /16, public/private/data subnets in 2 AZs','Deploy Internet Gateway + NAT Gateways ×2 (one per AZ)','Validate all subnet routing end-to-end'] },
+      { day:'Thu', act:['Create VPC Interface Endpoints: S3, ECR, SSM, Secrets Manager','Configure Security Groups for ALB, EKS, RDS, ElastiCache','Tag all resources: Environment, Project, Owner, CostCentre'] },
+      { day:'Fri', act:['Deploy App 1 to RHEL → smoke test with app owner → sign off','Deploy App 2 to RHEL → smoke test with app owner → sign off','Week 2 network topology + migration status review with Customer IT lead'] },
+    ],
+    objectives:['Landing Zone guardrails fully enforced (preventive + detective)','GuardDuty and Security Hub active in all 5 accounts','CloudTrail org-wide aggregation flowing to Log Archive','Production VPC built: subnets, NAT GW, VPC Endpoints','Apps 1 & 2 deployed to RHEL and signed off by app owners'],
+    success:[
+      { text:'Security Hub FSBP baseline score captured', metric:'Score documented' },
+      { text:'GuardDuty active in all 5 accounts', metric:'5 / 5 accounts' },
+      { text:'CloudTrail validated in Log Archive', metric:'Athena query confirmed' },
+      { text:'Production VPC + all subnet types + NAT GWs created', metric:'Network diagram updated' },
+      { text:'Apps 1 & 2 on RHEL, signed off by app owners', metric:'Friday EOD' },
+    ],
+    prereqs:['W1 Discovery Report reviewed by Customer IT lead','All 6 RHEL instances provisioned, hardened, and runtime-ready from W1','Remediation priorities agreed and signed off','Change window agreed for network modifications','App owners for Apps 1 & 2 available Friday for sign-off sessions'],
+    effort:'42h',
+    bast: null,
+  },
+  {
+    week:3, phase:'m1', title:'OS Migration Completion & EKS Prerequisites',
+    focus:'Complete OS migration for Apps 3–6. Run load tests and write runbooks for all 6 apps. Begin EKS and IaC pre-requisite setup (IAM roles, ECR repos, GitHub, Terraform remote state) to align with W4 cluster deployment.',
+    dayFocus:[
+      { day:'Mon', act:['Deploy App 3 (PHP stack) to RHEL → smoke test with app owner → sign off','Deploy App 4 to RHEL → smoke test with app owner → sign off','Document RHEL-specific fixes per app'] },
+      { day:'Tue', act:['Deploy Apps 5 & 6 to RHEL → smoke tests with owners','Load test Apps 1 & 2 on RHEL vs Windows baseline (migrated in W2)','Load test Apps 3 & 4 on RHEL'] },
+      { day:'Wed', act:['Load test Apps 5 & 6 on RHEL','Write migration runbooks for Apps 1 & 2 (steps + rollback)','Write migration runbooks for Apps 3, 4, 5, 6'] },
+      { day:'Thu', act:['Run Security Hub FSBP — target ≥80% pass rate','Create EKS IAM service role + node instance profile in Production account','Create ECR repos for all 6 apps + GitHub org repos + Terraform remote state'] },
+      { day:'Fri', act:['SA architecture review — validate network + security posture','Set up Terraform module structure: /modules/vpc, /eks, /rds, /app','Prepare BAST 1 documentation outline'] },
+    ],
+    objectives:['All 6 apps deployed and functional on RHEL — Apps 3–6 migrate this week','Load test results ≥ Windows baseline for all 6 apps','Migration runbook written for all 6 apps (deploy + rollback)','EKS IAM roles, ECR repos, GitHub repos, Terraform remote state ready for W4'],
+    success:[
+      { text:'All 6 apps on RHEL, signed off by all app owners', metric:'6 / 6 apps' },
+      { text:'Load test p99 ≥ Windows baseline for all apps', metric:'Load test report' },
+      { text:'Migration runbooks for all 6 apps', metric:'6 runbooks' },
+      { text:'Security Hub score ≥ 80% FSBP', metric:'Score ≥ 80%' },
+      { text:'EKS prereqs ready — IAM, ECR, GitHub, Terraform state', metric:'Ready for W4 EKS deploy' },
+    ],
+    prereqs:['Apps 1 & 2 migrated and signed off in W2','RHEL instances for Apps 3–6 provisioned and hardened from W1','App owners for Apps 3–6 available for validation sessions','App smoke test checklist agreed per app'],
+    effort:'42h',
+    bast: null,
+  },
+  {
+    week:4, phase:'m1', title:'BAST 1 Documentation, Sign-off & EKS Cluster Deployment',
+    focus:'Finalise all BAST 1 documentation. Present to Customer stakeholders. Get formal sign-off. Issue invoice. Deploy the production EKS cluster (control plane, node groups, add-ons) and apply Terraform vpc + eks-cluster modules.',
+    dayFocus:[
+      { day:'Mon', act:['Write Landing Zone Governance Report: OU structure, SCP inventory, compliance score','Compile OS Migration Documentation: runbooks index, load test results','Collect all 6 app owner sign-off evidence'] },
+      { day:'Tue', act:['SA internal review of both BAST 1 documents','Add evidence appendices: CloudTrail, GuardDuty, Security Hub screenshots','Prepare BAST 1 presentation deck (5 slides)'] },
+      { day:'Wed', act:['BAST 1 presentation to Customer stakeholders','Address questions and revisions same day','Customer signs BAST 1 → submit 30% invoice'] },
+      { day:'Thu', act:['Apply Terraform eks-cluster module: EKS control plane (K8s 1.30), OIDC, 3 managed node groups in 2 AZs','Install EKS add-ons: CoreDNS, kube-proxy, VPC CNI, EBS CSI, AWS LB Controller','Write + apply Terraform vpc module over existing VPC resources'] },
+      { day:'Fri', act:['Month 1 retrospective with Customer IT team','Confirm Dockerfile base images with dev team','Wrap-up email: BAST 1 complete, EKS cluster deployed, Month 2 starts Monday'] },
+    ],
+    objectives:['BAST 1 documentation package compiled, presented, and signed','BAST 1 invoice submitted (30% of contract)','EKS cluster deployed in Production — control plane, node groups, add-ons all running','Terraform vpc + eks-cluster modules applied — state clean'],
+    success:[
+      { text:'BAST 1 signed by Customer — 30% invoice submitted', metric:'Wednesday EOD' },
+      { text:'EKS cluster deployed — all nodes in Ready state', metric:'Thursday EOD' },
+      { text:'Terraform vpc + eks-cluster modules applied', metric:'terraform plan = 0 changes' },
+      { text:'Month 2 plan shared and confirmed by stakeholders', metric:'Email sent' },
+    ],
+    prereqs:['All 6 apps validated on RHEL with app owner sign-offs','Security Hub FSBP score ≥ 80% confirmed','W3 migration runbooks reviewed by SA','EKS IAM roles, ECR repos, GitHub repos, Terraform remote state all created in W3'],
+    effort:'38h',
+    bast: { label:'BAST 1', pct:'30%', items:['Landing Zone Governance Report','OS Migration Documentation (6 apps)','App owner sign-off evidence','Security Hub FSBP compliance report'] },
+  },
+  {
+    week:5, phase:'m2', title:'Containerise Apps 1 & 2 & Complete Network IaC',
+    focus:'EKS cluster already deployed from W4. Containerise Apps 1 and 2 as the pilot — establish Docker and Helm patterns that all remaining apps will follow. Configure IRSA, CloudFront, Secrets Manager, and begin Terraform rds module.',
+    dayFocus:[
+      { day:'Mon', act:['Configure IRSA roles for all 6 apps (IAM role per app via OIDC)','Validate kubectl access for all team members','Write Dockerfile for App 1 (Node.js multi-stage build) → Trivy scan → push to ECR'] },
+      { day:'Tue', act:['Write Helm chart for App 1 (Deployment, Service, Ingress, HPA, ServiceAccount) → deploy to EKS','Write Dockerfile for App 2 → build, scan, push → write Helm chart → deploy'] },
+      { day:'Wed', act:['Configure CloudFront in front of ALB for Apps 1 & 2','Configure Secrets Manager for DB credentials and API keys','Validate end-to-end: CloudFront → ALB → EKS pod → Secrets Manager'] },
+      { day:'Thu', act:['Configure HPA for Apps 1 & 2 — validate auto-scale under load test','App 1 & 2 sign-off sessions with app owners','Write Terraform rds module (Aurora PostgreSQL, RDS, Secrets Mgr integration)'] },
+      { day:'Fri', act:['SA architecture review: EKS config, networking, IRSA roles, Helm standards','Apply SA feedback — update configs as directed','Document EKS cluster config in project wiki'] },
+    ],
+    objectives:['Apps 1 & 2 containerised and accessible via HTTPS (CloudFront → ALB → EKS)','HPA auto-scale confirmed for Apps 1 & 2 under load test','IRSA roles configured for all 6 app ServiceAccounts','Terraform rds module written and ready for W6'],
+    success:[
+      { text:'Apps 1 & 2 accessible via CloudFront/HTTPS', metric:'App owner sign-off' },
+      { text:'HPA confirmed scaling under load test', metric:'Load test evidence' },
+      { text:'IRSA roles configured — no node-level IAM', metric:'6 ServiceAccounts' },
+      { text:'Terraform rds module in GitHub', metric:'Ready for W6' },
+    ],
+    prereqs:['BAST 1 signed — BAST 2 work can begin','EKS cluster deployed with all add-ons in Ready state (from W4)','Terraform vpc + eks-cluster modules applied — state clean (from W4)','ECR repos and GitHub repos ready (from W3)','Docker base images agreed (node:20-alpine, php:8-fpm-alpine)'],
+    effort:'40h',
+    bast: null,
+  },
+  {
+    week:6, phase:'m2', title:'Containerise All 6 Apps & Build CI/CD Pipeline',
+    focus:'Apply the containerisation pattern from W5 to all 4 remaining apps. Build the full CI/CD pipeline (GitHub → CodeBuild → ECR → CodeDeploy) so deployments are automated from W7 onwards.',
+    dayFocus:[
+      { day:'Mon', act:['Write Dockerfile for App 3 (PHP/nginx) → build, scan, push → deploy to EKS','Write Dockerfile + Helm chart for App 4 → deploy to EKS'] },
+      { day:'Tue', act:['Deploy Apps 5 & 6 to EKS','App owner sign-off sessions for Apps 3, 4, 5, 6','Confirm all 6/6 app owners signed off — update tracker'] },
+      { day:'Wed', act:['Create CodePipeline for App 1 as template: Source (GitHub) → Build → Deploy','Write CodeBuild buildspec.yml: build, Trivy scan, ECR push','Integrate SonarQube quality gate — fail pipeline if gate fails'] },
+      { day:'Thu', act:['Replicate CodePipeline + CodeBuild to Apps 2–6 (parameterised)','Configure CodeDeploy blue-green deployment group per app','Test pipelines for Apps 2 & 3 end-to-end push-to-deploy'] },
+      { day:'Fri', act:['Test pipelines for Apps 4, 5, 6 end-to-end','Write Terraform rds module (Aurora, RDS, subnet groups, Secrets Mgr)','Plan W7 database migration approach with Customer'] },
+    ],
+    objectives:['All 6 apps containerised on EKS — all app owners signed off','CI/CD pipeline (GitHub → CodeBuild → ECR → CodeDeploy) for all 6 apps','SonarQube quality gate blocking bad commits','Terraform rds module written'],
+    success:[
+      { text:'All 6 apps on EKS — all 6 app owners signed off', metric:'6 / 6 apps' },
+      { text:'CI/CD pipeline end-to-end for all 6 apps', metric:'6 / 6 pipelines' },
+      { text:'SonarQube blocks deliberately bad commit', metric:'Test evidence' },
+      { text:'Terraform rds module in GitHub', metric:'Module written' },
+    ],
+    prereqs:['Apps 1 & 2 validated on EKS with sign-offs','EKS cluster fully operational — all add-ons Running','App owners for Apps 3–6 available for sign-off sessions','CodePipeline, CodeBuild, CodeDeploy IAM roles created'],
+    effort:'40h',
+    bast: null,
+  },
+  {
+    week:7, phase:'m2', title:'Database Migration & Terraform IaC Completion',
+    focus:'Migrate all 6 app databases to Aurora PostgreSQL and RDS. Complete all Terraform modules and apply to all 6 apps. After this week, zero resources in Production should be unmanaged.',
+    dayFocus:[
+      { day:'Mon', act:['Apply Terraform rds module: Aurora PostgreSQL (db.r5.2xlarge, Multi-AZ)','Deploy RDS instances ×3 for specialised apps','Store all DB credentials in Secrets Manager — update Helm values'] },
+      { day:'Tue', act:['Configure AWS DMS: replication instance, source + target endpoints','Start DMS full-load + CDC for Apps 1 & 2 — validate data integrity','Create DMS tasks for Apps 3, 4, 5, 6 — start migration'] },
+      { day:'Wed', act:['Validate Apps 3–6 data on Aurora/RDS: row counts, checksums','Write Terraform module app-deployment (ECR, IRSA, Helm, ALB, CloudFront)','Write Terraform module secrets (Secrets Manager + rotation)'] },
+      { day:'Thu', act:['DB cutover window: stop CDC, freeze source, switch all apps to Aurora/RDS','Monitor apps for 1 hour post-cutover — no DB errors','Apply Terraform app-deployment to all 6 apps; verify terraform plan = 0 changes'] },
+      { day:'Fri', act:['Write README for each Terraform module (inputs, outputs, usage example)','Write module index document','SA review: Terraform modules, RDS config, Secrets Manager integration'] },
+    ],
+    objectives:['All 6 app databases migrated to Aurora/RDS — data integrity validated','Zero manual (unmanaged) resources in Production — terraform plan = 0 changes','All 4 Terraform modules with READMEs in GitHub','All apps reading DB credentials from Secrets Manager (no hardcoded secrets)'],
+    success:[
+      { text:'All 6 app databases migrated — row count + checksum validated', metric:'DMS validation report' },
+      { text:'Zero manual resources in Production', metric:'terraform plan = 0 changes' },
+      { text:'4 Terraform modules with READMEs', metric:'GitHub merged' },
+      { text:'No hardcoded secrets in any app', metric:'Code review confirmed' },
+    ],
+    prereqs:['All 6 apps on EKS with CI/CD working end-to-end','Terraform rds module reviewed by SA','Database migration approach agreed (DMS + CDC)','App owners briefed on cutover window — scheduled for Thursday','AWS DMS replication instance pre-created'],
+    effort:'40h',
+    bast: null,
+  },
+  {
+    week:8, phase:'m2', title:'Load Testing, Security Review & BAST 2 Sign-off',
+    focus:'Validate everything built in Weeks 5–7. Run load and security tests. Compile BAST 2 documentation. Get Customer sign-off. Reduce Cloudflare DNS TTL to 60s ready for Month 3 cutover.',
+    dayFocus:[
+      { day:'Mon', act:['Load test all 6 apps on EKS: ramp to 150–200 concurrent users per app','Compile load test report: p50/p95/p99 latency, error rate, HPA evidence','Fix any performance regressions found'] },
+      { day:'Tue', act:['ECR image scan review — zero CRITICAL vulnerabilities for all 6 apps','Review Kubernetes RBAC, Network Policies, IRSA roles','Run Checkov on all Terraform modules — fix HIGH severity IaC issues'] },
+      { day:'Wed', act:['Write EKS Architecture & Production Environment Document','Write Containerization & Deployment Pattern Guide','Write CI/CD Pipeline Guide (covers all 6 apps)'] },
+      { day:'Thu', act:['SA review all BAST 2 documents; prepare live demo presentation','BAST 2 presentation to Customer: demo CI/CD, show all 6 apps on EKS','Customer signs BAST 2 → submit 30% invoice'] },
+      { day:'Fri', act:['Month 2 retrospective: lessons learned','Agree SLO thresholds per app for Month 3 monitoring','Reduce Cloudflare DNS TTL to 60s — must be done 48 hrs before W11 cutover'] },
+    ],
+    objectives:['All 6 apps pass load test within agreed SLO','Zero CRITICAL ECR vulnerabilities; Terraform modules pass Checkov','BAST 2 documentation signed and invoice submitted','Cloudflare DNS TTL reduced to 60s'],
+    success:[
+      { text:'BAST 2 signed — 30% invoice submitted', metric:'Thursday EOD' },
+      { text:'All 6 apps pass load test within SLO', metric:'Load test report' },
+      { text:'Zero CRITICAL ECR vulnerabilities', metric:'Scan results' },
+      { text:'Cloudflare DNS TTL = 60s', metric:'TTL confirmed Friday' },
+    ],
+    prereqs:['All 6 apps on EKS, CI/CD + Terraform + databases complete','terraform plan = 0 changes confirmed in Production','All 6 app owner sign-offs for Month 2 collected'],
+    effort:'38h',
+    bast: { label:'BAST 2', pct:'30%', items:['EKS Architecture & Production Environment Documentation','Terraform Modules Repository (4 modules with READMEs)','Containerization & Deployment Pattern Documentation','CI/CD Pipeline Guide (all 6 apps)'] },
+  },
+  {
+    week:9, phase:'m3', title:'Blue-Green Deployment & X-Ray APM',
+    focus:'Implement blue-green deployment with traffic shifting for all 6 apps. Install X-Ray tracing and CloudWatch Container Insights. All rollout and rollback drills must be timed and documented.',
+    dayFocus:[
+      { day:'Mon', act:['Install X-Ray DaemonSet on EKS — validate trace ingestion','Add X-Ray SDK to Apps 1–3 (aws-xray-sdk-node), instrument HTTP + DB calls','Enable CloudWatch Container Insights on EKS cluster'] },
+      { day:'Tue', act:['Configure CodeDeploy blue-green for Apps 1–3: 10%→50%→100% traffic shift','Run rollout drill for Apps 1–3 — document switch-over time','Run rollback drill for Apps 1–3 — confirm rollback < 5 minutes'] },
+      { day:'Wed', act:['Add X-Ray SDK to Apps 4, 5, 6 — deploy via CI/CD','Configure blue-green deployment for Apps 4–6','Validate X-Ray service map: app → DB → external API chain visible'] },
+      { day:'Thu', act:['Run rollout + rollback drills for Apps 4, 5, 6','Configure CloudWatch log groups via Fluent Bit DaemonSet (30-day retention)','Create metric filters: extract error count + latency as CloudWatch custom metrics'] },
+      { day:'Fri', act:['Compile Blue-Green Drill Results Report: rollout/rollback times per app','SA review: X-Ray completeness, blue-green config, CloudWatch logs','Shadow: run a blue-green rollout for App 5 independently'] },
+    ],
+    objectives:['Blue-green deployment with traffic shifting configured for all 6 apps','Rollout and rollback drills timed and evidenced for all 6 apps (< 5 min rollback)','X-Ray DaemonSet on EKS — all 6 apps sending traces with visible service map','CloudWatch Container Insights + log groups active'],
+    success:[
+      { text:'Blue-green rollback < 5 min for all 6 apps — timed', metric:'Drill report' },
+      { text:'X-Ray service map showing all 6 app traces', metric:'ServiceLens screenshot' },
+      { text:'CloudWatch log groups active with metric filters', metric:'6 log groups' },
+      { text:'All 6 app owners attended rollout drills', metric:'Sign-off record' },
+    ],
+    prereqs:['BAST 2 signed — BAST 3 work can begin','SLO thresholds agreed per app (latency p99, error rate)','Rollback criteria documented per app','App owners available for rollout and rollback drills this week'],
+    effort:'40h',
+    bast: null,
+  },
+  {
+    week:10, phase:'m3', title:'CloudWatch Dashboards, Alarms & Backup',
+    focus:'Build comprehensive observability: per-app dashboards, ≥20 alarms, SNS alerting. Define and test AWS Backup policies for EBS, RDS, and S3. Activate cross-region DR replication. Begin DNS preparation.',
+    dayFocus:[
+      { day:'Mon', act:['Create per-app CloudWatch dashboards (6 dashboards): latency p99, error rate, pod count, DB connections','Create infrastructure dashboard: EKS nodes, RDS IOPS, Aurora replica lag, ALB'] },
+      { day:'Tue', act:['Create ≥20 CloudWatch alarms: latency > 2s, error rate > 1%, pod OOMKilled, node CPU > 80%, RDS CPU > 80%','Configure SNS topics → Teams/Slack webhook + email','Test alarm end-to-end: inject fault → confirm SNS fires within 2 min'] },
+      { day:'Wed', act:['Create AWS Backup plan: daily EBS snapshots (EKS PVs), 30-day retention','Create AWS Backup plan: daily RDS + Aurora backups, 30-day retention','Enable S3 cross-region replication to ap-southeast-3 (Jakarta)'] },
+      { day:'Thu', act:['Execute RDS restore test → document time taken → validate data integrity','Execute EBS restore test → mount to test pod → confirm app reads data','Document RTO achieved (target ≤ 2 hours) with evidence screenshots'] },
+      { day:'Fri', act:['Observability walkthrough with Customer IT lead: show all dashboards + alarms','Export Cloudflare DNS records — create Route 53 hosted zones, import all records','Validate Route 53 records match Cloudflare export exactly'] },
+    ],
+    objectives:['≥ 20 CloudWatch alarms active — alarm → SNS → Teams/email tested end-to-end','Per-app + infrastructure dashboards live in CloudWatch','AWS Backup: EBS, RDS, S3 backed up with 30-day retention; restore tests passed','Cross-region replication to ap-southeast-3 confirmed; Route 53 zones ready'],
+    success:[
+      { text:'≥ 20 alarms active — SNS → Teams tested', metric:'Alarm list + test evidence' },
+      { text:'RTO ≤ 2 hrs demonstrated via RDS restore', metric:'Restore report' },
+      { text:'S3 cross-region replication confirmed in DR region', metric:'Object verified' },
+      { text:'Route 53 zones ready — all records imported from Cloudflare', metric:'Record count match' },
+    ],
+    prereqs:['X-Ray flowing for all 6 apps; CloudWatch Container Insights active','CloudWatch log groups + metric filters from W9','AWS Backup vault pre-created; SNS endpoint (Teams/email) confirmed','DNS cutover window agreed in W8 — TTL already at 60s'],
+    effort:'40h',
+    bast: null,
+  },
+  {
+    week:11, phase:'m3', title:'DNS & WAF Migration from Cloudflare',
+    focus:'Execute the DNS cutover from Cloudflare to Route 53. Migrate all firewall rules to AWS WAF + Shield. Highest-risk week — execute during approved maintenance window with rollback plan ready.',
+    dayFocus:[
+      { day:'Mon', act:['Validate all Route 53 records match Cloudflare export (comparison script)','Configure Route 53 health checks for all 6 app endpoints','Design AWS WAF WebACLs: map each Cloudflare rule to AWS WAF equivalent'] },
+      { day:'Tue', act:['Create WAF WebACLs — attach to CloudFront; add rate-based rules (1000 req/5min)','Enable AWS Shield Standard on all CloudFront distributions','Full dry-run: hosts file override → validate all 6 apps respond via Route 53'] },
+      { day:'Wed', act:['PRE-CUTOVER: confirm all health checks passing, rollback plan ready','Execute DNS cutover: update NS records at registrar to Route 53','Monitor DNS propagation + validate all 6 apps for 2 hours post-cutover'] },
+      { day:'Thu', act:['24-hr post-cutover review: WAF logs, health check status, latency','Tune WAF rules: remove false positives, tighten any gaps','SA final architecture review: full 30-min walkthrough of entire environment'] },
+      { day:'Fri', act:['Compile DNS & WAF Migration Report','Begin Operations Guide: how to deploy new app, manage EKS, respond to alarms','Confirm BAST 3 presentation stakeholders + schedule W12 sign-off meeting'] },
+    ],
+    objectives:['DNS fully migrated to Route 53 — zero user-impacting downtime during cutover','AWS WAF rules fully migrated from Cloudflare — no false positive blockers','Route 53 health checks active for all 6 apps','SA final architecture review completed and sign-off obtained'],
+    success:[
+      { text:'DNS cutover — zero user-impacting downtime', metric:'CloudWatch error rate unchanged' },
+      { text:'AWS WAF rules migrated from Cloudflare', metric:'WAF log review' },
+      { text:'Route 53 health checks green for all 6 apps', metric:'6 health checks' },
+      { text:'SA final architecture sign-off', metric:'Sign-off document' },
+    ],
+    prereqs:['Route 53 hosted zones validated from W10','DNS TTL at ≤ 60s for at least 24 hrs','Cutover maintenance window formally approved by Customer management','Rollback plan documented — know exactly how to revert to Cloudflare in < 5 min'],
+    effort:'38h',
+    bast: null,
+  },
+  {
+    week:12, phase:'m3', title:'Final Documentation, Handover & BAST 3 Sign-off',
+    focus:'Complete all documentation. Validate shadow engineer independence. Execute formal handover. Sign BAST 3 and close the engagement. Schedule post-program SA consultation.',
+    dayFocus:[
+      { day:'Mon', act:['Finalise Blue-Green Deployment Report, Monitoring & APM Guide','Finalise Backup & Restore Test Report, DNS & WAF Migration Report','Compile all 5 BAST 3 documents into structured folder'] },
+      { day:'Tue', act:['Complete Operations Guide: deploy new app, manage EKS, respond to alarms','SHADOW ENGINEER INDEPENDENCE TEST: deploy code change via CI/CD without Xtremax help','If pass → document sign-off. If not → 1hr coaching + retest same day'] },
+      { day:'Wed', act:['Remove all Xtremax IAM roles from all 5 accounts — Customer SSO only','Transfer GitHub repo ownership to Customer','SA + internal review of all 5 BAST 3 documents — final quality check'] },
+      { day:'Thu', act:['BAST 3 presentation to stakeholders: live demo + document walkthrough (1.5hr)','Customer signs BAST 3 → submit 40% final invoice','Send formal engagement closure email to management'] },
+      { day:'Fri', act:['Final program retrospective with Customer IT team','Schedule Month 4 post-program SA consultation (5 days/mo × 3 months per contract)','Archive all project docs to Customer-owned storage — Xtremax retains no data'] },
+    ],
+    objectives:['All 5 BAST 3 documents compiled, reviewed, and signed','BAST 3 formally signed — 40% final invoice submitted','Shadow engineers pass independence test (live deployment observed)','All Xtremax access removed from all 5 AWS accounts'],
+    success:[
+      { text:'BAST 3 signed — 40% final invoice submitted', metric:'Thursday EOD' },
+      { text:'Shadow engineer passes independence test', metric:'Live deployment observed' },
+      { text:'All Xtremax access removed from all accounts', metric:'IAM audit clean' },
+      { text:'Post-program SA consultation scheduled', metric:'Calendar invite sent' },
+    ],
+    prereqs:['DNS cutover successful — no issues for 48+ hrs','All 20+ alarms active and tested','All restore tests passed with evidence','SA final architecture sign-off from W11'],
+    effort:'35h',
+    bast: { label:'BAST 3', pct:'40%', items:['Blue-Green Deployment Report & Rollback Test Results','Monitoring & APM Dashboard Configuration Guide','Backup & Restore Test Report (RTO/RPO evidence)','DNS & WAF Migration Report','Full Operations Handover Guide'] },
+  },
+];
+
+// ── State ──────────────────────────────────────────────────────────────
+let selectedWeek = 1;
+let currentView = 'single';
+// Load stored current week from localStorage or default to 1
+try {
+  const stored = localStorage.getItem('XTRM_CURRENT_WEEK');
+  if (stored) selectedWeek = parseInt(stored);
+} catch(e){}
+
+// ── Helpers ────────────────────────────────────────────────────────────
+function phaseColor(p){ return PHASE_COLORS[p]; }
+function phaseLabel(p){ return PHASE_LABELS[p]; }
+
+function setCurrentWeek(wn) {
+  selectedWeek = wn;
+  try { localStorage.setItem('XTRM_CURRENT_WEEK', wn); } catch(e){}
+  document.getElementById('current-week-indicator').textContent = `Week ${wn} of 12 selected`;
+  renderWeekBtns();
+  if (currentView === 'single') renderSingle(wn);
+}
+
+// ── Week buttons ───────────────────────────────────────────────────────
+function renderWeekBtns() {
+  const container = document.getElementById('week-btns');
+  container.innerHTML = '';
+  WEEKS.forEach(w => {
+    const btn = document.createElement('button');
+    btn.className = 'wbtn' +
+      (w.week === selectedWeek ? ' selected' : '') ;
+    if (w.bast) btn.style.borderColor = phaseColor(w.phase);
+    btn.textContent = `W${w.week}${w.bast ? ' ★' : ''}`;
+    btn.title = w.title + (w.bast ? ` · ${w.bast.label}` : '');
+    btn.onclick = () => setCurrentWeek(w.week);
+    container.appendChild(btn);
+  });
+}
+
+// ── Single week render ─────────────────────────────────────────────────
+function renderSingle(wn) {
+  const w = WEEKS[wn - 1];
+  const col = phaseColor(w.phase);
+  const container = document.getElementById('view-single');
+
+  let html = `
+  <div class="meeting-card">
+    <div class="phase-banner" style="background:${col}">
+      <div>
+        <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">${phaseLabel(w.phase)} · ${w.effort} effort</div>
+        <h2>Week ${w.week} — ${w.title}</h2>
+        <div class="sub">${w.focus}</div>
+      </div>
+      ${w.bast ? `<div class="bast-pill">${w.bast.label} · ${w.bast.pct}</div>` : ''}
+    </div>
+    <div class="mc-body">`;
+
+  // BAST milestone block
+  if (w.bast) {
+    html += `
+      <div class="mc-section">
+        <div class="mc-sec-title" style="color:${col}">
+          <div class="mc-sec-icon" style="background:${col}20;color:${col}">📋</div>
+          BAST MILESTONE — ${w.bast.label} (${w.bast.pct})
+        </div>
+        <div class="bast-box">
+          <div class="bast-pct">${w.bast.pct}</div>
+          <div class="bast-info">
+            <h4>${w.bast.label} — Deliverables required for sign-off</h4>
+            ${w.bast.items.map(i=>`<div class="bast-deliverable">${i}</div>`).join('')}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // Prerequisites
+  html += `
+      <div class="mc-section">
+        <div class="mc-sec-title" style="color:#854F0B">
+          <div class="mc-sec-icon" style="background:#FAEEDA;color:#854F0B">⚡</div>
+          PREREQUISITES — Must exist before this week starts
+        </div>
+        <div class="prereq-list">
+          ${w.prereqs.map(p=>`<div class="prereq-item">${p}</div>`).join('')}
+        </div>
+      </div>`;
+
+  // Day-by-day activities
+  html += `
+      <div class="mc-section">
+        <div class="mc-sec-title" style="color:${col}">
+          <div class="mc-sec-icon" style="background:${col}20;color:${col}">📅</div>
+          KEY ACTIVITIES BY DAY
+        </div>
+        <div class="activities-grid">`;
+  w.dayFocus.forEach((d, di) => {
+    const dayColors = ['#0D2137','#0F6E56','#533AB7','#854F0B','#A32D2D'];
+    html += `
+          <div class="day-card">
+            <div class="day-card-hdr" style="background:${dayColors[di]}">${d.day}</div>
+            <div class="day-card-body">
+              ${d.act.map(a=>`<div class="day-activity">${a}</div>`).join('')}
+            </div>
+          </div>`;
+  });
+  html += `</div></div>`;
+
+  // Objectives
+  html += `
+      <div class="mc-section">
+        <div class="mc-sec-title" style="color:${col}">
+          <div class="mc-sec-icon" style="background:${col}20;color:${col}">🎯</div>
+          WEEK OBJECTIVES
+        </div>
+        <div class="obj-list">
+          ${w.objectives.map((o,i)=>`
+          <div class="obj-item">
+            <div class="obj-num" style="background:${col}">${i+1}</div>
+            <div class="obj-text">${o}</div>
+          </div>`).join('')}
+        </div>
+      </div>`;
+
+  // Success criteria
+  html += `
+      <div class="mc-section">
+        <div class="mc-sec-title" style="color:#0F6E56">
+          <div class="mc-sec-icon" style="background:#E1F5EE;color:#0F6E56">✓</div>
+          SUCCESS CRITERIA — How we know this week succeeded
+        </div>
+        <div class="sc-grid">`;
+  w.success.forEach(s => {
+    html += `
+          <div class="sc-item" style="background:#F0FBF7;border-color:#5DCAA5">
+            <div class="sc-check-icon">✅</div>
+            <div class="sc-main">
+              <div class="sc-text">${s.text}</div>
+              <div class="sc-metric" style="background:#E1F5EE;color:#0F6E56">${s.metric}</div>
+            </div>
+          </div>`;
+  });
+  html += `</div></div>`;
+
+  // Navigation arrows
+  html += `
+      <div class="mc-section" style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          ${wn > 1 ? `<button onclick="setCurrentWeek(${wn-1})" style="font-size:12px;font-weight:600;padding:7px 16px;border-radius:6px;border:1.5px solid #D3D1C7;cursor:pointer;background:#fff;color:#0D2137">← Week ${wn-1}</button>` : '<span></span>'}
+        </div>
+        <div style="font-size:11px;color:#B4B2A9">Week ${wn} of 12 · ${phaseLabel(w.phase)}</div>
+        <div>
+          ${wn < 12 ? `<button onclick="setCurrentWeek(${wn+1})" style="font-size:12px;font-weight:600;padding:7px 16px;border-radius:6px;border:1.5px solid #0D2137;cursor:pointer;background:#0D2137;color:#fff">Week ${wn+1} →</button>` : '<span></span>'}
+        </div>
+      </div>`;
+
+  html += `</div></div>`;
+  container.innerHTML = html;
+}
+
+// ── All weeks timeline render ──────────────────────────────────────────
+function renderAll() {
+  const container = document.getElementById('view-all');
+  let html = '';
+  const phases = ['m1','m2','m3'];
+  const phaseWeeks = { m1:[1,2,3,4], m2:[5,6,7,8], m3:[9,10,11,12] };
+
+  phases.forEach(ph => {
+    const col = phaseColor(ph);
+    html += `
+    <div class="tl-group">
+      <div class="tl-phase-hdr" style="background:${col}">${phaseLabel(ph)}</div>
+      <div class="tl-hdr-row">
+        <div class="tl-hdr-cell">Week</div>
+        <div class="tl-hdr-cell">Title</div>
+        <div class="tl-hdr-cell">Day-by-day focus</div>
+        <div class="tl-hdr-cell">Key Outputs</div>
+      </div>`;
+
+    phaseWeeks[ph].forEach(wn => {
+      const w = WEEKS[wn - 1];
+      const isSel = wn === selectedWeek;
+      html += `
+      <div class="tl-row ${isSel ? 'tl-current' : ''} ${w.bast ? 'tl-bast' : ''}" onclick="setCurrentWeek(${wn}); setView('single')">
+        <div class="tl-cell">
+          <div class="tl-week">
+            <span style="width:28px;height:28px;border-radius:50%;background:${col};color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${wn}</span>
+          </div>
+          ${w.bast ? `<div class="tl-bast-badge" style="background:${col};margin-top:5px">${w.bast.label}</div>` : ''}
+          ${isSel ? `<div style="font-size:10px;color:#3B6D11;font-weight:700;margin-top:4px">● Selected</div>` : ''}
+        </div>
+        <div class="tl-cell">
+          <div class="tl-focus">Week ${wn} — ${w.title.replace(/Week \d+ — /, '')}</div>
+          <div class="tl-sub" style="margin-top:4px;font-size:10px;color:#888780">${w.effort}</div>
+        </div>
+        <div class="tl-cell">
+          ${w.dayFocus.map(d=>`<div style="font-size:11px;color:#444;margin-bottom:2px"><span style="font-weight:700;color:${col};min-width:28px;display:inline-block">${d.day}</span> ${d.act[0]}</div>`).join('')}
+        </div>
+        <div class="tl-cell">
+          ${w.success.map(s=>`<div style="display:flex;gap:6px;align-items:flex-start;margin-bottom:5px;font-size:11px"><span style="color:#3DB56C;flex-shrink:0">✓</span><span>${s.text} <span style="font-weight:700;color:${col}">(${s.metric})</span></span></div>`).join('')}
+        </div>
+      </div>`;
+    });
+
+    html += `</div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+// ── View toggle ────────────────────────────────────────────────────────
+function setView(v) {
+  currentView = v;
+  document.getElementById('view-single').style.display = v === 'single' ? 'block' : 'none';
+  document.getElementById('view-all').style.display    = v === 'all'    ? 'block' : 'none';
+  document.getElementById('vbtn-single').className = 'vbtn' + (v==='single' ? ' active' : '');
+  document.getElementById('vbtn-all').className    = 'vbtn' + (v==='all'    ? ' active' : '');
+  if (v === 'all') renderAll();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────
+renderWeekBtns();
+renderSingle(selectedWeek);
+document.getElementById('current-week-indicator').textContent = `Week ${selectedWeek} of 12 selected`;
+</script>
+</body>
+</html>
