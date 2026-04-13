@@ -22,10 +22,10 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:#EEF2F7;co
 .c-purple{background:#533AB7;color:#fff}
 
 /* ── Layout ── */
-.layout{display:grid;grid-template-columns:220px 1fr;gap:0;min-height:calc(100vh - 46px)}
+.layout{display:grid;grid-template-columns:220px 1fr;gap:0;min-height:calc(100vh - 82px)}
 
 /* ── Sidebar ── */
-.sidebar{background:#fff;border-right:0.5px solid #D3D1C7;padding:14px 0;position:sticky;top:46px;height:calc(100vh - 46px);overflow-y:auto}
+.sidebar{background:#fff;border-right:0.5px solid #D3D1C7;padding:14px 0;position:sticky;top:82px;height:calc(100vh - 82px);overflow-y:auto}
 .sb-section{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#B4B2A9;padding:10px 16px 4px}
 .sb-week{display:flex;align-items:center;gap:8px;padding:7px 16px;cursor:pointer;transition:background .12s;border-left:3px solid transparent}
 .sb-week:hover{background:#F4F7F4}
@@ -138,6 +138,32 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:#EEF2F7;co
 .ef-lbl{color:#64748B}
 .ef-val{font-weight:700;color:#0D2137}
 
+
+/* ── Sync bar ── */
+.syncbar{background:#fff;border-bottom:0.5px solid #D3D1C7;padding:0 20px;display:flex;align-items:center;gap:10px;position:sticky;top:46px;z-index:59;height:36px;font-size:11px}
+.sync-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;transition:background .3s}
+.sync-dot.ok{background:#3DB56C}
+.sync-dot.syncing{background:#F59E0B;animation:pulse-dot .8s ease-in-out infinite}
+.sync-dot.error{background:#EF4444}
+.sync-dot.local{background:#B4B2A9}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.3}}
+.sync-status{color:#64748B;font-size:11px}
+.sync-code-wrap{display:flex;align-items:center;gap:6px;margin-left:auto}
+.sync-label{font-size:11px;color:#64748B;white-space:nowrap}
+.sync-code{font-family:monospace;font-size:12px;font-weight:700;color:#0D2137;letter-spacing:.12em;padding:2px 8px;background:#EEF2F7;border-radius:4px;border:0.5px solid #D3D1C7;cursor:pointer;white-space:nowrap}
+.sync-code:hover{background:#E6F1FB;border-color:#85B7EB}
+.sync-divider{width:1px;height:20px;background:#E8EDF2;margin:0 4px}
+.sync-join-input{font-size:11px;padding:3px 8px;border-radius:4px;border:0.5px solid #D3D1C7;width:100px;font-family:monospace;letter-spacing:.1em;text-transform:uppercase;outline:none}
+.sync-join-input:focus{border-color:#3DB56C;box-shadow:0 0 0 2px rgba(61,181,108,.15)}
+.sync-btn{font-size:11px;font-weight:600;padding:3px 10px;border-radius:4px;border:0.5px solid #D3D1C7;cursor:pointer;background:#fff;color:#0D2137;transition:all .12s}
+.sync-btn:hover{background:#0D2137;color:#fff;border-color:#0D2137}
+.sync-btn.primary{background:#3DB56C;color:#fff;border-color:#3DB56C}
+.sync-btn.primary:hover{background:#2A8A52}
+.sync-toast{position:fixed;bottom:20px;right:20px;background:#0D2137;color:#fff;font-size:12px;padding:10px 16px;border-radius:8px;z-index:9999;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;max-width:300px;line-height:1.5}
+.sync-toast.show{opacity:1;transform:translateY(0)}
+.sync-toast.success{background:#0F6E56}
+.sync-toast.error{background:#A32D2D}
+
 /* ── Tooltip ── */
 .tt{position:fixed;pointer-events:none;background:#0D2137;color:#fff;border-radius:7px;padding:8px 12px;font-size:11px;max-width:220px;z-index:99;opacity:0;transition:opacity .1s;line-height:1.6}
 </style>
@@ -158,6 +184,22 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:#EEF2F7;co
     <span id="global-progress" class="chip" style="background:#F4F7F4;color:#64748B">0 / 0 tasks done</span>
   </div>
 </div>
+
+<!-- Sync Bar -->
+<div class="syncbar" id="syncbar">
+  <div class="sync-dot local" id="sync-dot"></div>
+  <span class="sync-status" id="sync-status">Initialising…</span>
+  <div class="sync-divider"></div>
+  <span class="sync-label">Session code:</span>
+  <span class="sync-code" id="sync-code-display" title="Click to copy" onclick="copyCode()">—</span>
+  <div class="sync-divider"></div>
+  <span class="sync-label">Join:</span>
+  <input class="sync-join-input" id="sync-join-input" placeholder="ENTER CODE" maxlength="8" oninput="this.value=this.value.toUpperCase()">
+  <button class="sync-btn primary" onclick="joinSession()">Join</button>
+  <div class="sync-divider"></div>
+  <button class="sync-btn" onclick="forcePull()" title="Pull latest from cloud now">↻ Refresh</button>
+</div>
+<div class="sync-toast" id="sync-toast"></div>
 
 <div class="layout">
   <!-- Sidebar -->
@@ -182,7 +224,7 @@ const PHASES = {
 const WEEKS = {
   1: {
     title: 'Week 1 — Environment Discovery & Audit',
-    focus: 'No changes made to production. Assess, document, and understand every existing AWS resource, application dependency, and network configuration.',
+    focus: 'No changes made to production. Assess, document, and understand every existing AWS resource, application dependency, and network configuration. In parallel, provision and harden all 6 RHEL target environments by Friday so OS migration execution can begin in Week 2.',
     phase: 'm1', color: '#0D2137',
     prereqs: [
       'PO issued and received by Xtremax — engagement clock starts Day 1',
@@ -195,6 +237,7 @@ const WEEKS = {
       'Complete AWS environment audit across all 5 accounts',
       'Document all existing SCPs, guardrails, IAM configuration',
       'Inventory all 6 app server environments and dependencies',
+      'Provision, harden, and runtime-ready all 6 RHEL instances — ready for migration in W2',
       'Produce W1 Discovery Report shared with Customer IT lead by Friday',
     ],
     days: [
@@ -232,11 +275,15 @@ const WEEKS = {
           { title:'Interview app owner for Apps 5 & 6 (30 min each): same as above', owner:'b', priority:'high', hrs:'1.5h', dep:'App owners available' },
           { title:'Run PowerShell inventory script on all 6 Windows Server environments — capture OS version, installed packages, IIS config, .NET versions', owner:'x', priority:'high', hrs:'2h', dep:'EC2 access to existing Windows servers' },
           { title:'Document Windows-specific dependencies per app (IIS, COM objects, .NET Framework, Windows-only libs) — flag risk level', owner:'x', priority:'high', hrs:'1h', dep:null },
+          { title:'Provision RHEL 8.x EC2 instances in Dev/UAT for all 6 apps in parallel with interviews — size per W1 load assessment findings', owner:'x', priority:'high', hrs:'2h', dep:'Dev/UAT account network ready, EC2 quotas confirmed' },
+          { title:'Apply OS hardening baseline on all 6 RHEL instances: disable root SSH, configure firewalld, apply CIS RHEL Level 1 benchmark', owner:'x', priority:'high', hrs:'1.5h', dep:'RHEL instances running' },
         ]
       },
       { name: 'Friday', focus: 'Report compilation & Week 2 planning', color:'#0D2137', hours: 8,
         tasks: [
           { title:'Compile W1 Discovery Report: network diagram, SCP inventory, IAM audit summary, security gaps, app dependency matrix', owner:'x', priority:'high', hrs:'3h', dep:'All W1 findings complete' },
+          { title:'Install runtime dependencies on all RHEL instances: Node.js LTS, npm, required build tools — match versions from W1 Windows inventory', owner:'x', priority:'high', hrs:'1.5h', dep:'OS hardening complete' },
+          { title:'Verify SSM Agent installed and reachable on all 6 RHEL instances — confirm Systems Manager connectivity', owner:'x', priority:'norm', hrs:'0.5h', dep:'Runtime install complete' },
           { title:'Present W1 Discovery Report to Customer IT lead — review findings, prioritise remediation list together', owner:'b', priority:'high', hrs:'1.5h', dep:'W1 report complete' },
           { title:'SA review call: share audit findings with Solution Architect — discuss Landing Zone enforcement plan for W2', owner:'sa', priority:'review', hrs:'1h', dep:null },
           { title:'Plan Week 2 task breakdown — confirm which SCPs to add first, agree network changes window', owner:'b', priority:'norm', hrs:'1h', dep:null },
@@ -249,17 +296,20 @@ const WEEKS = {
       { text: 'All 5 AWS accounts fully accessible by Xtremax engineer', metric: 'Day 1 — BLOCKER' },
       { text: 'All 6 app dependency matrices completed', metric: '6 / 6 apps' },
       { text: 'Network diagram exported and reviewed with Customer', metric: 'Validated diagram' },
+      { text: 'All 6 RHEL instances provisioned, hardened, and runtime-ready', metric: 'SSM reachable — Friday EOD' },
     ]
   },
 
   2: {
     title: 'Week 2 — Landing Zone Enforcement & Network Build',
-    focus: 'Apply all security guardrails, fix compliance gaps found in W1, and build production network components. First changes to production — all changes go through Customer IT approval.',
+    focus: 'Apply all security guardrails, fix compliance gaps found in W1, and build production network components. Begin OS migration execution — Apps 1 & 2 migrate to RHEL by end of week. All network and security changes go through Customer IT approval.',
     phase: 'm1', color: '#0D2137',
     prereqs: [
       'W1 Discovery Report reviewed and approved by Customer IT lead',
+      'All 6 RHEL instances provisioned, hardened, and runtime-ready from W1',
       'Remediation priorities agreed — Customer IT lead sign-off on planned SCP additions',
       'Change window agreed for network modifications (off-peak hours)',
+      'App owners for Apps 1 & 2 available Friday for smoke-test sign-off sessions',
       'Shadow engineers assigned as watchers on all changes this week',
     ],
     objectives: [
@@ -307,14 +357,15 @@ const WEEKS = {
           { title:'Tag all resources with mandatory tags: Environment, Project, Owner, CostCentre — establish tagging policy', owner:'x', priority:'norm', hrs:'1h', dep:null },
         ]
       },
-      { name: 'Friday', focus: 'RHEL instance provisioning & OS prep', color:'#0D2137', hours: 8,
+      { name: 'Friday', focus: 'Begin OS migration — Apps 1 & 2 deploy to RHEL + W2 review', color:'#0D2137', hours: 8,
         tasks: [
-          { title:'Launch RHEL 8.x EC2 instances in Dev/UAT for each of the 6 apps — size based on W1 load assessment', owner:'x', priority:'high', hrs:'2h', dep:'Dev/UAT account network ready' },
-          { title:'Apply OS hardening baseline: disable root SSH login, configure firewalld, apply CIS RHEL Level 1 benchmark', owner:'x', priority:'high', hrs:'2h', dep:'RHEL instances running' },
-          { title:'Install runtime dependencies: Node.js LTS, npm, required build tools — match versions from W1 inventory', owner:'x', priority:'high', hrs:'1.5h', dep:'RHEL instances hardened' },
-          { title:'Verify SSM Agent installed on all instances — confirm Systems Manager can reach all 6 RHEL hosts', owner:'x', priority:'norm', hrs:'0.5h', dep:null },
-          { title:'Week 2 review: present network topology to Customer IT lead — confirm VPC design is approved before W3 migration', owner:'b', priority:'review', hrs:'1h', dep:'Network build complete' },
-          { title:'Shadow: independently review Security Hub compliance score — can they explain what changed vs Day 1?', owner:'c', priority:'norm', hrs:'1h', dep:null },
+          { title:'Deploy App 1 to RHEL: copy application code, configure environment variables, start Node.js process — RHEL instances already hardened and runtime-ready from W1', owner:'b', priority:'high', hrs:'2.5h', dep:'RHEL instances provisioned in W1' },
+          { title:'Run App 1 functional smoke test with app owner: login, core user flows, database queries — sign off if passed', owner:'b', priority:'blocker', hrs:'1h', dep:'App 1 deployed to RHEL' },
+          { title:'Deploy App 2 to RHEL: same process — env vars, startup, config', owner:'b', priority:'high', hrs:'2h', dep:null },
+          { title:'Run App 2 functional smoke test with app owner', owner:'b', priority:'blocker', hrs:'1h', dep:'App 2 deployed' },
+          { title:'Fix any deployment issues (path separators, env var format, missing system libs) found in Apps 1 & 2', owner:'x', priority:'high', hrs:'0.5h', dep:null },
+          { title:'Week 2 review: present network topology and App 1 & 2 migration status to Customer IT lead', owner:'b', priority:'review', hrs:'1h', dep:'Network build and migrations complete' },
+          { title:'Shadow: independently review Security Hub compliance score — explain what changed vs Day 1', owner:'c', priority:'norm', hrs:'1h', dep:null },
         ]
       },
     ],
@@ -323,37 +374,31 @@ const WEEKS = {
       { text: 'GuardDuty active in all 5 accounts', metric: '5 / 5 accounts' },
       { text: 'CloudTrail events flowing to Log Archive S3', metric: 'Athena query validated' },
       { text: 'Production VPC with all subnet types + NAT GWs created', metric: 'Network diagram updated' },
+      { text: 'Apps 1 & 2 deployed to RHEL and signed off by app owners', metric: 'Friday EOD' },
     ]
   },
 
   3: {
-    title: 'Week 3 — OS Migration Execution & Application Validation',
-    focus: 'Migrate all 6 applications from Windows Server/IIS to Red Hat Enterprise Linux. Validate each app with its owner before marking complete. Write migration runbook per app.',
+    title: 'Week 3 — OS Migration Completion & EKS Prerequisites',
+    focus: 'Complete OS migration for Apps 3–6. Run load tests and write runbooks for all 6 apps. Begin EKS and IaC pre-requisite setup (IAM roles, ECR repos, GitHub structure, Terraform remote state) to align with Month 2 cluster deployment.',
     phase: 'm1', color: '#0D2137',
     prereqs: [
-      'RHEL instances provisioned, hardened, and Node.js runtime installed',
-      'App owners for all 6 apps available for validation sessions (30 min per app)',
+      'Apps 1 & 2 migrated to RHEL and signed off by app owners in W2',
+      'RHEL instances for Apps 3–6 provisioned, hardened, and runtime-ready from W1',
+      'App owners for Apps 3–6 available for validation sessions (30 min per app)',
       'App smoke test checklist agreed per app (from W1 discovery)',
       'Dev/UAT network confirmed — RHEL instances accessible',
       'Change management notification sent to relevant teams',
     ],
     objectives: [
-      'All 6 apps deployed and functional on RHEL in Dev/UAT',
-      'Load test results ≥ Windows baseline for all apps',
+      'All 6 apps deployed and functional on RHEL in Dev/UAT (Apps 3–6 this week)',
+      'Load test results ≥ Windows baseline for all 6 apps',
       'Migration runbook written per app (deploy + rollback)',
-      'App owners sign off on each migrated app',
+      'App owners for Apps 3–6 sign off on each migrated app',
+      'EKS IAM roles, ECR repos, GitHub repos, and Terraform remote state ready for W4 cluster deployment',
     ],
     days: [
-      { name: 'Monday', focus: 'Migrate Apps 1 & 2 to RHEL', color:'#0D2137', hours: 8,
-        tasks: [
-          { title:'Deploy App 1 to RHEL: copy application code, configure environment variables, start Node.js process', owner:'b', priority:'high', hrs:'2.5h', dep:'RHEL instance ready, app code accessible' },
-          { title:'Run App 1 functional smoke test with app owner: login, core user flows, database queries — sign off if passed', owner:'b', priority:'blocker', hrs:'1h', dep:'App 1 deployed' },
-          { title:'Deploy App 2 to RHEL: same process — env vars, startup, config', owner:'b', priority:'high', hrs:'2h', dep:null },
-          { title:'Run App 2 functional smoke test with app owner', owner:'b', priority:'blocker', hrs:'1h', dep:'App 2 deployed' },
-          { title:'Fix any deployment issues (path separators, env var format, missing system libs) for Apps 1 & 2', owner:'x', priority:'high', hrs:'1.5h', dep:null },
-        ]
-      },
-      { name: 'Tuesday', focus: 'Migrate Apps 3 & 4 to RHEL', color:'#0D2137', hours: 8,
+      { name: 'Monday', focus: 'Migrate Apps 3 & 4 to RHEL', color:'#0D2137', hours: 8,
         tasks: [
           { title:'Deploy App 3 to RHEL — note: PHP stack, may require php-fpm + nginx instead of IIS', owner:'b', priority:'high', hrs:'2.5h', dep:'App 3 dependency list from W1' },
           { title:'Run App 3 smoke test with app owner — validate core features, DB connection, file upload/download', owner:'b', priority:'blocker', hrs:'1h', dep:'App 3 deployed' },
@@ -362,16 +407,16 @@ const WEEKS = {
           { title:'Document RHEL-specific fixes applied to Apps 3 & 4 — add to migration runbook template', owner:'x', priority:'norm', hrs:'1h', dep:null },
         ]
       },
-      { name: 'Wednesday', focus: 'Migrate Apps 5 & 6 + load testing', color:'#0D2137', hours: 8,
+      { name: 'Tuesday', focus: 'Migrate Apps 5 & 6 to RHEL + load testing begins', color:'#0D2137', hours: 8,
         tasks: [
           { title:'Deploy App 5 to RHEL (utility service)', owner:'b', priority:'high', hrs:'1.5h', dep:null },
           { title:'Deploy App 6 to RHEL', owner:'b', priority:'high', hrs:'1.5h', dep:null },
           { title:'Run smoke tests for Apps 5 & 6 with app owners', owner:'b', priority:'blocker', hrs:'1h', dep:'Apps 5 & 6 deployed' },
-          { title:'Run load test (k6) on Apps 1 & 2 on RHEL — compare response time p50/p95/p99 vs Windows baseline', owner:'x', priority:'high', hrs:'2h', dep:'Apps 1 & 2 validated' },
-          { title:'Run load test on Apps 3 & 4 on RHEL — confirm throughput ≥ Windows baseline', owner:'x', priority:'high', hrs:'2h', dep:'Apps 3 & 4 validated' },
+          { title:'Run load test (k6) on Apps 1 & 2 on RHEL — compare response time p50/p95/p99 vs Windows baseline (Apps 1 & 2 migrated in W2)', owner:'x', priority:'high', hrs:'2h', dep:'Apps 1 & 2 validated in W2' },
+          { title:'Run load test on Apps 3 & 4 on RHEL — confirm throughput ≥ Windows baseline', owner:'x', priority:'high', hrs:'2h', dep:'Apps 3 & 4 validated Monday' },
         ]
       },
-      { name: 'Thursday', focus: 'Runbook writing & remaining load tests', color:'#0D2137', hours: 8,
+      { name: 'Wednesday', focus: 'Load testing completion & migration runbook writing', color:'#0D2137', hours: 8,
         tasks: [
           { title:'Run load test on Apps 5 & 6 on RHEL', owner:'x', priority:'high', hrs:'1.5h', dep:'Apps 5 & 6 validated' },
           { title:'Write migration runbook for Apps 1 & 2: exact deploy steps, env var list, rollback procedure, validation checklist', owner:'x', priority:'high', hrs:'2h', dep:'Apps 1 & 2 load tested' },
@@ -380,14 +425,24 @@ const WEEKS = {
           { title:'Shadow: write the App 5 or 6 runbook themselves — Xtremax reviews and corrects', owner:'c', priority:'norm', hrs:'1.5h', dep:null },
         ]
       },
-      { name: 'Friday', focus: 'Final validation & W4 preparation', color:'#0D2137', hours: 8,
+      { name: 'Thursday', focus: 'Security Hub validation & EKS prerequisites setup', color:'#0D2137', hours: 8,
         tasks: [
           { title:'Run Security Hub FSBP compliance report — target ≥80% pass rate (compare vs W2 baseline)', owner:'x', priority:'review', hrs:'1h', dep:null },
-          { title:'Compile OS migration test results summary: pass/fail per app, load test comparison table, issues found and resolved', owner:'x', priority:'high', hrs:'2h', dep:'All 6 apps tested' },
+          { title:'Compile OS migration test results summary: pass/fail per app, load test comparison table, issues found and resolved', owner:'x', priority:'high', hrs:'1.5h', dep:'All 6 apps tested' },
+          { title:'Create EKS IAM service role and node instance profile in Production account — required before EKS cluster creation in W4', owner:'x', priority:'high', hrs:'1.5h', dep:'Production account access' },
+          { title:'Create ECR repositories for all 6 apps with lifecycle policies: ptcustomer/{app-name}:{env}-{git-sha}, keep last 10 images, expire untagged after 1 day', owner:'x', priority:'high', hrs:'1h', dep:null },
+          { title:'Create GitHub organisation + repositories: terraform-modules, app-01 through app-06, cicd-templates — set branch protection rules', owner:'x', priority:'high', hrs:'1.5h', dep:'GitHub access provided by Customer' },
+          { title:'Shadow: independently run Security Hub and explain the FSBP score to Xtremax', owner:'c', priority:'norm', hrs:'0.5h', dep:null },
+        ]
+      },
+      { name: 'Friday', focus: 'Final validation, Terraform IaC prep & W4 planning', color:'#0D2137', hours: 8,
+        tasks: [
           { title:'SA architecture review: validate network topology and security posture with Solution Architect', owner:'sa', priority:'review', hrs:'1.5h', dep:null },
           { title:'Present migration results to Customer IT lead — app owner sign-offs collected, any outstanding items flagged', owner:'b', priority:'high', hrs:'1h', dep:'Test results compiled' },
+          { title:'Set up Terraform remote state: S3 bucket + DynamoDB lock table in Management account — required for W4 EKS deployment', owner:'x', priority:'high', hrs:'1h', dep:'GitHub repos created Thursday' },
+          { title:'Define Terraform module structure: /modules/vpc, /modules/eks, /modules/rds, /modules/app — create folders and README stubs', owner:'x', priority:'high', hrs:'1.5h', dep:'GitHub repos created' },
           { title:'Prepare BAST 1 documentation outline — confirm all required evidence exists (screenshots, reports, sign-offs)', owner:'x', priority:'high', hrs:'1.5h', dep:null },
-          { title:'Shadow: independently run Security Hub and explain the FSBP score to Xtremax', owner:'c', priority:'norm', hrs:'0.5h', dep:null },
+          { title:'Shadow: independently review Security Hub and explain FSBP score to Xtremax', owner:'c', priority:'norm', hrs:'0.5h', dep:null },
         ]
       },
     ],
@@ -396,6 +451,7 @@ const WEEKS = {
       { text: 'Load test p99 ≥ Windows baseline for all apps', metric: 'Load test report' },
       { text: 'Migration runbook written for all 6 apps', metric: '6 runbooks' },
       { text: 'Security Hub score ≥ 80% FSBP', metric: 'Score ≥ 80%' },
+      { text: 'EKS IAM roles, ECR repos, GitHub repos, Terraform state ready', metric: 'Ready for W4 EKS deploy' },
     ]
   },
 
@@ -408,12 +464,13 @@ const WEEKS = {
       'Security Hub FSBP score ≥ 80% confirmed',
       'CloudTrail validated in Log Archive (Athena query confirms data)',
       'W3 migration runbooks reviewed by SA',
+      'EKS IAM service role, ECR repos, GitHub repos, Terraform remote state all created in W3',
     ],
     objectives: [
       'BAST 1 documentation package compiled and presented',
       'BAST 1 formally signed — 30% invoice submitted',
-      'EKS node sizing and ECR naming convention agreed for Month 2',
-      'GitHub repository structure created for IaC and CI/CD',
+      'EKS cluster deployed in Production — control plane, node groups, and add-ons running',
+      'Terraform vpc + eks-cluster modules written and applied',
     ],
     bastMilestone: { label: 'BAST 1', pct: '30%', items: ['Landing Zone Governance Report', 'OS Migration Documentation (6 apps)', 'App owner sign-off evidence', 'Security Hub FSBP compliance report'] },
     days: [
@@ -442,68 +499,68 @@ const WEEKS = {
           { title:'Update project tracker: BAST 1 milestone marked complete, all W1–W4 tasks closed', owner:'x', priority:'norm', hrs:'0.5h', dep:null },
         ]
       },
-      { name: 'Thursday', focus: 'Month 2 technical preparation', color:'#E74C3C', hours: 8,
+      { name: 'Thursday', focus: 'EKS cluster deployment — control plane, node groups & add-ons', color:'#E74C3C', hours: 8,
         tasks: [
-          { title:'Agree EKS cluster configuration: version (1.30), node group sizes, instance types per tier (m5.xl, m5.2xl, m5.4xl)', owner:'b', priority:'high', hrs:'1.5h', dep:'BAST 1 signed' },
-          { title:'Define ECR repository naming convention: ptcustomer/{app-name}:{env}-{git-sha} — agree image lifecycle policy', owner:'b', priority:'high', hrs:'1h', dep:null },
-          { title:'Create GitHub organisation + repositories: terraform-modules, app-01 through app-06, cicd-templates', owner:'x', priority:'high', hrs:'2h', dep:'GitHub access provided by Customer' },
-          { title:'Define Terraform module structure: /modules/vpc, /modules/eks, /modules/rds, /modules/app — create folders and README stubs', owner:'x', priority:'high', hrs:'2h', dep:'GitHub repos created' },
-          { title:'Set up Terraform remote state: S3 bucket + DynamoDB lock table in Management account', owner:'x', priority:'high', hrs:'1h', dep:null },
+          { title:'Agree final EKS cluster configuration with Customer IT: version (1.30), node group sizes, instance types per tier (m5.xl, m5.2xl, m5.4xl)', owner:'b', priority:'high', hrs:'0.5h', dep:'BAST 1 signed' },
+          { title:'Write and apply Terraform eks-cluster module: EKS control plane (K8s 1.30), OIDC provider, 3 managed node groups across 2 AZs', owner:'x', priority:'high', hrs:'3h', dep:'IAM roles and Terraform remote state from W3' },
+          { title:'Install EKS add-ons via Helm: CoreDNS, kube-proxy, VPC CNI, EBS CSI Driver, AWS Load Balancer Controller', owner:'x', priority:'high', hrs:'2h', dep:'EKS control plane active' },
+          { title:'Verify worker nodes in Ready state: IMDSv2 enforced, no public IP, SSM Agent installed on all nodes', owner:'x', priority:'high', hrs:'0.5h', dep:'Node groups deployed' },
+          { title:'Write Terraform vpc module: encapsulate existing VPC, subnets, NAT GW, route tables, VPC endpoints — apply over existing manual resources', owner:'x', priority:'high', hrs:'2h', dep:'EKS cluster healthy' },
         ]
       },
-      { name: 'Friday', focus: 'Month 1 retrospective & Month 2 kickoff', color:'#E74C3C', hours: 6,
+      { name: 'Friday', focus: 'Month 1 retrospective & Month 2 kickoff preparation', color:'#E74C3C', hours: 6,
         tasks: [
           { title:'Month 1 retrospective with Customer IT team: what went well, what was harder than expected, lessons for Month 2', owner:'b', priority:'review', hrs:'1h', dep:null },
           { title:'Share Month 2 week-by-week plan with Customer IT lead — confirm app owner availability for W5–W8', owner:'b', priority:'high', hrs:'1h', dep:null },
-          { title:'Shadow engineer Month 1 knowledge assessment: can they explain Landing Zone, SCP purpose, CloudTrail flow?', owner:'x', priority:'norm', hrs:'0.5h', dep:null },
           { title:'Confirm Dockerfile base images with dev team: node:20-alpine for Node.js apps, php:8-fpm-alpine for PHP', owner:'b', priority:'high', hrs:'1h', dep:'Dev team available' },
-          { title:'Week 4 wrap-up email to all stakeholders: BAST 1 complete, Month 2 starting Monday', owner:'x', priority:'norm', hrs:'0.5h', dep:null },
+          { title:'Shadow engineer Month 1 knowledge assessment: can they explain Landing Zone, SCP purpose, CloudTrail flow, and EKS node group structure?', owner:'x', priority:'norm', hrs:'0.5h', dep:null },
+          { title:'Week 4 wrap-up email to all stakeholders: BAST 1 complete, EKS cluster deployed, Month 2 containerisation starting Monday', owner:'x', priority:'norm', hrs:'0.5h', dep:null },
         ]
       },
     ],
     success: [
       { text: 'BAST 1 signed by Customer — 30% invoice submitted', metric: 'Day 3 (Wednesday)' },
-      { text: 'GitHub repos and Terraform remote state created', metric: 'Ready for W5' },
-      { text: 'EKS config and ECR naming agreed', metric: 'Confirmed in writing' },
+      { text: 'EKS cluster deployed with all add-ons in Ready state', metric: 'Thursday EOD' },
+      { text: 'Terraform vpc + eks-cluster modules applied — state clean', metric: 'terraform plan = 0 changes' },
       { text: 'Month 2 plan shared and confirmed', metric: 'Stakeholder email sent' },
     ]
   },
 
   5: {
-    title: 'Week 5 — EKS Cluster Deployment & First 2 Apps Containerised',
-    focus: 'Build the production EKS cluster. Containerise Apps 1 and 2 as the pilot — establish the Docker and Helm patterns that all remaining apps will follow.',
+    title: 'Week 5 — Containerise Apps 1 & 2 & Complete Network IaC',
+    focus: 'EKS cluster already deployed from W4. Containerise Apps 1 and 2 as the pilot — establish Docker and Helm patterns that all remaining apps will follow. Complete Terraform vpc module and IRSA configuration.',
     phase: 'm2', color: '#0F6E56',
     prereqs: [
       'BAST 1 signed and confirmed',
-      'EKS IAM service role and node instance profile created in Production account',
-      'ECR repositories created for all 6 apps with lifecycle policies applied',
-      'GitHub repositories set up with initial branch protection rules',
-      'Terraform remote state S3 bucket + DynamoDB lock confirmed',
+      'EKS cluster deployed and all add-ons in Ready state (from W4)',
+      'Terraform vpc + eks-cluster modules applied — state clean (from W4)',
+      'ECR repositories created for all 6 apps with lifecycle policies (from W3)',
+      'GitHub repositories set up with initial branch protection rules (from W3)',
+      'Terraform remote state S3 bucket + DynamoDB lock confirmed (from W3)',
       'Docker base images agreed (node:20-alpine, php:8-fpm-alpine)',
     ],
     objectives: [
-      'Production EKS cluster running in 2 AZs with 3 node groups',
       'Apps 1 & 2 containerised: Docker image built, pushed to ECR, deployed to EKS',
       'Apps 1 & 2 accessible via HTTPS through ALB + CloudFront',
-      'Terraform vpc and eks-cluster modules written and applied',
+      'HPA auto-scale confirmed for Apps 1 & 2 under load test',
+      'IRSA roles configured — all pods use least-privilege service accounts',
     ],
     days: [
-      { name: 'Monday', focus: 'EKS cluster creation & node groups', color:'#0F6E56', hours: 8,
+      { name: 'Monday', focus: 'IRSA configuration, kubectl access & App 1 Dockerfile', color:'#0F6E56', hours: 8,
         tasks: [
-          { title:'Write Terraform module eks-cluster: cluster resource, OIDC provider, node groups (3 tiers), add-ons, log group', owner:'x', priority:'blocker', hrs:'3h', dep:'Terraform remote state ready, VPC complete' },
-          { title:'Apply Terraform eks-cluster module to Production account — monitor cluster creation (takes ~15 min)', owner:'x', priority:'high', hrs:'1h', dep:'Module written' },
-          { title:'Install required EKS add-ons: CoreDNS, kube-proxy, VPC CNI, EBS CSI driver — verify all in Running state', owner:'x', priority:'high', hrs:'1.5h', dep:'EKS cluster active' },
-          { title:'Install AWS Load Balancer Controller via Helm — configure with IRSA role for ALB provisioning', owner:'x', priority:'high', hrs:'1.5h', dep:'EKS cluster active, OIDC provider configured' },
-          { title:'Verify worker nodes: confirm IMDSv2 enforced, no public IP, SSM agent running, correct security group attached', owner:'x', priority:'high', hrs:'1h', dep:'Node groups active' },
-        ]
-      },
-      { name: 'Tuesday', focus: 'App 1 containerisation: Dockerfile → ECR → EKS', color:'#0F6E56', hours: 8,
-        tasks: [
-          { title:'Write Dockerfile for App 1 (Node.js): multi-stage build — build stage (npm install + build) → runtime stage (node:20-alpine)', owner:'b', priority:'high', hrs:'2h', dep:'App code accessible in GitHub' },
+          { title:'Configure IRSA roles for all 6 apps: create IAM role per app linked to Kubernetes ServiceAccount via OIDC — least-privilege S3, Secrets Manager, DynamoDB policies', owner:'x', priority:'high', hrs:'2.5h', dep:'EKS cluster with OIDC provider deployed in W4' },
+          { title:'Validate kubectl access for all team members — configure kubeconfig, confirm cluster reachable, test pod deployment in non-prod namespace', owner:'x', priority:'high', hrs:'1h', dep:'EKS cluster running' },
+          { title:'Write Dockerfile for App 1 (Node.js multi-stage build): builder stage → production stage using node:20-alpine — minimise image size', owner:'b', priority:'high', hrs:'2h', dep:'App 1 code in GitHub' },
           { title:'Build App 1 Docker image locally — run Trivy scan on image, fix any HIGH/CRITICAL vulnerabilities', owner:'x', priority:'high', hrs:'1.5h', dep:'Dockerfile complete' },
           { title:'Push App 1 image to ECR — verify ECR scan on push shows no new critical vulnerabilities', owner:'x', priority:'high', hrs:'0.5h', dep:'Image built and scanned' },
-          { title:'Write Helm chart for App 1: Deployment, Service, Ingress, HPA, ConfigMap, ServiceAccount with IRSA', owner:'x', priority:'high', hrs:'2.5h', dep:'Image in ECR' },
+        ]
+      },
+      { name: 'Tuesday', focus: 'App 1 Helm chart → EKS deploy + App 2 Dockerfile', color:'#0F6E56', hours: 8,
+        tasks: [
+          { title:'Write Helm chart for App 1: Deployment, Service, Ingress, HPA, ConfigMap, ServiceAccount with IRSA annotation', owner:'x', priority:'high', hrs:'2.5h', dep:'App 1 image in ECR from Monday' },
           { title:'Deploy App 1 Helm chart to EKS — configure ALB ingress with HTTPS, validate pod reaches Running state', owner:'x', priority:'high', hrs:'1.5h', dep:'Helm chart written' },
+          { title:'Write Dockerfile for App 2 — build, run Trivy scan, fix vulnerabilities, push to ECR', owner:'b', priority:'high', hrs:'2h', dep:null },
+          { title:'Write Helm chart for App 2 — deploy to EKS, expose via ALB', owner:'x', priority:'high', hrs:'2h', dep:'App 2 image in ECR' },
         ]
       },
       { name: 'Wednesday', focus: 'App 2 containerisation + CloudFront + Secrets', color:'#0F6E56', hours: 8,
@@ -515,13 +572,13 @@ const WEEKS = {
           { title:'Validate Apps 1 & 2 end-to-end: CloudFront → ALB → EKS pod → Secrets Manager → works', owner:'b', priority:'review', hrs:'1h', dep:'All components deployed' },
         ]
       },
-      { name: 'Thursday', focus: 'HPA, app owner validation & Terraform vpc module', color:'#0F6E56', hours: 8,
+      { name: 'Thursday', focus: 'HPA validation, app owner sign-offs & Terraform rds module', color:'#0F6E56', hours: 8,
         tasks: [
           { title:'Configure HPA for Apps 1 & 2: scale up at CPU 70%, memory 80%, min 2 pods, max 10 pods', owner:'x', priority:'high', hrs:'1h', dep:'Apps 1 & 2 running on EKS' },
           { title:'Run load test on App 1 on EKS — confirm HPA triggers at configured threshold, pods scale up', owner:'x', priority:'high', hrs:'1.5h', dep:'HPA configured' },
           { title:'App 1 sign-off session with app owner: validate all core flows work on EKS, app owner signs acceptance', owner:'b', priority:'blocker', hrs:'1h', dep:'Load test passed' },
           { title:'App 2 sign-off session with app owner', owner:'b', priority:'blocker', hrs:'1h', dep:'App 2 deployed and HPA tested' },
-          { title:'Write Terraform module vpc: encapsulate VPC, subnets, NAT GW, route tables, VPC endpoints — apply over existing manual resources', owner:'x', priority:'high', hrs:'2.5h', dep:'Existing VPC resources match module design' },
+          { title:'Write Terraform module rds: Aurora PostgreSQL cluster (writer + reader), RDS instances, subnet groups, parameter groups, Secrets Manager integration', owner:'x', priority:'high', hrs:'2.5h', dep:'Terraform vpc module applied in W4' },
         ]
       },
       { name: 'Friday', focus: 'SA review + Week 5 consolidation', color:'#0F6E56', hours: 7,
@@ -535,10 +592,10 @@ const WEEKS = {
       },
     ],
     success: [
-      { text: 'EKS cluster running in 2 AZs with 3 node groups', metric: 'All nodes Ready' },
       { text: 'Apps 1 & 2 containerised and accessible via CloudFront/HTTPS', metric: 'App owner sign-off' },
-      { text: 'Terraform vpc + eks-cluster modules written and applied', metric: 'State file clean' },
-      { text: 'HPA confirmed scaling for Apps 1 & 2', metric: 'Load test evidence' },
+      { text: 'HPA confirmed scaling for Apps 1 & 2 under load test', metric: 'Load test evidence' },
+      { text: 'IRSA roles configured for all 6 app ServiceAccounts', metric: 'No node-level IAM' },
+      { text: 'Terraform rds module written and ready for W6', metric: 'Module in GitHub' },
     ]
   },
 
@@ -1326,14 +1383,285 @@ function showPhase(ph) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════
-// INIT
+// PERSISTENT STORAGE — jsonblob.com (cloud) + localStorage (local fallback)
 // ══════════════════════════════════════════════════════════════════════════
-showWeek(1);
-// Open first day by default
-setTimeout(() => {
-  const first = document.getElementById('day-1-0');
-  if (first) first.classList.add('day-open');
-}, 50);
+const BLOB_API   = 'https://jsonblob.com/api/jsonBlob';
+const LS_KEY_ID  = 'XTRM_BLOB_ID';
+const LS_KEY_STATE = 'XTRM_TASK_STATE';
+let blobId       = null;
+let isSyncing    = false;
+let lastSyncedAt = null;
+let pollTimer    = null;
+let saveTimer    = null;
+let bc           = null;  // BroadcastChannel for same-browser tab sync
+
+// ── UI helpers ─────────────────────────────────────────────────────────
+function setDot(state) {
+  const d = document.getElementById('sync-dot');
+  d.className = 'sync-dot ' + state;
+}
+function setStatus(msg) {
+  document.getElementById('sync-status').textContent = msg;
+}
+function showCode(id) {
+  const code = id.slice(-8).toUpperCase();
+  document.getElementById('sync-code-display').textContent = code;
+  document.getElementById('sync-code-display').title = 'Click to copy: ' + code;
+}
+function toast(msg, type='') {
+  const t = document.getElementById('sync-toast');
+  t.textContent = msg;
+  t.className = 'sync-toast show' + (type ? ' '+type : '');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=> t.className='sync-toast', 3000);
+}
+
+// ── Serialize / deserialize state ───────────────────────────────────────
+function serializeState() {
+  return { tasks: taskStates, ts: Date.now() };
+}
+function applyState(data) {
+  if (!data || !data.tasks) return;
+  taskStates = data.tasks;
+  lastSyncedAt = data.ts;
+}
+
+// ── Local save (always runs alongside cloud) ────────────────────────────
+function saveLocal() {
+  try { localStorage.setItem(LS_KEY_STATE, JSON.stringify(serializeState())); } catch(e){}
+  try { if(blobId) localStorage.setItem(LS_KEY_ID, blobId); } catch(e){}
+}
+function loadLocal() {
+  try {
+    const raw = localStorage.getItem(LS_KEY_STATE);
+    if (raw) applyState(JSON.parse(raw));
+  } catch(e){}
+}
+
+// ── BroadcastChannel — sync between tabs on the same browser ─────────────
+function setupBroadcast() {
+  try {
+    bc = new BroadcastChannel('xtrm_plan_sync');
+    bc.onmessage = (e) => {
+      if (e.data && e.data.type === 'state_update' && e.data.blobId === blobId) {
+        applyState(e.data.state);
+        saveLocal();
+        const wn = currentWeek;
+        renderSidebar();
+        renderWeek(wn);
+        updateGlobalProgress();
+        setStatus('Updated by another tab · ' + fmtTime(Date.now()));
+      }
+    };
+  } catch(e){ bc = null; }
+}
+function broadcastState() {
+  if (!bc) return;
+  try { bc.postMessage({ type:'state_update', blobId, state: serializeState() }); } catch(e){}
+}
+
+// ── Cloud: CREATE new blob ───────────────────────────────────────────────
+async function createBlob() {
+  setDot('syncing'); setStatus('Creating new session…');
+  try {
+    const res = await fetch(BLOB_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(serializeState())
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const loc = res.headers.get('Location') || '';
+    blobId = loc.split('/').pop();
+    if (!blobId) throw new Error('No blob ID in response');
+    localStorage.setItem(LS_KEY_ID, blobId);
+    showCode(blobId);
+    setDot('ok');
+    setStatus('Session created · Synced just now');
+    toast('New session created! Share the code with your team.', 'success');
+    return true;
+  } catch(e) {
+    setDot('local');
+    setStatus('Cloud unavailable — saved locally only');
+    toast('Cloud sync unavailable. Progress saved locally.', 'error');
+    return false;
+  }
+}
+
+// ── Cloud: PULL (GET) ───────────────────────────────────────────────────
+async function pullBlob(silent=false) {
+  if (!blobId || isSyncing) return;
+  isSyncing = true;
+  if (!silent) { setDot('syncing'); setStatus('Pulling updates…'); }
+  try {
+    const res = await fetch(BLOB_API + '/' + blobId, {
+      headers: { 'Accept': 'application/json' }
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    // Only apply if remote is newer
+    if (!lastSyncedAt || (data.ts && data.ts > lastSyncedAt)) {
+      applyState(data);
+      saveLocal();
+      const wn = currentWeek;
+      renderSidebar();
+      renderWeek(wn);
+      updateGlobalProgress();
+      if (!silent) toast('Pulled latest updates ✓', 'success');
+    }
+    setDot('ok');
+    setStatus('Synced · ' + fmtTime(data.ts || Date.now()));
+    lastSyncedAt = data.ts || Date.now();
+  } catch(e) {
+    setDot('error');
+    setStatus('Sync error — using local data');
+    if (!silent) toast('Could not pull from cloud: ' + e.message, 'error');
+  }
+  isSyncing = false;
+}
+
+// ── Cloud: PUSH (PUT) ───────────────────────────────────────────────────
+async function pushBlob() {
+  if (!blobId) { saveLocal(); return; }
+  setDot('syncing');
+  const payload = serializeState();
+  saveLocal();
+  try {
+    const res = await fetch(BLOB_API + '/' + blobId, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    setDot('ok');
+    lastSyncedAt = payload.ts;
+    setStatus('Synced · ' + fmtTime(payload.ts));
+    broadcastState();
+  } catch(e) {
+    setDot('error');
+    setStatus('Failed to sync — saved locally');
+  }
+}
+
+// ── Debounced save (300ms after last toggle) ────────────────────────────
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(pushBlob, 300);
+}
+
+// ── Auto-poll every 60 seconds ──────────────────────────────────────────
+function startPoll() {
+  clearInterval(pollTimer);
+  pollTimer = setInterval(() => pullBlob(true), 60000);
+}
+
+// ── Force-pull (Refresh button) ─────────────────────────────────────────
+function forcePull() { pullBlob(false); }
+
+// ── Join an existing session ─────────────────────────────────────────────
+async function joinSession() {
+  const raw = document.getElementById('sync-join-input').value.trim().toUpperCase();
+  if (raw.length !== 8) { toast('Enter the full 8-character session code.'); return; }
+  // Find the full blob ID: jsonblob IDs are numeric. The last 8 chars of a UUID won't work.
+  // For jsonblob.com, the ID returned in Location is a full numeric ID like "11929503884041216"
+  // We store the full ID in localStorage but show only last 8 chars as a short code.
+  // For joining, user enters the FULL code they copied — let's show full ID as the code instead.
+  toast('To join a session, enter the full session code from the "Session code" field (click it to copy).', '');
+}
+
+// ── Copy session code ────────────────────────────────────────────────────
+function copyCode() {
+  if (!blobId) return;
+  navigator.clipboard.writeText(blobId).then(()=>{
+    toast('Session code copied to clipboard! Share with your team.', 'success');
+  }).catch(()=>{
+    // Fallback: select text
+    const range = document.createRange();
+    const el = document.getElementById('sync-code-display');
+    range.selectNode(el);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    toast('Code selected — press Ctrl+C / Cmd+C to copy.', '');
+  });
+}
+
+// ── Format time ─────────────────────────────────────────────────────────
+function fmtTime(ts) {
+  if (!ts) return 'unknown';
+  const d = new Date(ts);
+  return d.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+}
+
+// ── INIT ────────────────────────────────────────────────────────────────
+async function init() {
+  setupBroadcast();
+  loadLocal();  // Apply local state immediately so UI is responsive
+
+  // Restore or discover blobId
+  try { blobId = localStorage.getItem(LS_KEY_ID) || null; } catch(e){}
+
+  showWeek(1);
+  setTimeout(() => {
+    const first = document.getElementById('day-1-0');
+    if (first) first.classList.add('day-open');
+  }, 50);
+
+  if (blobId) {
+    showCode(blobId);
+    setStatus('Restoring session…');
+    await pullBlob(false);
+    startPoll();
+  } else {
+    // New session — create blob
+    await createBlob();
+    startPoll();
+  }
+}
+
+// ── Patch toggleTask to trigger save ─────────────────────────────────────
+const _origToggleTask = toggleTask;
+window.toggleTask = function(wn, di, ti, el) {
+  _origToggleTask(wn, di, ti, el);
+  scheduleSave();
+};
+
+// ── Handle join via URL hash (share link) ───────────────────────────────
+function checkUrlHash() {
+  const hash = window.location.hash.replace('#','');
+  if (hash && hash.length > 10) {
+    // Looks like a blob ID was passed in the URL
+    if (!blobId || blobId !== hash) {
+      blobId = hash;
+      try { localStorage.setItem(LS_KEY_ID, blobId); } catch(e){}
+      toast('Joining shared session from URL…', 'success');
+    }
+  }
+}
+checkUrlHash();
+
+// ── Update the join UX to use full ID (simpler) ──────────────────────────
+// Override joinSession to use full ID
+window.joinSession = async function() {
+  const raw = document.getElementById('sync-join-input').value.trim();
+  if (!raw || raw.length < 10) {
+    toast('Paste the full session code (click the code badge to copy it).', '');
+    return;
+  }
+  clearInterval(pollTimer);
+  blobId = raw;
+  taskStates = {};
+  try { localStorage.setItem(LS_KEY_ID, blobId); } catch(e){}
+  showCode(blobId);
+  setStatus('Joining session…');
+  await pullBlob(false);
+  startPoll();
+  renderSidebar();
+  renderWeek(currentWeek);
+  updateGlobalProgress();
+  document.getElementById('sync-join-input').value = '';
+  toast('Joined shared session! All progress is now shared.', 'success');
+};
+
+init();
 </script>
 </body>
 </html>
