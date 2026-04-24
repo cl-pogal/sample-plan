@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Weekly Plan — PT Customer AWS Modernisation</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #070E1A;
+    --surface:   #0D1B2E;
+    --border:    #1A2F4A;
+    --m1:        #1A6B8A;
+    --m1-light:  #2AACCE;
+    --m2:        #0F6E56;
+    --m2-light:  #20C08A;
+    --m3:        #5B3FA0;
+    --m3-light:  #9B70F0;
+    --bast:      #C97C1A;
+    --bast-light:#F4A940;
+    --txt:       #E8EEF5;
+    --txt-dim:   #7A99B8;
+    --check:     #20C08A;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--txt);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 48px 48px 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  header h1 span { color: var(--m1-light); }
+  header p { color: var(--txt-dim); font-size: 13px; margin-top: 4px; }
+  .header-meta {
+    display: flex; gap: 16px; flex-wrap: wrap;
+  }
+  .badge {
+    padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;
+    border: 1px solid;
+  }
+  .badge.m1 { border-color: var(--m1); color: var(--m1-light); background: rgba(26,107,138,.12); }
+  .badge.m2 { border-color: var(--m2); color: var(--m2-light); background: rgba(15,110,86,.12); }
+  .badge.m3 { border-color: var(--m3); color: var(--m3-light); background: rgba(91,63,160,.12); }
+
+  /* ── LAYOUT ── */
+  .container { padding: 32px 48px 80px; max-width: 1400px; }
+
+  /* ── PHASE LABEL ── */
+  .phase-header {
+    display: flex; align-items: center; gap: 16px;
+    margin: 40px 0 20px;
+  }
+  .phase-header h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .phase-header .line {
+    flex: 1; height: 1px; background: var(--border);
+  }
+  .phase-header.m1 h2 { color: var(--m1-light); }
+  .phase-header.m2 h2 { color: var(--m2-light); }
+  .phase-header.m3 h2 { color: var(--m3-light); }
+
+  /* ── WEEK GRID ── */
+  .week-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+
+  /* ── WEEK CARD ── */
+  .week-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color .2s;
+  }
+  .week-card:hover { border-color: #2A4060; }
+
+  .week-card.has-bast { border-color: var(--bast); box-shadow: 0 0 0 1px rgba(201,124,26,.2); }
+
+  .card-top {
+    padding: 16px 20px 14px;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .week-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; margin-bottom: 3px;
+  }
+  .m1 .week-num { color: var(--m1-light); }
+  .m2 .week-num { color: var(--m2-light); }
+  .m3 .week-num { color: var(--m3-light); }
+  .week-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px; font-weight: 700; line-height: 1.3;
+  }
+  .bast-pill {
+    flex-shrink: 0;
+    background: rgba(201,124,26,.15);
+    border: 1px solid var(--bast);
+    color: var(--bast-light);
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 700;
+    white-space: nowrap; letter-spacing: .5px;
+  }
+
+  .card-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 16px; }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--txt-dim); margin-bottom: 7px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .section-label::before {
+    content: ''; display: block; width: 14px; height: 2px;
+    background: currentColor; opacity: .5; flex-shrink: 0;
+  }
+
+  /* ── OBJECTIVE BOX ── */
+  .objective-box {
+    padding: 10px 14px;
+    border-radius: 8px;
+    border-left: 3px solid;
+    font-size: 13px; line-height: 1.55;
+  }
+  .m1 .objective-box { background: rgba(26,107,138,.1); border-color: var(--m1-light); }
+  .m2 .objective-box { background: rgba(15,110,86,.1); border-color: var(--m2-light); }
+  .m3 .objective-box { background: rgba(91,63,160,.1); border-color: var(--m3-light); }
+
+  /* ── CHECKLIST ── */
+  .checklist { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .checklist li {
+    display: flex; align-items: flex-start; gap: 9px;
+    font-size: 13px; line-height: 1.5;
+  }
+  .checklist li .chk {
+    width: 16px; height: 16px; flex-shrink: 0;
+    border: 1.5px solid #2A4060; border-radius: 4px;
+    margin-top: 2px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .checklist li .chk svg { display: none; }
+
+  /* ── PREREQS ── */
+  .prereq-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+  .prereq-list li {
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: 12.5px; color: var(--txt-dim); line-height: 1.5;
+  }
+  .prereq-list li::before {
+    content: '↳'; flex-shrink: 0; color: #3A5878; font-size: 12px; margin-top: 1px;
+  }
+
+  /* ── MILESTONE ── */
+  .milestone-box {
+    background: rgba(201,124,26,.08);
+    border: 1px solid rgba(201,124,26,.3);
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .milestone-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .milestone-box p { font-size: 12.5px; color: #D4A862; line-height: 1.5; }
+  .milestone-box strong { color: var(--bast-light); }
+
+  /* ── PRINT / EXPORT ── */
+  @media print {
+    body { background: #fff; color: #111; }
+    .week-card { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>AWS Modernisation — <span>Project Weekly Plan</span></h1>
+    <p>PT Customer · Xtremax Engagement · 12-Week Delivery · 3 BAST Milestones</p>
+  </div>
+  <div class="header-meta">
+    <span class="badge m1">Month 1 · Foundation</span>
+    <span class="badge m2">Month 2 · Build</span>
+    <span class="badge m3">Month 3 · Deliver</span>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- ════════════════════ MONTH 1 ════════════════════ -->
+<div class="phase-header m1">
+  <h2>Month 1 — Foundation</h2>
+  <div class="line"></div>
+</div>
+<div class="week-grid">
+
+  <!-- W1 -->
+  <div class="week-card m1">
+    <div class="card-top">
+      <div>
+        <div class="week-num">Week 1</div>
+        <div class="week-title">Environment Discovery, Audit &amp; RHEL Preparation</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div>
+        <div class="section-label">Objective</div>
+        <div class="objective-box">Fully understand the existing AWS environment. Produce a Discovery Report. Have all 6 RHEL target servers provisioned, hardened, and runtime-ready by Friday so migration can begin in Week 2.</div>
+      </div>
+      <div>
+        <div class="section-label">Key Activities</div>
+        <ul class="checklist">
+          <li><span class="chk"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1" stroke="#20C08A" stroke-width="2" fill="none"/></svg></span>Kick-off meeting — agree RACI, tools, access, communication cadence</li>
+          <li><span class="chk"></span>Verify access to all 5 AWS accounts (Day 1 blocker)</li>
+          <li><span class="chk"></span>Audit SCPs, OU structure, IAM users/roles, and MFA enforcement</li>
+          <li><span class="chk"></span>Map VPC topology, Security Groups, Transit Gateway, and VPN routing</li>
+          <li><span class="chk"></span>Interview all 6 app owners — capture dependencies, runtime versions, config</li>
+          <li><span class="chk"></span>Provision RHEL 8.x EC2 instances in Dev/UAT for all 6 apps (Thursday)</li>
+          <li><span class="chk"></span>Apply OS hardening on all 6 RHEL instances — CIS RHEL Level 1 baseline</li>
+          <li><span class="chk"></span>Install runtime dependencies and verify SSM Agent on all RHEL hosts</li>
+          <li><span class="chk"></span>Compile and present W1 Discovery Report to Customer IT lead (Friday)</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-label">Pre-requisites</div>
+        <ul class="prereq-list">
+          <li>PO issued — engagement clock starts Day 1</li>
+          <li>AWS console credentials for all 5 accounts provided before kick-off</li>
+          <li>6 app owners introduced and available for 30-min interviews</li>
+          <li>Shadow engineers assigned and available from Day 1</li>
+          <li>Dev/UAT EC2 quotas and RHEL AMI access pre-confirmed</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- W2 -->
+  <div class="week-card m1">
+    <div class="card-top">
+      <div>
+        <div class="week-num">Week 2</div>
+        <div class="week-title">Landing Zone Enforcement, Network Build &amp; OS Migration Begins</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div>
+        <div class="section-label">Objective</div>
+        <div class="objective-box">Apply all security guardrails, fix compliance gaps, and build production network infrastructure. Deploy Apps 1 &amp; 2 to RHEL with app owner sign-off by Friday.</div>
+      </div>
+      <div>
+        <div class="section-label">Key Activities</div>
+        <ul class="checklist">
+          <li><span class="chk"></span>Enforce missing SCPs: prevent root usage, enforce MFA, block S3 public access</li>
+          <li><span class="chk"></span>Enable AWS Config, CIS conformance pack, and org-wide CloudTrail</li>
+          <li><span class="chk"></span>Enable GuardDuty in all 5 accounts and Security Hub (FSBP standard)</li>
+          <li><span class="chk"></span>Configure VPC Flow Logs and capture Security Hub baseline score</li>
+          <li><span class="chk"></span>Create Production VPC: subnets (public/private/data), IGW, NAT GW ×2</li>
+          <li><span class="chk"></span>Create VPC Interface Endpoints (S3, ECR, SSM, Secrets Manager)</li>
+          <li><span class="chk"></span>Configure Security Groups for ALB, EKS, RDS tiers; tag all resources</li>
+          <li><span class="chk"></span>Deploy App 1 to RHEL → functional smoke test → app owner sign-off</li>
+          <li><span class="chk"></span>Deploy App 2 to RHEL → functional smoke test → app owner sign-off</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-label">Pre-requisites</div>
+        <ul class="prereq-list">
+          <li>W1 Discovery Report reviewed and approved by Customer IT lead</li>
+          <li>All 6 RHEL instances provisioned, hardened, and runtime-ready (from W1)</li>
+          <li>Remediation priority list agreed and signed off</li>
+          <li>Change window confirmed for network modifications (off-peak hours)</li>
+          <li>App owners for Apps 1 &amp; 2 available Friday for sign-off sessions</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- W3 -->
+  <div class="week-card m1">
+    <div class="card-top">
+      <div>
+        <div class="week-num">Week 3</div>
+        <div class="week-title">OS Migration Completion &amp; EKS Prerequisites</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div>
+        <div class="section-label">Objective</div>
+        <div class="objective-box">Complete OS migration for Apps 3–6. Run load tests for all 6 apps. Write migration runbooks. Set up all EKS and IaC prerequisites so W4 cluster deployment is a clean, fast execution.</div>
+      </div>
+      <div>
+        <div class="section-label">Key Activities</div>
+        <ul class="checklist">
+          <li><span class="chk"></span>Deploy Apps 3 &amp; 4 to RHEL → smoke tests → app owner sign-offs (Monday)</li>
+          <li><span class="chk"></span>Deploy Apps 5 &amp; 6 to RHEL → smoke tests → app owner sign-offs (Tuesday)</li>
+          <li><span class="chk"></span>Run k6 load tests on all 6 apps — confirm p99 ≥ Windows baseline</li>
+          <li><span class="chk"></span>Write migration runbook per app: deploy steps, env vars, rollback procedure</li>
+          <li><span class="chk"></span>Run Security Hub FSBP — confirm ≥80% pass rate</li>
+          <li><span class="chk"></span>Create EKS IAM service role and node instance profile in Production account</li>
+          <li><span class="chk"></span>Create ECR repositories for all 6 apps with lifecycle policies</li>
+          <li><span class="chk"></span>Create GitHub org + repos; set up Terraform remote state (S3 + DynamoDB)</li>
+          <li><span class="chk"></span>Define Terraform module structure and scaffold /modules/vpc, /eks, /rds, /app</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-label">Pre-requisites</div>
+        <ul class="prereq-list">
+          <li>Apps 1 &amp; 2 migrated to RHEL and signed off in W2</li>
+          <li>RHEL instances for Apps 3–6 provisioned and hardened from W1</li>
+          <li>App owners for Apps 3–6 available for validation sessions</li>
+          <li>GitHub organisation access granted by Customer</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- W4 — BAST 1 -->
+  <div class="week-card m1 has-bast">
+    <div class="card-top">
+      <div>
+        <div class="week-num">Week 4</div>
+        <div class="week-title">BAST 1 Documentation, Sign-off &amp; EKS Cluster Deployment</div>
+      </div>
+      <span class="bast-pill">🏁 BAST 1 · 30%</span>
+    </div>
+    <div class="card-body">
+      <div>
+        <div class="section-label">Objective</div>
+        <div class="objective-box">Formally close Month 1 with Customer sign-off and invoice. Deploy the production EKS cluster (control plane, node groups, add-ons) and apply Terraform vpc + eks-cluster modules before Month 2 begins.</div>
+      </div>
+      <div>
+        <div class="section-label">Key Activities</div>
+        <ul class="checklist">
+          <li><span class="chk"></span>Write Landing Zone Governance Report and OS Migration Documentation</li>
+          <li><span class="chk"></span>SA internal review — add evidence appendices (screenshots, reports)</li>
+          <li><span class="chk"></span>Present BAST 1 documents to Customer stakeholders (Wednesday)</li>
+          <li><span class="chk"></span>Obtain Customer signature → submit 30% invoice (Wednesday)</li>
+          <li><span class="chk"></span>Deploy EKS cluster via Terraform: control plane (K8s 1.30), OIDC, 3 managed node groups in 2 AZs (Thursday)</li>
+          <li><span class="chk"></span>Install EKS add-ons: CoreDNS, kube-proxy, VPC CNI, EBS CSI, AWS Load Balancer Controller</li>
+          <li><span class="chk"></span>Write and apply Terraform vpc module over existing VPC resources</li>
+          <li><span class="chk"></span>Month 1 retrospective + confirm Month 2 app owner availability (Friday)</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-label">Pre-requisites</div>
+        <ul class="prereq-list">
+          <li>All 6 apps validated on RHEL with app owner sign-offs collected</li>
+          <li>Security Hub FSBP score ≥80% confirmed</li>
+          <li>EKS IAM roles, ECR repos, GitHub repos, Terraform remote state all ready (from W3)</li>
+          <li>Customer stakeholder calendar blocked for Wednesday BAST 1 presentation</li>
+        </ul>
+      </div>
+      <div class="milestone-box">
+        <span class="milestone-icon">🏁</span>
+        <p><strong>BAST 1 — 30% Payment Milestone</strong><br>
+        Landing Zone Governance Report · OS Migration Documentation (6 apps) · App owner sign-off evidence · Security Hub FSBP compliance report</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /week-grid M1 -->
+
+<!-- ════════════════════ MONTH 2 ════════════════════ -->
+<div class="phase-header m2">
+  <h2>Month 2 — Build</h2>
+  <div class="line"></div>
+</div>
+<div class="week-grid">
+
+  <!-- W5 -->
+  <div class="week-card m2">
+    <div class="card-top">
+      <div>
+        <div class="week-num">Week 5</div>
+        <div class="week-title">Containerise Apps 1 &amp; 2 &amp; Complete Network IaC</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div>
+        <div class="section-label">Objective</div>
+        <div class="objective-box">Containerise Apps 1 &amp; 2 as the pilot. Establish Dockerfile and Helm patterns for all remaining apps. Configure IRSA, CloudFront, Secrets Manager. Begin Terraform rds module.</div>
+      </div>
+      <div>
+        <div class="section-label">Key Activities</div>
+        <ul class="checklist">
+          <li><span class="chk"></span>Configure IRSA roles for all 6 apps (IAM role per app via OIDC)</li>
+          <li><span class="chk"></span>Validate kubectl access for all team members</li>
+          <li><span class="chk"></span>Write Dockerfile for App 1 (multi-stage Node.js build) → Trivy scan → push to ECR</li>
+          <li><span class="chk"></span>Write Helm chart for App 1 (Deployment, Ingress, HPA, ServiceAccount) → deploy to EKS</li>
+          <li><span class="chk"></span>Write Dockerfile + Helm chart for App 2 → deploy to EKS</li>
+          <li><span class="chk"></span>Configure CloudFront in front of ALB for Apps 1 &amp; 2 (HTTPS only)</li>
+          <li><span class="chk"></span>Configure Secrets Manager for DB credentials and API keys for Apps 1 &amp; 2</li>
+          <li><span class="chk"></span>Configure HPA for Apps 1 &amp; 2 → validate auto-scale under load test</li>
+          <li><span class="chk"></span>App owner sign-off sessions for Apps 1 &amp; 2 on EKS</li>
+          <li><span class="chk"></span>Write Terraform rds module (Aurora PostgreSQL, subnet group, Secrets Manager)</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-label">Pre-requisites</div>
+        <ul class="prereq-list">
+          <li>BAST 1 signed — Month 2 work can begin</li>
+          <li>EKS cluster deployed, all add-ons in Ready state (from W4)</li>
+          <li>Terraform vpc + eks-cluster modules applied — state clean (from W4)</li>
+          <li>ECR repositories and GitHub repos ready (from W3)</li>
+          <li>Docker base images agreed: node:20-alpine, php:8-fpm-alpine</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- W6 -->
+  <div class="week-card m2">
+    <div class="card-top">
+      <div>
+        <div class="week-num">Week 6</div>
+        <div class="week-title">Containerise Apps 3–6 &amp; Build CI/CD Pipeline</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div>
+        <div class="section-label">Objective</div>
+        <div class="objective-box">Containerise remaining 4 apps using the patterns established in W5. Build the full CI/CD pipeline (CodePipeline → CodeBuild → ECR → CodeDeploy). Apply Terraform rds module.</div>
+      </div>
+      <div>
+        <div class="section-label">Key Activities</div>
+        <ul class="checklist">
+          <li><span class="chk"></span>Containerise Apps 3, 4, 5 &amp; 6 — Dockerfile + Helm charts → deploy to EKS</li>
+          <li><span class="chk"></span>Configure HPA for all 4 apps and validate auto-scale</li>
+          <li><span class="chk"></span>App owner sign-off sessions for Apps 3–6 on EKS</li>
+          <li><span class="chk"></span>Build CodePipeline: Source (GitHub) → CodeBuild → ECR → CodeDeploy to EKS</li>
+          <li><span class="chk"></span>Add SonarQube quality gate to CodeBuild — block pipeline on critical issues</li>
+          <li><span class="chk"></span>Add ECR image scan to CodeBuild — block on HIGH/CRITICAL vulnerabilities</li>
+          <li><span class="chk"></span>Apply Terraform rds module: Aurora PostgreSQL writer + reader, RDS instance</li>
+          <li><span class="chk"></span>Test CI/CD pipeline end-to-end for all 6 apps</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-label">Pre-requisites</div>
+        <ul class="prereq-list">
+          <li>Apps 1 &amp; 2 Dockerfile and Helm patterns validated and approved (from W5)</li>
+          <li>Terraform rds module written and reviewed (from W5)</li>
+          <li>CodePipeline/CodeBuild IAM roles pre-created</li>
+          <li>SonarQube server accessible from CodeBuild VPC</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- W7 -->
+  <div class="week-card m2">
+    <div class="card-top">
+      <div>
+        <div class="week-num">Week 7</div>
+        <div class="week-title">Database Migration &amp; Terraform IaC Completion</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div>
+        <div class="section-label">Objective</div>
+        <div class="objective-box">Migrate all application databases to Aurora PostgreSQL and RDS using AWS DMS. Complete all 4 Terraform modules. Confirm <code>terraform plan = 0 changes</code> with all secrets in Secrets Manager.</div>
+      </div>
+      <div>
+        <div class="section-label">Key Activities</div>
+        <ul class="checklist">
+          <li><span class="chk"></span>Set up AWS DMS replication instance and source/target endpoints</li>
+          <li><span class="chk"></span>Run DMS full-load migration for each application database</li>
+          <li><span class="chk"></span>Enable DMS CDC (change data capture) for near-zero-downtime cutover</li>
+          <li><span class="chk"></span>Validate data integrity post-migration (row counts, checksums)</li>
+          <li><span class="chk"></span>Update all 6 app connection strings → point to new Aurora/RDS endpoints</li>
+          <li><span class="chk"></span>Move all DB credentials to Secrets Manager — remove hardcoded secrets from code</li>
+          <li><span class="chk"></span>Write and apply Terraform app module for all 6 apps</li>
+          <li><span class="chk"></span>Confirm all 4 modules applied: terraform plan = 0 changes</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-label">Pre-requisites</div>
+        <ul class="prereq-list">
+          <li>All 6 apps deployed and running on EKS (from W6)</li>
+          <li>Aurora PostgreSQL and RDS instances deployed via Terraform rds module (from W6)</li>
+          <li>Source DB credentials and schema documentation provided by Customer DBA</li>
+          <li>DMS subnet group and security group pre-created</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- W8 — BAST 2 -->
+  <div class="week-card m2 has-bast">
+    <div class="card-top">
+      <div>
+        <div class="week-num">Week 8</div>
+        <div class="week-title">Load Testing, Security Review &amp; BAST 2 Sign-off</div>
+      </div>
+      <span class="bast-pill">🏁 BAST 2 · 30%</span>
+    </div>
+    <div class="card-body">
+      <div>
+        <div class="section-label">Objective</div>
+        <div class="objective-box">Validate full system performance under load. Complete security scan of containers and IaC. Obtain BAST 2 sign-off. Prepare Cloudflare DNS for Week 11 cutover.</div>
+      </div>
+      <div>
+        <div class="section-label">Key Activities</div>
+        <ul class="checklist">
+          <li><span class="chk"></span>Run full k6 load tests on all 6 apps — validate performance SLAs</li>
+          <li><span class="chk"></span>Run ECR image scans on all 6 app containers — resolve HIGH/CRITICAL findings</li>
+          <li><span class="chk"></span>Run Checkov static analysis on all Terraform IaC — resolve critical findings</li>
+          <li><span class="chk"></span>SA final review of EKS, network, and database architecture</li>
+          <li><span class="chk"></span>Compile BAST 2 evidence package (test reports, security scan results, SA sign-off)</li>
+          <li><span class="chk"></span>Present BAST 2 to Customer stakeholders → obtain signature → submit 30% invoice</li>
+          <li><span class="chk"></span>Set Cloudflare DNS TTL → 60 seconds in preparation for W11 cutover</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-label">Pre-requisites</div>
+        <ul class="prereq-list">
+          <li>All 6 apps running on EKS with CI/CD pipeline operational</li>
+          <li>All databases migrated and apps pointing to Aurora/RDS</li>
+          <li>terraform plan = 0 changes confirmed across all 4 modules</li>
+          <li>Customer stakeholder calendar blocked for BAST 2 presentation</li>
+        </ul>
+      </div>
+      <div class="milestone-box">
+        <span class="milestone-icon">🏁</span>
+        <p><strong>BAST 2 — 30% Payment Milestone</strong><br>
+        All 6 apps on EKS · CI/CD pipeline live · Database migration complete · IaC (4 Terraform modules) applied · Load test &amp; security scan reports</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /week-grid M2 -->
+
+<!-- ════════════════════ MONTH 3 ════════════════════ -->
+<div class="phase-header m3">
+  <h2>Month 3 — Deliver</h2>
+  <div class="line"></div>
+</div>
+<div class="week-grid">
+
+  <!-- W9 -->
+  <div class="week-card m3">
+    <div class="card-top">
+      <div>
+        <div class="week-num">Week 9</div>
+        <div class="week-title">Blue-Green Deployment &amp; APM / Monitoring Setup</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div>
+        <div class="section-label">Objective</div>
+        <div class="objective-box">Configure CodeDeploy blue-green for all 6 apps and verify rollback completes in under 5 minutes. Set up X-Ray distributed tracing, CloudWatch Container Insights, and Fluent Bit log routing.</div>
+      </div>
+      <div>
+        <div class="section-label">Key Activities</div>
+        <ul class="checklist">
+          <li><span class="chk"></span>Configure CodeDeploy blue-green for all 6 apps (10% → 50% → 100% traffic shift)</li>
+          <li><span class="chk"></span>Run rollout drill for all 6 apps and verify deployment completes cleanly</li>
+          <li><span class="chk"></span>Run rollback drill for all 6 apps — confirm rollback completes in &lt;5 minutes</li>
+          <li><span class="chk"></span>Deploy X-Ray DaemonSet to EKS — instrument all 6 apps for distributed tracing</li>
+          <li><span class="chk"></span>Enable CloudWatch Container Insights for EKS cluster</li>
+          <li><span class="chk"></span>Deploy Fluent Bit DaemonSet — route logs to CloudWatch Log Groups per app</li>
+          <li><span class="chk"></span>Validate full observability stack: traces, metrics, and logs flowing in CloudWatch</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-label">Pre-requisites</div>
+        <ul class="prereq-list">
+          <li>BAST 2 signed — Month 3 work can begin</li>
+          <li>CI/CD pipeline operational for all 6 apps (from W6)</li>
+          <li>All apps stable on EKS in production with load tests passed</li>
+          <li>X-Ray SDK integrated into app code (coordinate with dev team)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- W10 -->
+  <div class="week-card m3">
+    <div class="card-top">
+      <div>
+        <div class="week-num">Week 10</div>
+        <div class="week-title">CloudWatch Dashboards, Alarms &amp; Backup Configuration</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div>
+        <div class="section-label">Objective</div>
+        <div class="objective-box">Build operational dashboards and alarms for all 6 apps and infrastructure. Configure AWS Backup with tested restore. Import Route 53 hosted zones in preparation for W11 DNS cutover.</div>
+      </div>
+      <div>
+        <div class="section-label">Key Activities</div>
+        <ul class="checklist">
+          <li><span class="chk"></span>Create ≥20 CloudWatch alarms covering EKS, RDS, ALB, and app-level metrics</li>
+          <li><span class="chk"></span>Configure SNS → notify Teams and email on alarm state change</li>
+          <li><span class="chk"></span>Build CloudWatch dashboards: per-app and infrastructure overview</li>
+          <li><span class="chk"></span>Configure AWS Backup plans for EBS, RDS, and S3 with retention policies</li>
+          <li><span class="chk"></span>Run RDS point-in-time restore test — confirm RTO ≤ 2 hours</li>
+          <li><span class="chk"></span>Import existing DNS zones into Route 53 hosted zones</li>
+          <li><span class="chk"></span>Validate Route 53 records match Cloudflare configuration</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-label">Pre-requisites</div>
+        <ul class="prereq-list">
+          <li>X-Ray, Container Insights, and Fluent Bit all operational (from W9)</li>
+          <li>Cloudflare DNS TTL set to 60s (from W8)</li>
+          <li>AWS Backup vault created with appropriate KMS key</li>
+          <li>Route 53 hosted zone creation approved by Customer IT lead</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- W11 -->
+  <div class="week-card m3">
+    <div class="card-top">
+      <div>
+        <div class="week-num">Week 11</div>
+        <div class="week-title">DNS &amp; Firewall Migration from Cloudflare to AWS</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div>
+        <div class="section-label">Objective</div>
+        <div class="objective-box">Cut DNS over from Cloudflare to Route 53. Deploy AWS WAF WebACLs and Shield Standard. Conduct final SA architecture review before BAST 3 documentation begins.</div>
+      </div>
+      <div>
+        <div class="section-label">Key Activities</div>
+        <ul class="checklist">
+          <li><span class="chk"></span>Update domain registrar NS records — point to Route 53 name servers</li>
+          <li><span class="chk"></span>Monitor DNS propagation — validate all apps resolve correctly via Route 53</li>
+          <li><span class="chk"></span>Deploy AWS WAF WebACLs to ALB and CloudFront for all 6 apps</li>
+          <li><span class="chk"></span>Configure WAF managed rule groups (Core Rule Set, Known Bad Inputs, SQLi)</li>
+          <li><span class="chk"></span>Enable AWS Shield Standard — confirm DDoS protection active</li>
+          <li><span class="chk"></span>Decommission Cloudflare DNS and firewall configuration</li>
+          <li><span class="chk"></span>SA final architecture review — validate end-to-end security and network posture</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-label">Pre-requisites</div>
+        <ul class="prereq-list">
+          <li>Route 53 hosted zones imported and validated (from W10)</li>
+          <li>Cloudflare DNS TTL at 60s for &gt;72 hours (set in W8)</li>
+          <li>Domain registrar access credentials provided by Customer</li>
+          <li>WAF rule groups agreed with Customer IT and security lead</li>
+          <li>Rollback plan documented: re-point NS to Cloudflare if needed</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- W12 — BAST 3 -->
+  <div class="week-card m3 has-bast">
+    <div class="card-top">
+      <div>
+        <div class="week-num">Week 12</div>
+        <div class="week-title">Final Documentation, Knowledge Handover &amp; Project Closure</div>
+      </div>
+      <span class="bast-pill">🏁 BAST 3 · 40%</span>
+    </div>
+    <div class="card-body">
+      <div>
+        <div class="section-label">Objective</div>
+        <div class="objective-box">Deliver the complete documentation package. Confirm shadow engineer independence through a live assessment. Obtain BAST 3 sign-off, revoke Xtremax access, and formally close the engagement.</div>
+      </div>
+      <div>
+        <div class="section-label">Key Activities</div>
+        <ul class="checklist">
+          <li><span class="chk"></span>Write and finalise all 5 BAST 3 documents (Architecture, CI/CD, DB, Monitoring, DNS/Security)</li>
+          <li><span class="chk"></span>Compile Operations Guide: runbooks, escalation matrix, incident response, backup procedures</li>
+          <li><span class="chk"></span>Shadow engineer independence test — perform a deployment and incident simulation unassisted</li>
+          <li><span class="chk"></span>Final project presentation to Customer stakeholders and management</li>
+          <li><span class="chk"></span>Address all final feedback and document sign-offs</li>
+          <li><span class="chk"></span>Customer signs BAST 3 → submit final 40% invoice</li>
+          <li><span class="chk"></span>Remove all Xtremax IAM users and access keys from Customer accounts</li>
+          <li><span class="chk"></span>Project closure — handover of all credentials, repos, and documentation</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-label">Pre-requisites</div>
+        <ul class="prereq-list">
+          <li>DNS cutover complete and all apps stable on Route 53 (from W11)</li>
+          <li>WAF and Shield Standard active and configured (from W11)</li>
+          <li>All backups configured and restore test passed (from W10)</li>
+          <li>Shadow engineers assessed and confirmed operationally ready</li>
+          <li>Customer stakeholder calendar blocked for final presentation</li>
+        </ul>
+      </div>
+      <div class="milestone-box">
+        <span class="milestone-icon">🏁</span>
+        <p><strong>BAST 3 — 40% Final Payment Milestone</strong><br>
+        Final Architecture Document · CI/CD Pipeline Guide · Database Migration Report · Monitoring &amp; Alerting Guide · DNS &amp; Security Report · Operations Guide</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /week-grid M3 -->
+</div><!-- /container -->
+
+</body>
+</html>
