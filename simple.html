@@ -197,7 +197,7 @@
 <header>
   <div>
     <h1>AWS Modernisation — <span>Project Weekly Plan</span></h1>
-    <p>PT Customer · Xtremax Engagement · 12-Week Delivery · 3 BAST Milestones</p>
+    <p>PT Customer · Xtremax Engagement · 13-Week Delivery · 3 BAST Milestones</p>
   </div>
   <div class="header-meta">
     <span class="badge m1">Month 1 · Foundation</span>
@@ -220,36 +220,33 @@
     <div class="card-top">
       <div>
         <div class="week-num">Week 1</div>
-        <div class="week-title">Environment Discovery, Audit &amp; RHEL Preparation</div>
+        <div class="week-title">Project Kick-off &amp; Environment Discovery</div>
       </div>
     </div>
     <div class="card-body">
       <div>
         <div class="section-label">Objective</div>
-        <div class="objective-box">Fully understand the existing AWS environment. Produce a Discovery Report. Have all 6 RHEL target servers provisioned, hardened, and runtime-ready by Friday so migration can begin in Week 2.</div>
+        <div class="objective-box">Formally kick off the engagement. Understand the existing AWS environment, network topology, and application landscape. Provision Linux instances in Non-Production and begin exploring container build images for sample apps.</div>
       </div>
       <div>
         <div class="section-label">Key Activities</div>
         <ul class="checklist">
-          <li><span class="chk"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1" stroke="#20C08A" stroke-width="2" fill="none"/></svg></span>Kick-off meeting — agree RACI, tools, access, communication cadence</li>
-          <li><span class="chk"></span>Verify access to all 5 AWS accounts (Day 1 blocker)</li>
-          <li><span class="chk"></span>Audit SCPs, OU structure, IAM users/roles, and MFA enforcement</li>
-          <li><span class="chk"></span>Map VPC topology, Security Groups, Transit Gateway, and VPN routing</li>
-          <li><span class="chk"></span>Interview all 6 app owners — capture dependencies, runtime versions, config</li>
-          <li><span class="chk"></span>Provision RHEL 8.x EC2 instances in Dev/UAT for all 6 apps (Thursday)</li>
-          <li><span class="chk"></span>Apply OS hardening on all 6 RHEL instances — CIS RHEL Level 1 baseline</li>
-          <li><span class="chk"></span>Install runtime dependencies and verify SSM Agent on all RHEL hosts</li>
-          <li><span class="chk"></span>Compile and present W1 Discovery Report to Customer IT lead (Friday)</li>
+          <li><span class="chk"></span>Kick-off meeting</li>
+          <li><span class="chk"></span>Verify access to all AWS accounts</li>
+          <li><span class="chk"></span>Map network topology</li>
+          <li><span class="chk"></span>Finalise 6 application candidates</li>
+          <li><span class="chk"></span>Provision Linux EC2 instances in Non-Production</li>
+          <li><span class="chk"></span>Explore the build images for 2 sample apps</li>
         </ul>
       </div>
       <div>
         <div class="section-label">Pre-requisites</div>
         <ul class="prereq-list">
           <li>PO issued — engagement clock starts Day 1</li>
-          <li>AWS console credentials for all 5 accounts provided before kick-off</li>
-          <li>6 app owners introduced and available for 30-min interviews</li>
+          <li>AWS console credentials for all accounts provided before kick-off</li>
+          <li>6 app owners introduced and available for interviews</li>
           <li>Shadow engineers assigned and available from Day 1</li>
-          <li>Dev/UAT EC2 quotas and RHEL AMI access pre-confirmed</li>
+          <li>Non-Production EC2 quotas and Linux AMI access pre-confirmed</li>
         </ul>
       </div>
     </div>
@@ -260,36 +257,31 @@
     <div class="card-top">
       <div>
         <div class="week-num">Week 2</div>
-        <div class="week-title">Landing Zone Enforcement, Network Build &amp; OS Migration Begins</div>
+        <div class="week-title">Network Setup, EKS Preparation &amp; Image Testing</div>
       </div>
     </div>
     <div class="card-body">
       <div>
         <div class="section-label">Objective</div>
-        <div class="objective-box">Apply all security guardrails, fix compliance gaps, and build production network infrastructure. Deploy Apps 1 &amp; 2 to RHEL with app owner sign-off by Friday.</div>
+        <div class="objective-box">Continue building and validating container images. Set up the production network components and EKS prerequisites in Non-Production. Test images in the EKS environment by end of week.</div>
       </div>
       <div>
         <div class="section-label">Key Activities</div>
         <ul class="checklist">
-          <li><span class="chk"></span>Enforce missing SCPs: prevent root usage, enforce MFA, block S3 public access</li>
-          <li><span class="chk"></span>Enable AWS Config, CIS conformance pack, and org-wide CloudTrail</li>
-          <li><span class="chk"></span>Enable GuardDuty in all 5 accounts and Security Hub (FSBP standard)</li>
-          <li><span class="chk"></span>Configure VPC Flow Logs and capture Security Hub baseline score</li>
-          <li><span class="chk"></span>Create Production VPC: subnets (public/private/data), IGW, NAT GW ×2</li>
-          <li><span class="chk"></span>Create VPC Interface Endpoints (S3, ECR, SSM, Secrets Manager)</li>
-          <li><span class="chk"></span>Configure Security Groups for ALB, EKS, RDS tiers; tag all resources</li>
-          <li><span class="chk"></span>Deploy App 1 to RHEL → functional smoke test → app owner sign-off</li>
-          <li><span class="chk"></span>Deploy App 2 to RHEL → functional smoke test → app owner sign-off</li>
+          <li><span class="chk"></span>Continue to explore the build images</li>
+          <li><span class="chk"></span>Configure Security Groups for ALB, EKS, RDS tiers</li>
+          <li><span class="chk"></span>Create EKS IAM service role and node instance profile in Non-Production</li>
+          <li><span class="chk"></span>Start to setup the EKS environment in Non-Production</li>
+          <li><span class="chk"></span>Test the images in EKS environment</li>
         </ul>
       </div>
       <div>
         <div class="section-label">Pre-requisites</div>
         <ul class="prereq-list">
-          <li>W1 Discovery Report reviewed and approved by Customer IT lead</li>
-          <li>All 6 RHEL instances provisioned, hardened, and runtime-ready (from W1)</li>
-          <li>Remediation priority list agreed and signed off</li>
-          <li>Change window confirmed for network modifications (off-peak hours)</li>
-          <li>App owners for Apps 1 &amp; 2 available Friday for sign-off sessions</li>
+          <li>Linux EC2 instances provisioned in Non-Production (from W1)</li>
+          <li>Initial build images for 2 sample apps identified (from W1)</li>
+          <li>VPC and subnet design confirmed with Customer IT lead</li>
+          <li>EKS IAM permission boundaries agreed</li>
         </ul>
       </div>
     </div>
@@ -300,35 +292,32 @@
     <div class="card-top">
       <div>
         <div class="week-num">Week 3</div>
-        <div class="week-title">OS Migration Completion &amp; EKS Prerequisites</div>
+        <div class="week-title">DevOps Pipeline, IaC Foundation &amp; Security Audit</div>
       </div>
     </div>
     <div class="card-body">
       <div>
         <div class="section-label">Objective</div>
-        <div class="objective-box">Complete OS migration for Apps 3–6. Run load tests for all 6 apps. Write migration runbooks. Set up all EKS and IaC prerequisites so W4 cluster deployment is a clean, fast execution.</div>
+        <div class="objective-box">Establish the DevOps pipeline foundation using GitHub and AWS native services. Set up Terraform remote state and module structure. Conduct DevSecOps workshop and begin security audit of the AWS organisation.</div>
       </div>
       <div>
         <div class="section-label">Key Activities</div>
         <ul class="checklist">
-          <li><span class="chk"></span>Deploy Apps 3 &amp; 4 to RHEL → smoke tests → app owner sign-offs (Monday)</li>
-          <li><span class="chk"></span>Deploy Apps 5 &amp; 6 to RHEL → smoke tests → app owner sign-offs (Tuesday)</li>
-          <li><span class="chk"></span>Run k6 load tests on all 6 apps — confirm p99 ≥ Windows baseline</li>
-          <li><span class="chk"></span>Write migration runbook per app: deploy steps, env vars, rollback procedure</li>
-          <li><span class="chk"></span>Run Security Hub FSBP — confirm ≥80% pass rate</li>
-          <li><span class="chk"></span>Create EKS IAM service role and node instance profile in Production account</li>
-          <li><span class="chk"></span>Create ECR repositories for all 6 apps with lifecycle policies</li>
-          <li><span class="chk"></span>Create GitHub org + repos; set up Terraform remote state (S3 + DynamoDB)</li>
-          <li><span class="chk"></span>Define Terraform module structure and scaffold /modules/vpc, /eks, /rds, /app</li>
+          <li><span class="chk"></span>Start to setup DevOps pipeline using GitHub repo and AWS native services</li>
+          <li><span class="chk"></span>Create ECR repositories</li>
+          <li><span class="chk"></span>Set up Terraform remote state</li>
+          <li><span class="chk"></span>Start to define Terraform module structure</li>
+          <li><span class="chk"></span>Provide a workshop related to DevSecOps</li>
+          <li><span class="chk"></span>Audit SCPs, OU structure, IAM users/roles, and MFA enforcement</li>
         </ul>
       </div>
       <div>
         <div class="section-label">Pre-requisites</div>
         <ul class="prereq-list">
-          <li>Apps 1 &amp; 2 migrated to RHEL and signed off in W2</li>
-          <li>RHEL instances for Apps 3–6 provisioned and hardened from W1</li>
-          <li>App owners for Apps 3–6 available for validation sessions</li>
+          <li>EKS environment running in Non-Production (from W2)</li>
+          <li>Images tested successfully in EKS (from W2)</li>
           <li>GitHub organisation access granted by Customer</li>
+          <li>DevSecOps workshop audience and schedule confirmed</li>
         </ul>
       </div>
     </div>
@@ -339,35 +328,34 @@
     <div class="card-top">
       <div>
         <div class="week-num">Week 4</div>
-        <div class="week-title">BAST 1 Documentation, Sign-off &amp; EKS Cluster Deployment</div>
+        <div class="week-title">Landing Zone Enforcement, EKS Production Deployment &amp; BAST 1</div>
       </div>
       <span class="bast-pill">🏁 BAST 1 · 30%</span>
     </div>
     <div class="card-body">
       <div>
         <div class="section-label">Objective</div>
-        <div class="objective-box">Formally close Month 1 with Customer sign-off and invoice. Deploy the production EKS cluster (control plane, node groups, add-ons) and apply Terraform vpc + eks-cluster modules before Month 2 begins.</div>
+        <div class="objective-box">Apply all AWS security guardrails from the W3 audit. Deploy the production EKS cluster via Terraform. Formally close Month 1 with BAST 1 documentation and Customer sign-off.</div>
       </div>
       <div>
         <div class="section-label">Key Activities</div>
         <ul class="checklist">
-          <li><span class="chk"></span>Write Landing Zone Governance Report and OS Migration Documentation</li>
-          <li><span class="chk"></span>SA internal review — add evidence appendices (screenshots, reports)</li>
-          <li><span class="chk"></span>Present BAST 1 documents to Customer stakeholders (Wednesday)</li>
-          <li><span class="chk"></span>Obtain Customer signature → submit 30% invoice (Wednesday)</li>
-          <li><span class="chk"></span>Deploy EKS cluster via Terraform: control plane (K8s 1.30), OIDC, 3 managed node groups in 2 AZs (Thursday)</li>
-          <li><span class="chk"></span>Install EKS add-ons: CoreDNS, kube-proxy, VPC CNI, EBS CSI, AWS Load Balancer Controller</li>
+          <li><span class="chk"></span>Enforce missing SCPs: prevent root usage, enforce MFA, block S3 public access</li>
+          <li><span class="chk"></span>Enable AWS Config and org-wide CloudTrail</li>
+          <li><span class="chk"></span>Enable GuardDuty</li>
+          <li><span class="chk"></span>Configure VPC Flow Logs and Security Hub</li>
+          <li><span class="chk"></span>Test to deploy EKS cluster via Terraform</li>
           <li><span class="chk"></span>Write and apply Terraform vpc module over existing VPC resources</li>
-          <li><span class="chk"></span>Month 1 retrospective + confirm Month 2 app owner availability (Friday)</li>
+          <li><span class="chk"></span>Provide BAST 1 documentation</li>
         </ul>
       </div>
       <div>
         <div class="section-label">Pre-requisites</div>
         <ul class="prereq-list">
-          <li>All 6 apps validated on RHEL with app owner sign-offs collected</li>
-          <li>Security Hub FSBP score ≥80% confirmed</li>
-          <li>EKS IAM roles, ECR repos, GitHub repos, Terraform remote state all ready (from W3)</li>
-          <li>Customer stakeholder calendar blocked for Wednesday BAST 1 presentation</li>
+          <li>SCP audit findings from W3 reviewed and prioritised</li>
+          <li>Terraform remote state and module structure ready (from W3)</li>
+          <li>EKS IAM roles confirmed in Non-Production (from W2)</li>
+          <li>Customer stakeholder calendar blocked for BAST 1 presentation</li>
         </ul>
       </div>
       <div class="milestone-box">
@@ -382,7 +370,7 @@
 
 <!-- ════════════════════ MONTH 2 ════════════════════ -->
 <div class="phase-header m2">
-  <h2>Month 2 — Build</h2>
+  <h2>Month 2 — Build &nbsp;·&nbsp; Weeks 5–9</h2>
   <div class="line"></div>
 </div>
 <div class="week-grid">
@@ -392,37 +380,32 @@
     <div class="card-top">
       <div>
         <div class="week-num">Week 5</div>
-        <div class="week-title">Containerise Apps 1 &amp; 2 &amp; Complete Network IaC</div>
+        <div class="week-title">Production EKS Infrastructure Setup via Terraform</div>
       </div>
     </div>
     <div class="card-body">
       <div>
         <div class="section-label">Objective</div>
-        <div class="objective-box">Containerise Apps 1 &amp; 2 as the pilot. Establish Dockerfile and Helm patterns for all remaining apps. Configure IRSA, CloudFront, Secrets Manager. Begin Terraform rds module.</div>
+        <div class="objective-box">Deploy and validate the full production EKS cluster infrastructure via Terraform. Configure pod-level IAM access, namespaces, and Secrets Manager. Write the Terraform rds module ready for Week 8.</div>
       </div>
       <div>
         <div class="section-label">Key Activities</div>
         <ul class="checklist">
-          <li><span class="chk"></span>Configure IRSA roles for all 6 apps (IAM role per app via OIDC)</li>
-          <li><span class="chk"></span>Validate kubectl access for all team members</li>
-          <li><span class="chk"></span>Write Dockerfile for App 1 (multi-stage Node.js build) → Trivy scan → push to ECR</li>
-          <li><span class="chk"></span>Write Helm chart for App 1 (Deployment, Ingress, HPA, ServiceAccount) → deploy to EKS</li>
-          <li><span class="chk"></span>Write Dockerfile + Helm chart for App 2 → deploy to EKS</li>
-          <li><span class="chk"></span>Configure CloudFront in front of ALB for Apps 1 &amp; 2 (HTTPS only)</li>
-          <li><span class="chk"></span>Configure Secrets Manager for DB credentials and API keys for Apps 1 &amp; 2</li>
-          <li><span class="chk"></span>Configure HPA for Apps 1 &amp; 2 → validate auto-scale under load test</li>
-          <li><span class="chk"></span>App owner sign-off sessions for Apps 1 &amp; 2 on EKS</li>
-          <li><span class="chk"></span>Write Terraform rds module (Aurora PostgreSQL, subnet group, Secrets Manager)</li>
+          <li><span class="chk"></span>Write and apply Terraform eks-cluster module to production account</li>
+          <li><span class="chk"></span>Install required EKS add-ons and validate all nodes are in Ready state</li>
+          <li><span class="chk"></span>Create EKS namespaces for DEV, STG, and PRD environments</li>
+          <li><span class="chk"></span>Configure IRSA — pod-level IAM access for apps via OIDC</li>
+          <li><span class="chk"></span>Set up Secrets Manager — store app secrets and database credentials</li>
+          <li><span class="chk"></span>Write Terraform rds module (database cluster, subnet group, parameter group)</li>
         </ul>
       </div>
       <div>
         <div class="section-label">Pre-requisites</div>
         <ul class="prereq-list">
           <li>BAST 1 signed — Month 2 work can begin</li>
-          <li>EKS cluster deployed, all add-ons in Ready state (from W4)</li>
-          <li>Terraform vpc + eks-cluster modules applied — state clean (from W4)</li>
+          <li>Terraform vpc module applied and state clean (from W4)</li>
           <li>ECR repositories and GitHub repos ready (from W3)</li>
-          <li>Docker base images agreed: node:20-alpine, php:8-fpm-alpine</li>
+          <li>EKS IAM roles confirmed in non-production (from W2)</li>
         </ul>
       </div>
     </div>
@@ -433,34 +416,33 @@
     <div class="card-top">
       <div>
         <div class="week-num">Week 6</div>
-        <div class="week-title">Containerise Apps 3–6 &amp; Build CI/CD Pipeline</div>
+        <div class="week-title">DevSecOps CI/CD Pipeline &amp; Pilot Apps End-to-End</div>
       </div>
     </div>
     <div class="card-body">
       <div>
         <div class="section-label">Objective</div>
-        <div class="objective-box">Containerise remaining 4 apps using the patterns established in W5. Build the full CI/CD pipeline (CodePipeline → CodeBuild → ECR → CodeDeploy). Apply Terraform rds module.</div>
+        <div class="objective-box">Build the full DevSecOps pipeline: GitHub → CodePipeline → CodeBuild (unit test + SonarQube + security scan) → ECR → CodeDeploy to EKS DEV → quality gate → manual approval → STG/PRD. Validate the full flow end-to-end using the 2 pilot apps.</div>
       </div>
       <div>
         <div class="section-label">Key Activities</div>
         <ul class="checklist">
-          <li><span class="chk"></span>Containerise Apps 3, 4, 5 &amp; 6 — Dockerfile + Helm charts → deploy to EKS</li>
-          <li><span class="chk"></span>Configure HPA for all 4 apps and validate auto-scale</li>
-          <li><span class="chk"></span>App owner sign-off sessions for Apps 3–6 on EKS</li>
-          <li><span class="chk"></span>Build CodePipeline: Source (GitHub) → CodeBuild → ECR → CodeDeploy to EKS</li>
-          <li><span class="chk"></span>Add SonarQube quality gate to CodeBuild — block pipeline on critical issues</li>
-          <li><span class="chk"></span>Add ECR image scan to CodeBuild — block on HIGH/CRITICAL vulnerabilities</li>
-          <li><span class="chk"></span>Apply Terraform rds module: Aurora PostgreSQL writer + reader, RDS instance</li>
-          <li><span class="chk"></span>Test CI/CD pipeline end-to-end for all 6 apps</li>
+          <li><span class="chk"></span>Set up CodePipeline: GitHub source → CodeBuild → ECR → CodeDeploy to EKS DEV</li>
+          <li><span class="chk"></span>Configure CodeBuild stage: unit test → SonarQube quality gate → container security scan → push to ECR</li>
+          <li><span class="chk"></span>Configure automation test and quality gate stage after DEV deployment</li>
+          <li><span class="chk"></span>Add manual pipeline approval gate (Team Lead / SPV) before STG/PRD promotion</li>
+          <li><span class="chk"></span>Configure CodeDeploy to EKS STG/PRD after approval</li>
+          <li><span class="chk"></span>Review and validate Dockerfiles and Helm charts for 2 pilot apps</li>
+          <li><span class="chk"></span>Run 2 pilot apps through the full pipeline end-to-end — DEV to STG/PRD</li>
         </ul>
       </div>
       <div>
         <div class="section-label">Pre-requisites</div>
         <ul class="prereq-list">
-          <li>Apps 1 &amp; 2 Dockerfile and Helm patterns validated and approved (from W5)</li>
-          <li>Terraform rds module written and reviewed (from W5)</li>
-          <li>CodePipeline/CodeBuild IAM roles pre-created</li>
-          <li>SonarQube server accessible from CodeBuild VPC</li>
+          <li>EKS cluster with all namespaces running in production (from W5)</li>
+          <li>SonarQube server deployed and accessible from CodeBuild</li>
+          <li>CodePipeline and CodeBuild IAM roles created</li>
+          <li>Developer team has written Dockerfiles and Helm charts for 2 pilot apps</li>
         </ul>
       </div>
     </div>
@@ -471,34 +453,384 @@
     <div class="card-top">
       <div>
         <div class="week-num">Week 7</div>
-        <div class="week-title">Database Migration &amp; Terraform IaC Completion</div>
+        <div class="week-title">Deploy Remaining 4 Apps Through Pipeline &amp; Terraform App Module</div>
       </div>
     </div>
     <div class="card-body">
       <div>
         <div class="section-label">Objective</div>
-        <div class="objective-box">Migrate all application databases to Aurora PostgreSQL and RDS using AWS DMS. Complete all 4 Terraform modules. Confirm <code>terraform plan = 0 changes</code> with all secrets in Secrets Manager.</div>
+        <div class="objective-box">Onboard all remaining 4 apps through the established DevSecOps pipeline from DEV to production. Write and apply the Terraform app module to complete full IaC coverage.</div>
       </div>
       <div>
         <div class="section-label">Key Activities</div>
         <ul class="checklist">
-          <li><span class="chk"></span>Set up AWS DMS replication instance and source/target endpoints</li>
-          <li><span class="chk"></span>Run DMS full-load migration for each application database</li>
-          <li><span class="chk"></span>Enable DMS CDC (change data capture) for near-zero-downtime cutover</li>
-          <li><span class="chk"></span>Validate data integrity post-migration (row counts, checksums)</li>
-          <li><span class="chk"></span>Update all 6 app connection strings → point to new Aurora/RDS endpoints</li>
-          <li><span class="chk"></span>Move all DB credentials to Secrets Manager — remove hardcoded secrets from code</li>
+          <li><span class="chk"></span>Review and validate Dockerfiles and Helm charts for remaining 4 apps</li>
+          <li><span class="chk"></span>Push all 4 apps through CI/CD pipeline: DEV → quality gate → Team Lead approval → STG/PRD</li>
+          <li><span class="chk"></span>Resolve any pipeline failures per app (SonarQube findings, security scan issues)</li>
           <li><span class="chk"></span>Write and apply Terraform app module for all 6 apps</li>
-          <li><span class="chk"></span>Confirm all 4 modules applied: terraform plan = 0 changes</li>
+          <li><span class="chk"></span>Confirm all Terraform modules applied cleanly — no outstanding drift</li>
         </ul>
       </div>
       <div>
         <div class="section-label">Pre-requisites</div>
         <ul class="prereq-list">
-          <li>All 6 apps deployed and running on EKS (from W6)</li>
-          <li>Aurora PostgreSQL and RDS instances deployed via Terraform rds module (from W6)</li>
-          <li>Source DB credentials and schema documentation provided by Customer DBA</li>
+          <li>CI/CD pipeline validated end-to-end for pilot apps (from W6)</li>
+          <li>Developer team has written Dockerfiles and Helm charts for remaining 4 apps</li>
+          <li>Pipeline approval workflow confirmed with Team Lead / SPV</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- W8 -->
+  <div class="week-card m2">
+    <div class="card-top">
+      <div>
+        <div class="week-num">Week 8</div>
+        <div class="week-title">Database Migration to Production RDS</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div>
+        <div class="section-label">Objective</div>
+        <div class="objective-box">Deploy the production database cluster via Terraform and migrate all application databases using AWS DMS. Complete full-load migration, enable CDC replication, and cut over all apps to the new database endpoints.</div>
+      </div>
+      <div>
+        <div class="section-label">Key Activities</div>
+        <ul class="checklist">
+          <li><span class="chk"></span>Apply Terraform rds module — deploy production database cluster</li>
+          <li><span class="chk"></span>Set up AWS DMS replication instance and source/target endpoints</li>
+          <li><span class="chk"></span>Run full-load migration for all application databases</li>
+          <li><span class="chk"></span>Enable DMS CDC replication — keep source and target in sync</li>
+          <li><span class="chk"></span>Validate data integrity between source and target (row counts, checksums)</li>
+          <li><span class="chk"></span>Cut over all 6 apps to new RDS endpoints — confirm all apps running correctly</li>
+          <li><span class="chk"></span>Set Cloudflare DNS TTL to low value in preparation for W12 cutover</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-label">Pre-requisites</div>
+        <ul class="prereq-list">
+          <li>All 6 apps deployed to production through CI/CD pipeline (from W7)</li>
+          <li>Terraform rds module written and reviewed (from W5)</li>
+          <li>Source database credentials and schema documentation provided by Customer</li>
           <li>DMS subnet group and security group pre-created</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- W9 — BAST 2 -->
+  <div class="week-card m2 has-bast">
+    <div class="card-top">
+      <div>
+        <div class="week-num">Week 9</div>
+        <div class="week-title">Blue-Green Infra Setup, Validation &amp; BAST 2 Sign-off</div>
+      </div>
+      <span class="bast-pill">🏁 BAST 2 · 30%</span>
+    </div>
+    <div class="card-body">
+      <div>
+        <div class="section-label">Objective</div>
+        <div class="objective-box">Configure blue-green deployment infrastructure for all 6 apps. Run load tests and security reviews across the full stack. Formally close Month 2 with BAST 2 documentation and Customer sign-off.</div>
+      </div>
+      <div>
+        <div class="section-label">Key Activities</div>
+        <ul class="checklist">
+          <li><span class="chk"></span>Configure blue-green deployment infrastructure via CodeDeploy for all 6 apps</li>
+          <li><span class="chk"></span>Validate blue-green traffic routing between Blue and Green environments</li>
+          <li><span class="chk"></span>Run load tests on all 6 apps in production</li>
+          <li><span class="chk"></span>Run security scan on all container images — resolve critical findings</li>
+          <li><span class="chk"></span>Run Checkov static analysis on all Terraform IaC — resolve critical findings</li>
+          <li><span class="chk"></span>Provide BAST 2 documentation and obtain Customer sign-off</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-label">Pre-requisites</div>
+        <ul class="prereq-list">
+          <li>All 6 apps connected to production RDS and running correctly (from W8)</li>
+          <li>All Terraform modules applied with no outstanding drift (from W7)</li>
+          <li>Customer stakeholder calendar blocked for BAST 2 presentation</li>
+        </ul>
+      </div>
+      <div class="milestone-box">
+        <span class="milestone-icon">🏁</span>
+        <p><strong>BAST 2 — 30% Payment Milestone</strong><br>
+        All 6 apps on EKS production · DevSecOps CI/CD pipeline live · Database migration complete · Terraform IaC applied · Load test &amp; security scan reports</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /week-grid M2 -->
+
+<!-- ════════════════════ MONTH 3 ════════════════════ -->
+<div class="phase-header m3">
+  <h2>Month 3 — Deliver &nbsp;·&nbsp; Weeks 10–13</h2>
+  <div class="line"></div>
+</div>
+<div class="week-grid">
+
+  <!-- W10 -->
+  <div class="week-card m3">
+    <div class="card-top">
+      <div>
+        <div class="week-num">Week 10</div>
+        <div class="week-title">Blue-Green Deployment Testing with Developer Team</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div>
+        <div class="section-label">Objective</div>
+        <div class="objective-box">Conduct blue-green rollout and rollback drills together with the developer team. Confirm the full deployment workflow is understood and can be executed independently before moving to observability setup.</div>
+      </div>
+      <div>
+        <div class="section-label">Key Activities</div>
+        <ul class="checklist">
+          <li><span class="chk"></span>Walk developer team through the blue-green deployment process end-to-end</li>
+          <li><span class="chk"></span>Run rollout drills for all 6 apps together with the developer team</li>
+          <li><span class="chk"></span>Run rollback drills — confirm team can execute rollback independently</li>
+          <li><span class="chk"></span>Validate full pipeline approval flow: DEV → Team Lead approval → STG/PRD</li>
+          <li><span class="chk"></span>Document and resolve any issues found during drill exercises</li>
+          <li><span class="chk"></span>Confirm all 6 apps stable in production after drills</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-label">Pre-requisites</div>
+        <ul class="prereq-list">
+          <li>BAST 2 signed — Month 3 work can begin</li>
+          <li>Blue-green infrastructure configured for all 6 apps (from W9)</li>
+          <li>Developer team and Team Lead available for drill sessions this week</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- W11 -->
+  <div class="week-card m3">
+    <div class="card-top">
+      <div>
+        <div class="week-num">Week 11</div>
+        <div class="week-title">Monitoring, APM &amp; Observability Setup</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div>
+        <div class="section-label">Objective</div>
+        <div class="objective-box">Set up full observability for the production environment — CloudWatch dashboards, alarms, AWS X-Ray distributed tracing, and centralised log management. Only begins once production is confirmed stable from W10.</div>
+      </div>
+      <div>
+        <div class="section-label">Key Activities</div>
+        <ul class="checklist">
+          <li><span class="chk"></span>Enable CloudWatch Container Insights for the EKS cluster</li>
+          <li><span class="chk"></span>Set up CloudWatch alarms covering EKS, RDS, ALB, and application metrics</li>
+          <li><span class="chk"></span>Configure SNS notifications for alarm state changes</li>
+          <li><span class="chk"></span>Build CloudWatch dashboards — infrastructure overview and per-app views</li>
+          <li><span class="chk"></span>Deploy AWS X-Ray for distributed tracing across all 6 apps</li>
+          <li><span class="chk"></span>Set up centralised log routing to CloudWatch Log Groups per app</li>
+          <li><span class="chk"></span>Validate full observability stack — traces, metrics, and logs all flowing</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-label">Pre-requisites</div>
+        <ul class="prereq-list">
+          <li>All 6 apps confirmed stable after blue-green drills (from W10)</li>
+          <li>X-Ray integration approach confirmed with developer team</li>
+          <li>CloudWatch log group naming convention agreed with Customer</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- W12 -->
+  <div class="week-card m3">
+    <div class="card-top">
+      <div>
+        <div class="week-num">Week 12</div>
+        <div class="week-title">AWS Backup &amp; DNS / Firewall Migration from Cloudflare</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div>
+        <div class="section-label">Objective</div>
+        <div class="objective-box">Configure AWS Backup for data protection and validate restore. Migrate DNS from Cloudflare to Route 53 and replace Cloudflare firewall with AWS WAF and Shield Standard.</div>
+      </div>
+      <div>
+        <div class="section-label">Key Activities</div>
+        <ul class="checklist">
+          <li><span class="chk"></span>Configure AWS Backup plans for RDS and EBS with retention policies</li>
+          <li><span class="chk"></span>Run a backup restore test and confirm data can be recovered</li>
+          <li><span class="chk"></span>Import existing DNS zones into Route 53 and validate all records match</li>
+          <li><span class="chk"></span>Update domain registrar NS records to point to Route 53</li>
+          <li><span class="chk"></span>Monitor DNS propagation — confirm all apps resolve correctly via Route 53</li>
+          <li><span class="chk"></span>Deploy AWS WAF WebACLs to ALB for all 6 apps</li>
+          <li><span class="chk"></span>Enable AWS Shield Standard and decommission Cloudflare configuration</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-label">Pre-requisites</div>
+        <ul class="prereq-list">
+          <li>Monitoring and observability stack fully operational (from W11)</li>
+          <li>Cloudflare DNS TTL set to low value since W8</li>
+          <li>Domain registrar access credentials provided by Customer</li>
+          <li>WAF rule requirements agreed with Customer IT and security lead</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- W13 — BAST 3 -->
+  <div class="week-card m3 has-bast">
+    <div class="card-top">
+      <div>
+        <div class="week-num">Week 13</div>
+        <div class="week-title">Documentation, Knowledge Transfer Workshop &amp; Project Closure</div>
+      </div>
+      <span class="bast-pill">🏁 BAST 3 · 40%</span>
+    </div>
+    <div class="card-body">
+      <div>
+        <div class="section-label">Objective</div>
+        <div class="objective-box">Deliver the complete documentation package and conduct a structured knowledge transfer workshop with the customer team. Verify operational independence. Obtain BAST 3 sign-off, revoke Xtremax access, and formally close the engagement.</div>
+      </div>
+      <div>
+        <div class="section-label">Key Activities</div>
+        <ul class="checklist">
+          <li><span class="chk"></span>Write and finalise all BAST 3 documents</li>
+          <li><span class="chk"></span>Compile Operations Guide: runbooks, escalation matrix, backup and recovery procedures</li>
+          <li><span class="chk"></span>Conduct knowledge transfer workshop — cover EKS operations, CI/CD pipeline, monitoring, DB, and DR procedures</li>
+          <li><span class="chk"></span>Verify customer team can operate the environment independently</li>
+          <li><span class="chk"></span>Final project presentation to Customer stakeholders</li>
+          <li><span class="chk"></span>Provide BAST 3 documentation and obtain Customer sign-off</li>
+          <li><span class="chk"></span>Remove all Xtremax access from Customer AWS accounts</li>
+          <li><span class="chk"></span>Project closure — handover of all repositories, credentials, and documentation</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-label">Pre-requisites</div>
+        <ul class="prereq-list">
+          <li>DNS cutover complete and all apps stable on Route 53 (from W12)</li>
+          <li>AWS WAF and Shield Standard active (from W12)</li>
+          <li>Backup configuration and restore test completed (from W12)</li>
+          <li>All BAST 3 documents drafted and ready for review before the week starts</li>
+          <li>Customer team and stakeholders available for workshop and final presentation</li>
+        </ul>
+      </div>
+      <div class="milestone-box">
+        <span class="milestone-icon">🏁</span>
+        <p><strong>BAST 3 — 40% Final Payment Milestone</strong><br>
+        Final Architecture Document · CI/CD Pipeline Guide · Database Migration Report · Monitoring &amp; APM Guide · DNS &amp; Security Report · Operations Guide</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /week-grid M3 -->
+</div><!-- /container -->
+
+</body>
+</html>
+    <div class="card-top">
+      <div>
+        <div class="week-num">Week 5</div>
+        <div class="week-title">Production EKS Setup via Terraform &amp; Pilot Containerisation</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div>
+        <div class="section-label">Objective</div>
+        <div class="objective-box">Deploy the production EKS cluster using Terraform. Validate and deploy 2 pilot app container images to ECR and EKS DEV. Establish the Dockerfile and Helm chart standards that all remaining apps will follow.</div>
+      </div>
+      <div>
+        <div class="section-label">Key Activities</div>
+        <ul class="checklist">
+          <li><span class="chk"></span>Write and apply Terraform eks-cluster module to production account</li>
+          <li><span class="chk"></span>Install required EKS add-ons and validate all nodes are in Ready state</li>
+          <li><span class="chk"></span>Create EKS namespaces for DEV, STG, and PRD environments</li>
+          <li><span class="chk"></span>Configure IRSA — pod-level IAM access for apps via OIDC</li>
+          <li><span class="chk"></span>Review and validate Dockerfiles and Helm charts for 2 pilot apps</li>
+          <li><span class="chk"></span>Build and push pilot app images to ECR</li>
+          <li><span class="chk"></span>Deploy pilot apps to EKS DEV namespace and validate</li>
+          <li><span class="chk"></span>Store app secrets and DB credentials in Secrets Manager</li>
+          <li><span class="chk"></span>Write Terraform rds module (database cluster, subnet group, parameter group)</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-label">Pre-requisites</div>
+        <ul class="prereq-list">
+          <li>BAST 1 signed — Month 2 work can begin</li>
+          <li>Terraform vpc module applied and state clean (from W4)</li>
+          <li>ECR repositories and GitHub repos ready (from W3)</li>
+          <li>EKS IAM roles confirmed in non-production (from W2)</li>
+          <li>Developer team has written Dockerfiles and Helm charts for 2 pilot apps</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- W6 -->
+  <div class="week-card m2">
+    <div class="card-top">
+      <div>
+        <div class="week-num">Week 6</div>
+        <div class="week-title">DevSecOps CI/CD Pipeline Setup</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div>
+        <div class="section-label">Objective</div>
+        <div class="objective-box">Build the full DevSecOps pipeline: GitHub → CodePipeline → CodeBuild (unit test + security scan + SonarQube quality gate) → ECR → CodeDeploy to EKS DEV. Add a manual pipeline approval gate before promotion to STG/PRD.</div>
+      </div>
+      <div>
+        <div class="section-label">Key Activities</div>
+        <ul class="checklist">
+          <li><span class="chk"></span>Set up CodePipeline: GitHub source → CodeBuild → ECR → CodeDeploy to EKS DEV</li>
+          <li><span class="chk"></span>Configure CodeBuild stage: unit test → container security scan → push to ECR</li>
+          <li><span class="chk"></span>Integrate SonarQube quality gate into CodeBuild — fail pipeline on critical findings</li>
+          <li><span class="chk"></span>Configure automation test and quality gate stage after DEV deployment</li>
+          <li><span class="chk"></span>Add manual pipeline approval gate (Team Lead / SPV) before STG/PRD promotion</li>
+          <li><span class="chk"></span>Configure CodeDeploy to EKS STG/PRD after approval</li>
+          <li><span class="chk"></span>Test end-to-end pipeline for both pilot apps</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-label">Pre-requisites</div>
+        <ul class="prereq-list">
+          <li>2 pilot apps containerised and running on EKS DEV (from W5)</li>
+          <li>SonarQube server deployed and accessible from CodeBuild</li>
+          <li>CodePipeline and CodeBuild IAM roles created</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- W7 -->
+  <div class="week-card m2">
+    <div class="card-top">
+      <div>
+        <div class="week-num">Week 7</div>
+        <div class="week-title">Deploy Remaining 4 Apps Through Pipeline &amp; Complete Terraform IaC</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div>
+        <div class="section-label">Objective</div>
+        <div class="objective-box">Onboard all remaining 4 apps through the established DevSecOps pipeline from DEV to production. Complete all Terraform modules so the full infrastructure is fully codified before BAST 2.</div>
+      </div>
+      <div>
+        <div class="section-label">Key Activities</div>
+        <ul class="checklist">
+          <li><span class="chk"></span>Review and validate Dockerfiles and Helm charts for remaining 4 apps</li>
+          <li><span class="chk"></span>Push all 4 apps through CI/CD pipeline: DEV → quality gate → Team Lead approval → STG/PRD</li>
+          <li><span class="chk"></span>Resolve any pipeline failures (SonarQube findings, security scan issues) per app</li>
+          <li><span class="chk"></span>Write and apply Terraform app module for all 6 apps</li>
+          <li><span class="chk"></span>Confirm all Terraform modules applied cleanly — no outstanding drift</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-label">Pre-requisites</div>
+        <ul class="prereq-list">
+          <li>CI/CD pipeline tested and working end-to-end for pilot apps (from W6)</li>
+          <li>Developer team has written Dockerfiles and Helm charts for remaining 4 apps using pilot templates as reference</li>
+          <li>Terraform rds module written and reviewed (from W5)</li>
+          <li>Pipeline approval workflow confirmed with Team Lead / SPV</li>
         </ul>
       </div>
     </div>
@@ -509,40 +841,44 @@
     <div class="card-top">
       <div>
         <div class="week-num">Week 8</div>
-        <div class="week-title">Load Testing, Security Review &amp; BAST 2 Sign-off</div>
+        <div class="week-title">Database Migration, Blue-Green Infra Setup &amp; BAST 2 Sign-off</div>
       </div>
       <span class="bast-pill">🏁 BAST 2 · 30%</span>
     </div>
     <div class="card-body">
       <div>
         <div class="section-label">Objective</div>
-        <div class="objective-box">Validate full system performance under load. Complete security scan of containers and IaC. Obtain BAST 2 sign-off. Prepare Cloudflare DNS for Week 11 cutover.</div>
+        <div class="objective-box">Migrate all application databases to the production RDS environment. Configure blue-green deployment infrastructure for all 6 apps. Run load tests and security reviews. Obtain BAST 2 sign-off and prepare DNS for the upcoming cutover.</div>
       </div>
       <div>
         <div class="section-label">Key Activities</div>
         <ul class="checklist">
-          <li><span class="chk"></span>Run full k6 load tests on all 6 apps — validate performance SLAs</li>
-          <li><span class="chk"></span>Run ECR image scans on all 6 app containers — resolve HIGH/CRITICAL findings</li>
-          <li><span class="chk"></span>Run Checkov static analysis on all Terraform IaC — resolve critical findings</li>
-          <li><span class="chk"></span>SA final review of EKS, network, and database architecture</li>
-          <li><span class="chk"></span>Compile BAST 2 evidence package (test reports, security scan results, SA sign-off)</li>
-          <li><span class="chk"></span>Present BAST 2 to Customer stakeholders → obtain signature → submit 30% invoice</li>
-          <li><span class="chk"></span>Set Cloudflare DNS TTL → 60 seconds in preparation for W11 cutover</li>
+          <li><span class="chk"></span>Apply Terraform rds module — deploy production database cluster</li>
+          <li><span class="chk"></span>Set up AWS DMS and run full-load migration for all application databases</li>
+          <li><span class="chk"></span>Enable DMS CDC replication and validate data integrity</li>
+          <li><span class="chk"></span>Cut over apps to new database endpoints and confirm all apps are running correctly</li>
+          <li><span class="chk"></span>Configure blue-green deployment infrastructure via CodeDeploy for all 6 apps</li>
+          <li><span class="chk"></span>Validate blue-green traffic routing between environments</li>
+          <li><span class="chk"></span>Run load tests on all 6 apps in production</li>
+          <li><span class="chk"></span>Run security scan on all container images and Terraform IaC — resolve critical findings</li>
+          <li><span class="chk"></span>Provide BAST 2 documentation and obtain Customer sign-off</li>
+          <li><span class="chk"></span>Set Cloudflare DNS TTL to low value in preparation for W11 cutover</li>
         </ul>
       </div>
       <div>
         <div class="section-label">Pre-requisites</div>
         <ul class="prereq-list">
-          <li>All 6 apps running on EKS with CI/CD pipeline operational</li>
-          <li>All databases migrated and apps pointing to Aurora/RDS</li>
-          <li>terraform plan = 0 changes confirmed across all 4 modules</li>
+          <li>All 6 apps deployed to production through CI/CD pipeline (from W7)</li>
+          <li>All Terraform modules applied with no outstanding drift (from W7)</li>
+          <li>Source database credentials and schema documentation provided by Customer</li>
+          <li>DMS subnet group and security group pre-created</li>
           <li>Customer stakeholder calendar blocked for BAST 2 presentation</li>
         </ul>
       </div>
       <div class="milestone-box">
         <span class="milestone-icon">🏁</span>
         <p><strong>BAST 2 — 30% Payment Milestone</strong><br>
-        All 6 apps on EKS · CI/CD pipeline live · Database migration complete · IaC (4 Terraform modules) applied · Load test &amp; security scan reports</p>
+        All 6 apps on EKS production · DevSecOps CI/CD pipeline live · Database migration complete · Terraform IaC applied · Load test &amp; security scan reports</p>
       </div>
     </div>
   </div>
@@ -561,33 +897,32 @@
     <div class="card-top">
       <div>
         <div class="week-num">Week 9</div>
-        <div class="week-title">Blue-Green Deployment &amp; APM / Monitoring Setup</div>
+        <div class="week-title">Blue-Green Deployment Testing with Developer Team</div>
       </div>
     </div>
     <div class="card-body">
       <div>
         <div class="section-label">Objective</div>
-        <div class="objective-box">Configure CodeDeploy blue-green for all 6 apps and verify rollback completes in under 5 minutes. Set up X-Ray distributed tracing, CloudWatch Container Insights, and Fluent Bit log routing.</div>
+        <div class="objective-box">Conduct blue-green rollout and rollback drills together with the developer team. Confirm the full deployment workflow is understood and operational before moving on to observability and operations setup.</div>
       </div>
       <div>
         <div class="section-label">Key Activities</div>
         <ul class="checklist">
-          <li><span class="chk"></span>Configure CodeDeploy blue-green for all 6 apps (10% → 50% → 100% traffic shift)</li>
-          <li><span class="chk"></span>Run rollout drill for all 6 apps and verify deployment completes cleanly</li>
-          <li><span class="chk"></span>Run rollback drill for all 6 apps — confirm rollback completes in &lt;5 minutes</li>
-          <li><span class="chk"></span>Deploy X-Ray DaemonSet to EKS — instrument all 6 apps for distributed tracing</li>
-          <li><span class="chk"></span>Enable CloudWatch Container Insights for EKS cluster</li>
-          <li><span class="chk"></span>Deploy Fluent Bit DaemonSet — route logs to CloudWatch Log Groups per app</li>
-          <li><span class="chk"></span>Validate full observability stack: traces, metrics, and logs flowing in CloudWatch</li>
+          <li><span class="chk"></span>Walk developer team through the blue-green deployment process end-to-end</li>
+          <li><span class="chk"></span>Run rollout drills for all 6 apps together with the developer team</li>
+          <li><span class="chk"></span>Run rollback drills — confirm team can execute rollback independently</li>
+          <li><span class="chk"></span>Validate pipeline approval flow: DEV → Team Lead approval → STG/PRD</li>
+          <li><span class="chk"></span>Document any issues found and resolve before proceeding to monitoring setup</li>
+          <li><span class="chk"></span>Confirm all 6 apps stable in production after drill exercises</li>
         </ul>
       </div>
       <div>
         <div class="section-label">Pre-requisites</div>
         <ul class="prereq-list">
           <li>BAST 2 signed — Month 3 work can begin</li>
-          <li>CI/CD pipeline operational for all 6 apps (from W6)</li>
-          <li>All apps stable on EKS in production with load tests passed</li>
-          <li>X-Ray SDK integrated into app code (coordinate with dev team)</li>
+          <li>Blue-green infrastructure configured for all 6 apps (from W8)</li>
+          <li>Developer team and Team Lead available for drill sessions</li>
+          <li>All 6 apps stable in production (from W8)</li>
         </ul>
       </div>
     </div>
@@ -598,33 +933,32 @@
     <div class="card-top">
       <div>
         <div class="week-num">Week 10</div>
-        <div class="week-title">CloudWatch Dashboards, Alarms &amp; Backup Configuration</div>
+        <div class="week-title">Monitoring, APM &amp; Observability Setup</div>
       </div>
     </div>
     <div class="card-body">
       <div>
         <div class="section-label">Objective</div>
-        <div class="objective-box">Build operational dashboards and alarms for all 6 apps and infrastructure. Configure AWS Backup with tested restore. Import Route 53 hosted zones in preparation for W11 DNS cutover.</div>
+        <div class="objective-box">Set up full observability for the production environment — CloudWatch dashboards, alarms, AWS X-Ray distributed tracing, and centralised log management. Production must be stable before this begins.</div>
       </div>
       <div>
         <div class="section-label">Key Activities</div>
         <ul class="checklist">
-          <li><span class="chk"></span>Create ≥20 CloudWatch alarms covering EKS, RDS, ALB, and app-level metrics</li>
-          <li><span class="chk"></span>Configure SNS → notify Teams and email on alarm state change</li>
-          <li><span class="chk"></span>Build CloudWatch dashboards: per-app and infrastructure overview</li>
-          <li><span class="chk"></span>Configure AWS Backup plans for EBS, RDS, and S3 with retention policies</li>
-          <li><span class="chk"></span>Run RDS point-in-time restore test — confirm RTO ≤ 2 hours</li>
-          <li><span class="chk"></span>Import existing DNS zones into Route 53 hosted zones</li>
-          <li><span class="chk"></span>Validate Route 53 records match Cloudflare configuration</li>
+          <li><span class="chk"></span>Enable CloudWatch Container Insights for the EKS cluster</li>
+          <li><span class="chk"></span>Set up CloudWatch alarms covering EKS, RDS, ALB, and application metrics</li>
+          <li><span class="chk"></span>Configure SNS notifications for alarm state changes</li>
+          <li><span class="chk"></span>Build CloudWatch dashboards — infrastructure overview and per-app views</li>
+          <li><span class="chk"></span>Deploy AWS X-Ray for distributed tracing across all 6 apps</li>
+          <li><span class="chk"></span>Set up centralised log routing to CloudWatch Log Groups per app</li>
+          <li><span class="chk"></span>Validate full observability stack — traces, metrics, and logs all flowing</li>
         </ul>
       </div>
       <div>
         <div class="section-label">Pre-requisites</div>
         <ul class="prereq-list">
-          <li>X-Ray, Container Insights, and Fluent Bit all operational (from W9)</li>
-          <li>Cloudflare DNS TTL set to 60s (from W8)</li>
-          <li>AWS Backup vault created with appropriate KMS key</li>
-          <li>Route 53 hosted zone creation approved by Customer IT lead</li>
+          <li>All 6 apps confirmed stable in production after blue-green drills (from W9)</li>
+          <li>X-Ray integration confirmed with developer team</li>
+          <li>CloudWatch log group naming convention agreed with Customer</li>
         </ul>
       </div>
     </div>
@@ -635,34 +969,33 @@
     <div class="card-top">
       <div>
         <div class="week-num">Week 11</div>
-        <div class="week-title">DNS &amp; Firewall Migration from Cloudflare to AWS</div>
+        <div class="week-title">AWS Backup &amp; DNS / Firewall Migration from Cloudflare</div>
       </div>
     </div>
     <div class="card-body">
       <div>
         <div class="section-label">Objective</div>
-        <div class="objective-box">Cut DNS over from Cloudflare to Route 53. Deploy AWS WAF WebACLs and Shield Standard. Conduct final SA architecture review before BAST 3 documentation begins.</div>
+        <div class="objective-box">Configure AWS Backup for data protection. Migrate DNS from Cloudflare to Route 53 and replace Cloudflare firewall with AWS WAF and Shield Standard.</div>
       </div>
       <div>
         <div class="section-label">Key Activities</div>
         <ul class="checklist">
-          <li><span class="chk"></span>Update domain registrar NS records — point to Route 53 name servers</li>
-          <li><span class="chk"></span>Monitor DNS propagation — validate all apps resolve correctly via Route 53</li>
-          <li><span class="chk"></span>Deploy AWS WAF WebACLs to ALB and CloudFront for all 6 apps</li>
-          <li><span class="chk"></span>Configure WAF managed rule groups (Core Rule Set, Known Bad Inputs, SQLi)</li>
-          <li><span class="chk"></span>Enable AWS Shield Standard — confirm DDoS protection active</li>
-          <li><span class="chk"></span>Decommission Cloudflare DNS and firewall configuration</li>
-          <li><span class="chk"></span>SA final architecture review — validate end-to-end security and network posture</li>
+          <li><span class="chk"></span>Configure AWS Backup plans for RDS and EBS with retention policies</li>
+          <li><span class="chk"></span>Run a backup restore test and confirm data can be recovered</li>
+          <li><span class="chk"></span>Import existing DNS zones into Route 53 and validate all records</li>
+          <li><span class="chk"></span>Update domain registrar NS records to point to Route 53</li>
+          <li><span class="chk"></span>Monitor DNS propagation — confirm all apps resolve correctly</li>
+          <li><span class="chk"></span>Deploy AWS WAF WebACLs to ALB for all 6 apps</li>
+          <li><span class="chk"></span>Enable AWS Shield Standard and decommission Cloudflare configuration</li>
         </ul>
       </div>
       <div>
         <div class="section-label">Pre-requisites</div>
         <ul class="prereq-list">
-          <li>Route 53 hosted zones imported and validated (from W10)</li>
-          <li>Cloudflare DNS TTL at 60s for &gt;72 hours (set in W8)</li>
+          <li>Monitoring and observability stack fully operational (from W10)</li>
+          <li>Cloudflare DNS TTL set to low value since W8</li>
           <li>Domain registrar access credentials provided by Customer</li>
-          <li>WAF rule groups agreed with Customer IT and security lead</li>
-          <li>Rollback plan documented: re-point NS to Cloudflare if needed</li>
+          <li>WAF rule requirements agreed with Customer IT and security lead</li>
         </ul>
       </div>
     </div>
@@ -680,35 +1013,35 @@
     <div class="card-body">
       <div>
         <div class="section-label">Objective</div>
-        <div class="objective-box">Deliver the complete documentation package. Confirm shadow engineer independence through a live assessment. Obtain BAST 3 sign-off, revoke Xtremax access, and formally close the engagement.</div>
+        <div class="objective-box">Deliver the complete documentation package. Confirm the customer team can operate independently. Obtain BAST 3 sign-off, revoke Xtremax access, and formally close the engagement.</div>
       </div>
       <div>
         <div class="section-label">Key Activities</div>
         <ul class="checklist">
-          <li><span class="chk"></span>Write and finalise all 5 BAST 3 documents (Architecture, CI/CD, DB, Monitoring, DNS/Security)</li>
-          <li><span class="chk"></span>Compile Operations Guide: runbooks, escalation matrix, incident response, backup procedures</li>
-          <li><span class="chk"></span>Shadow engineer independence test — perform a deployment and incident simulation unassisted</li>
-          <li><span class="chk"></span>Final project presentation to Customer stakeholders and management</li>
-          <li><span class="chk"></span>Address all final feedback and document sign-offs</li>
-          <li><span class="chk"></span>Customer signs BAST 3 → submit final 40% invoice</li>
-          <li><span class="chk"></span>Remove all Xtremax IAM users and access keys from Customer accounts</li>
-          <li><span class="chk"></span>Project closure — handover of all credentials, repos, and documentation</li>
+          <li><span class="chk"></span>Write and finalise all BAST 3 documents</li>
+          <li><span class="chk"></span>Compile Operations Guide: runbooks, escalation matrix, backup and recovery procedures</li>
+          <li><span class="chk"></span>Conduct knowledge transfer sessions with the customer team</li>
+          <li><span class="chk"></span>Verify customer team can operate the environment independently</li>
+          <li><span class="chk"></span>Final project presentation to Customer stakeholders</li>
+          <li><span class="chk"></span>Provide BAST 3 documentation and obtain Customer sign-off</li>
+          <li><span class="chk"></span>Remove all Xtremax access from Customer AWS accounts</li>
+          <li><span class="chk"></span>Project closure — handover of all repositories, credentials, and documentation</li>
         </ul>
       </div>
       <div>
         <div class="section-label">Pre-requisites</div>
         <ul class="prereq-list">
           <li>DNS cutover complete and all apps stable on Route 53 (from W11)</li>
-          <li>WAF and Shield Standard active and configured (from W11)</li>
-          <li>All backups configured and restore test passed (from W10)</li>
-          <li>Shadow engineers assessed and confirmed operationally ready</li>
+          <li>AWS WAF and Shield Standard active (from W11)</li>
+          <li>Backup configuration and restore test completed (from W11)</li>
+          <li>Customer team confirmed available for knowledge transfer sessions</li>
           <li>Customer stakeholder calendar blocked for final presentation</li>
         </ul>
       </div>
       <div class="milestone-box">
         <span class="milestone-icon">🏁</span>
         <p><strong>BAST 3 — 40% Final Payment Milestone</strong><br>
-        Final Architecture Document · CI/CD Pipeline Guide · Database Migration Report · Monitoring &amp; Alerting Guide · DNS &amp; Security Report · Operations Guide</p>
+        Final Architecture Document · CI/CD Pipeline Guide · Database Migration Report · Monitoring &amp; APM Guide · DNS &amp; Security Report · Operations Guide</p>
       </div>
     </div>
   </div>
