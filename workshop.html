@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workshop: Containerizing Legacy Applications with Docker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            color: #fff;
+            overflow: hidden;
+        }
+        
+        .slide {
+            display: none;
+            height: 100vh;
+            padding: 60px 80px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 30px;
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            color: #00d9ff;
+        }
+        
+        h3 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #00ff88;
+        }
+        
+        p, li {
+            font-size: 1.3rem;
+            line-height: 1.8;
+            color: #e0e0e0;
+        }
+        
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        ul li {
+            padding: 10px 0;
+            padding-left: 40px;
+            position: relative;
+        }
+        
+        ul li::before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #00ff88;
+            font-size: 1.5rem;
+        }
+        
+        .code-block {
+            background: #0d0d1a;
+            border: 1px solid #00d9ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            overflow-x: auto;
+        }
+        
+        .code-block .comment { color: #6a9955; }
+        .code-block .keyword { color: #569cd6; }
+        .code-block .string { color: #ce9178; }
+        .code-block .cmd { color: #00ff88; }
+        
+        .highlight {
+            background: rgba(0, 217, 255, 0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: #00d9ff;
+        }
+        
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            flex: 1;
+        }
+        
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(0,217,255,0.3);
+        }
+        
+        .card h3 {
+            margin-bottom: 20px;
+        }
+        
+        .progress-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            transition: width 0.3s ease;
+        }
+        
+        .slide-number {
+            position: fixed;
+            bottom: 20px;
+            right: 30px;
+            font-size: 1rem;
+            color: #666;
+        }
+        
+        .nav-buttons {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-btn {
+            background: rgba(0,217,255,0.2);
+            border: 1px solid #00d9ff;
+            color: #00d9ff;
+            padding: 10px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn:hover {
+            background: #00d9ff;
+            color: #1a1a2e;
+        }
+        
+        .diagram {
+            background: #0d0d1a;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .diagram-box {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 10px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+        
+        .diagram-box.frontend { background: #3498db; }
+        .diagram-box.backend { background: #e74c3c; }
+        .diagram-box.database { background: #9b59b6; }
+        .diagram-box.docker { background: #00d9ff; color: #1a1a2e; }
+        
+        .arrow {
+            font-size: 2rem;
+            color: #00ff88;
+            margin: 0 10px;
+        }
+        
+        .step-number {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: #00d9ff;
+            color: #1a1a2e;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+        
+        .best-practice {
+            background: rgba(0,255,136,0.1);
+            border-left: 4px solid #00ff88;
+            padding: 15px 20px;
+            margin: 10px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .warning-box {
+            background: rgba(255,193,7,0.1);
+            border-left: 4px solid #ffc107;
+            padding: 15px 20px;
+            margin: 10px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .flex-center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+        }
+        
+        .logo-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .logo-item {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+        }
+        
+        .logo-item img {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 10px;
+        }
+        
+        .checklist {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: rgba(0,255,136,0.1);
+            border-radius: 8px;
+        }
+        
+        .checklist-item .check {
+            color: #00ff88;
+            margin-right: 15px;
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Slide 1: Title -->
+<div class="slide active">
+    <div class="flex-center" style="flex-direction: column;">
+        <h1>🐳 Containerizing Legacy Applications</h1>
+        <p style="font-size: 1.5rem; color: #888; margin-top: 20px;">Workshop: From Monolith to Container</p>
+        <div style="margin-top: 60px;">
+            <span class="diagram-box docker">Docker</span>
+            <span class="arrow">→</span>
+            <span class="diagram-box frontend">Vue.js</span>
+            <span class="arrow">+</span>
+            <span class="diagram-box backend">AdonisJS</span>
+        </div>
+        <p style="margin-top: 40px; color: #666;">Press Arrow Keys or Click Buttons to Navigate</p>
+    </div>
+    <div class="progress-bar" style="width: 5%;"></div>
+    <div class="slide-number">1 / 15</div>
+</div>
+
+<!-- Slide 2: Agenda -->
+<div class="slide">
+    <h2>📋 Agenda</h2>
+    <ul>
+        <li><span class="highlight">Introduction</span> - What is Docker and why containerize?</li>
+        <li><span class="highlight">Preparation</span> - Assess your legacy application</li>
+        <li><span class="highlight">Step-by-Step</span> - Containerize from scratch</li>
+        <li><span class="highlight">Best Practices</span> - Docker best practices</li>
+        <li><span class="highlight">Live Demo</span> - Containerize Vendor Portal</li>
+        <li><span class="highlight">Q&A</span> - Questions and discussion</li>
+    </ul>
+    <div class="progress-bar" style="width: 10%;"></div>
+    <div class="slide-number">2 / 15</div>
+</div>
+
+<!-- Slide 3: What is Docker -->
+<div class="slide">
+    <h2>🐳 What is Docker?</h2>
+    <div class="two-column">
+        <div>
+            <h3>Container vs VM</h3>
+            <div class="diagram">
+                <p style="margin-bottom: 20px;"><strong>Virtual Machine</strong></p>
+                <div style="background: #2d2d2d; padding: 15px; border-radius: 8px;">
+                    <div style="background: #e74c3c; padding: 8px; margin: 5px; border-radius: 4px;">Guest OS</div>
+                    <div style="background: #3498db; padding: 8px; margin: 5px; border-radius: 4px;">Guest OS</div>
+                    <div style="background: #9b59b6; padding: 8px; margin: 5px; border-radius: 4px;">Guest OS</div>
+                    <div style="background: #2d2d2d; padding: 8px; margin: 5px; border-radius: 4px; border: 1px dashed #666;">Hypervisor</div>
+                    <div style="background: #1a1a2e; padding: 8px; margin: 5px; border-radius: 4px;">Host OS</div>
+                </div>
+            </div>
+        </div>
+        <div>
+            <h3>Docker Container</h3>
+            <div class="diagram">
+                <p style="margin-bottom: 20px;"><strong>Container</strong></p>
+                <div style="background: #2d2d2d; padding: 15px; border-radius: 8px;">
+                    <div style="background: #e74c3c; padding: 8px; margin: 5px; border-radius: 4px;">App 1</div>
+                    <div style="background: #3498db; padding: 8px; margin: 5px; border-radius: 4px;">App 2</div>
+                    <div style="background: #9b59b6; padding: 8px; margin: 5px; border-radius: 4px;">App 3</div>
+                    <div style="background: #00d9ff; padding: 8px; margin: 5px; border-radius: 4px; color: #1a1a2e;">Docker Engine</div>
+                    <div style="background: #1a1a2e; padding: 8px; margin: 5px; border-radius: 4px;">Host OS</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="progress-bar" style="width: 15%;"></div>
+    <div class="slide-number">3 / 15</div>
+</div>
+
+<!-- Slide 4: Why Containerize -->
+<div class="slide">
+    <h2>🎯 Why Containerize Legacy Apps?</h2>
+    <div class="two-column">
+        <div class="card">
+            <h3>🚀 Benefits</h3>
+            <ul>
+                <li><strong>Consistency</strong> - Same environment everywhere</li>
+                <li><strong>Isolation</strong> - No more "works on my machine"</li>
+                <li><strong>Portability</strong> - Run anywhere (dev, staging, prod)</li>
+                <li><strong>Scalability</strong> - Easy to scale horizontally</li>
+                <li><strong>Fast Deployment</strong> - Seconds instead of hours</li>
+                <li><strong>Resource Efficiency</strong> - More apps per server</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3>⚠️ Challenges</h3>
+            <ul>
+                <li><strong>Stateful Data</strong> - Databases need special handling</li>
+                <li><strong>Configuration</strong> - Environment variables</li>
+                <li><strong>Networking</strong> - Inter-container communication</li>
+                <li><strong>Legacy Code</strong> - May have hidden dependencies</li>
+                <li><strong>Security</strong> - New security considerations</li>
+                <li><strong>Monitoring</strong> - Different logging approach</li>
+            </ul>
+        </div>
+    </div>
+    <div class="progress-bar" style="width: 20%;"></div>
+    <div class="slide-number">4 / 15</div>
+</div>
+
+<!-- Slide 5: Steps Overview -->
+<div class="slide">
+    <h2>📝 Steps to Containerize from Scratch</h2>
+    <ul>
+        <li><span class="step-number">1</span> <strong>Assess</strong> - Understand your application structure</li>
+        <li><span class="step-number">2</span> <strong>Prepare</strong> - Create .dockerignore and organize files</li>
+        <li><span class="step-number">3</span> <strong>Create Dockerfile</strong> - Define build instructions</li>
+        <li><span class="step-number">4</span> <strong>Build Image</strong> - Test the build process</li>
+        <li><span class="step-number">5</span> <strong>Test Container</strong> - Run and verify functionality</li>
+        <li><span class="step-number">6</span> <strong>Orchestrate</strong> - Use Docker Compose for multi-container</li>
+        <li><span class="step-number">7</span> <strong>Optimize</strong> - Improve image size and security</li>
+    </ul>
+    <div class="progress-bar" style="width: 25%;"></div>
+    <div class="slide-number">5 / 15</div>
+</div>
+
+<!-- Slide 6: Step 1 - Assess -->
+<div class="slide">
+    <h2>🔍 Step 1: Assess Your Application</h2>
+    <div class="card">
+        <h3>Questions to Answer</h3>
+        <ul>
+            <li><strong>What type of app?</strong> - Frontend, Backend, Full-stack, Database</li>
+            <li><strong>What runtime?</strong> - Node.js, Python, Java, .NET, etc.</li>
+            <li><strong>What databases?</strong> - SQL Server, MySQL, PostgreSQL, MongoDB</li>
+            <li><strong>What external services?</strong> - APIs, FTP, Email, etc.</li>
+            <li><strong>What environment variables?</strong> - Configuration needs</li>
+            <li><strong>What ports?</strong> - Which ports does the app use?</li>
+            <li><strong>Native dependencies?</strong> - C++ libraries, system tools</li>
+        </ul>
+    </div>
+    <div class="warning-box" style="margin-top: 20px;">
+        <strong>💡 Tip:</strong> Check package.json, requirements.txt, or pom.xml for dependencies
+    </div>
+    <div class="progress-bar" style="width: 30%;"></div>
+    <div class="slide-number">6 / 15</div>
+</div>
+
+<!-- Slide 7: Step 2 - Prepare -->
+<div class="slide">
+    <h2>📂 Step 2: Prepare Your Project</h2>
+    <div class="two-column">
+        <div class="card">
+            <h3>Create .dockerignore</h3>
+            <div class="code-block">
+<span class="comment"># Don't include these in build</span><br>
+node_modules<br>
+npm-debug.log<br>
+.git<br>
+.gitignore<br>
+.env*<br>
+dist<br>
+build<br>
+*.log<br>
+.DS_Store<br>
+.vscode<br>
+.idea<br><br>
+<span class="comment"># Docker files</span><br>
+Dockerfile*<br>
+docker-compose*<br>
+.dockerignore
+            </div>
+        </div>
+        <div class="card">
+            <h3>Project Structure</h3>
+            <div class="code-block">
+my-app/<br>
+├── backend/<br>
+│&nbsp;&nbsp;&nbsp;├── Dockerfile<br>
+│&nbsp;&nbsp;&nbsp;├── .dockerignore<br>
+│&nbsp;&nbsp;&nbsp;├── package.json<br>
+│&nbsp;&nbsp;&nbsp;└── src/<br>
+├── frontend/<br>
+│&nbsp;&nbsp;&nbsp;├── Dockerfile<br>
+│&nbsp;&nbsp;&nbsp;├── nginx.conf<br>
+│&nbsp;&nbsp;&nbsp;└── src/<br>
+├── docker-compose.yml<br>
+└── .dockerignore
+            </div>
+        </div>
+    </div>
+    <div class="progress-bar" style="width: 35%;"></div>
+    <div class="slide-number">7 / 15</div>
+</div>
+
+<!-- Slide 8: Step 3 - Dockerfile Basics -->
+<div class="slide">
+    <h2>📝 Step 3: Create Dockerfile</h2>
+    <h3>Basic Dockerfile Structure</h3>
+    <div class="code-block">
+<span class="comment"># 1. Base Image</span><br>
+<span class="keyword">FROM</span> node:18-alpine<br><br>
+
+<span class="comment"># 2. Working Directory</span><br>
+<span class="keyword">WORKDIR</span> /app<br><br>
+
+<span class="comment"># 3. Copy package files</span><br>
+<span class="keyword">COPY</span> package*.json ./<br><br>
+
+<span class="comment"># 4. Install dependencies</span><br>
+<span class="keyword">RUN</span> npm install<br><br>
+
+<span class="comment"># 5. Copy source code</span><br>
+<span class="keyword">COPY</span> . .<br><br>
+
+<span class="comment"># 6. Build (if needed)</span><br>
+<span class="keyword">RUN</span> npm run build<br><br>
+
+<span class="comment"># 7. Expose port</span><br>
+<span class="keyword">EXPOSE</span> 3000<br><br>
+
+<span class="comment"># 8. Start command</span><br>
+<span class="keyword">CMD</span> [<span class="string">"npm"</span>, <span class="string">"start"</span>]
+    </div>
+    <div class="progress-bar" style="width: 40%;"></div>
+    <div class="slide-number">8 / 15</div>
+</div>
+
+<!-- Slide 9: Step 3 - Backend Example -->
+<div class="slide">
+    <h2>📝 Step 3: Backend Dockerfile (AdonisJS)</h2>
+    <div class="code-block">
+<span class="keyword">FROM</span> node:18-alpine<br><br>
+
+<span class="keyword">WORKDIR</span> /app<br><br>
+
+<span class="comment"># Install system dependencies for native modules</span><br>
+<span class="keyword">RUN</span> apk add --no-cache \<br>
+&nbsp;&nbsp;&nbsp;&nbsp;python3 \<br>
+&nbsp;&nbsp;&nbsp;&nbsp;make \<br>
+&nbsp;&nbsp;&nbsp;&nbsp;g++ \<br>
+&nbsp;&nbsp;&nbsp;&nbsp;curl \<br>
+&nbsp;&nbsp;&nbsp;&nbsp;curl-dev \<br>
+&nbsp;&nbsp;&nbsp;&nbsp;libtool \<br>
+&nbsp;&nbsp;&nbsp;&nbsp;openssl-dev<br><br>
+
+<span class="keyword">COPY</span> package*.json ./<br>
+<span class="keyword">RUN</span> npm install<br><br>
+
+<span class="keyword">COPY</span> . .<br><br>
+
+<span class="comment"># Build the application</span><br>
+<span class="keyword">RUN</span> node ace build --ignore-ts-errors --production<br><br>
+
+<span class="comment"># Create non-root user for security</span><br>
+<span class="keyword">RUN</span> addgroup -g 1001 -S nodejs<br>
+<span class="keyword">RUN</span> adduser -S adonisjs -u 1001<br>
+<span class="keyword">RUN</span> chown -R adonisjs:nodejs /app<br>
+<span class="keyword">USER</span> adonisjs<br><br>
+
+<span class="keyword">EXPOSE</span> 2239<br><br>
+
+<span class="keyword">CMD</span> [<span class="string">"npm"</span>, <span class="string">"start"</span>]
+    </div>
+    <div class="progress-bar" style="width: 45%;"></div>
+    <div class="slide-number">9 / 15</div>
+</div>
+
+<!-- Slide 10: Step 3 - Frontend Example -->
+<div class="slide">
+    <h2>📝 Step 3: Frontend Dockerfile (Vue.js)</h2>
+    <div class="code-block">
+<span class="comment"># Build stage</span><br>
+<span class="keyword">FROM</span> node:18-alpine <span class="keyword">AS</span> build-stage<br><br>
+
+<span class="keyword">WORKDIR</span> /app<br><br>
+
+<span class="keyword">COPY</span> package*.json ./<br>
+<span class="keyword">RUN</span> npm install<br><br>
+
+<span class="comment"># Copy env file (Vite embeds at build time)</span><br>
+<span class="keyword">COPY</span> .env.development .env<br><br>
+
+<span class="keyword">COPY</span> . .<br>
+<span class="keyword">RUN</span> npm run build<br><br>
+
+<span class="comment"># Production stage</span><br>
+<span class="keyword">FROM</span> nginx:alpine <span class="keyword">AS</span> production-stage<br><br>
+
+<span class="keyword">COPY</span> nginx.conf /etc/nginx/nginx.conf<br>
+<span class="keyword">COPY</span> --from=build-stage /app/dist /usr/share/nginx/html<br><br>
+
+<span class="keyword">USER</span> root<br><br>
+
+<span class="keyword">EXPOSE</span> 7101<br><br>
+
+<span class="keyword">CMD</span> [<span class="string">"nginx"</span>, <span class="string">"-g"</span>, <span class="string">"daemon off;"</span>]
+    </div>
+    <div class="progress-bar" style="width: 50%;"></div>
+    <div class="slide-number">10 / 15</div>
+</div>
+
+<!-- Slide 11: Step 4 & 5 - Build & Test -->
+<div class="slide">
+    <h2>🔨 Step 4 & 5: Build & Test</h2>
+    <div class="two-column">
+        <div class="card">
+            <h3>Build Image</h3>
+            <div class="code-block">
+<span class="comment"># Build the image</span><br>
+docker build -t my-app .<br><br>
+
+<span class="comment"># With custom tag</span><br>
+docker build -t my-app:v1.0.0 .<br><br>
+
+<span class="comment"># With build args</span><br>
+docker build \<br>
+&nbsp;&nbsp;--build-arg NODE_ENV=prod \<br>
+&nbsp;&nbsp;-t my-app .
+            </div>
+        </div>
+        <div class="card">
+            <h3>Run Container</h3>
+            <div class="code-block">
+<span class="comment"># Basic run</span><br>
+docker run -d \<br>
+&nbsp;&nbsp;--name my-app \<br>
+&nbsp;&nbsp;-p 3000:3000 \<br>
+&nbsp;&nbsp;my-app<br><br>
+
+<span class="comment"># With env file</span><br>
+docker run -d \<br>
+&nbsp;&nbsp;-p 3000:3000 \<br>
+&nbsp;&nbsp;-v $(pwd)/.env:/app/.env:ro \<br>
+&nbsp;&nbsp;my-app<br><br>
+
+<span class="comment"># With volume for development</span><br>
+docker run -d \<br>
+&nbsp;&nbsp;-p 3000:3000 \<br>
+&nbsp;&nbsp;-v $(pwd):/app \<br>
+&nbsp;&nbsp;-v /app/node_modules \<br>
+&nbsp;&nbsp;my-app
+            </div>
+        </div>
+    </div>
+    <div class="progress-bar" style="width: 55%;"></div>
+    <div class="slide-number">11 / 15</div>
+</div>
+
+<!-- Slide 12: Step 6 - Docker Compose -->
+<div class="slide">
+    <h2>🔗 Step 6: Docker Compose</h2>
+    <div class="code-block">
+<span class="keyword">version</span>: <span class="string">'3.8'</span><br><br>
+
+<span class="keyword">services</span>:<br>
+&nbsp;&nbsp;<span class="cmd">backend</span>:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;build: ./backend<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ports:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <span class="string">"2239:2239"</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;volumes:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- ./backend/.env:/app/.env:ro<br>
+&nbsp;&nbsp;&nbsp;&nbsp;environment:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- NODE_ENV=production<br><br>
+
+&nbsp;&nbsp;<span class="cmd">frontend</span>:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;build: ./frontend<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ports:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <span class="string">"7101:7101"</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;depends_on:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- backend<br><br>
+
+&nbsp;&nbsp;<span class="cmd">database</span>:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;image: mcr.microsoft.com/mssql/server:2019-latest<br>
+&nbsp;&nbsp;&nbsp;&nbsp;environment:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- ACCEPT_EULA=Y<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- SA_PASSWORD=YourStrong@Passw0rd<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ports:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <span class="string">"1433:1433"</span>
+    </div>
+    <div class="progress-bar" style="width: 60%;"></div>
+    <div class="slide-number">12 / 15</div>
+</div>
+
+<!-- Slide 13: Best Practices -->
+<div class="slide">
+    <h2>✅ Docker Best Practices</h2>
+    <div class="checklist">
+        <div class="checklist-item">
+            <span class="check">✓</span>
+            <div>
+                <strong>Use specific base image versions</strong><br>
+                <span style="color: #888;">FROM node:18-alpine (not :latest)</span>
+            </div>
+        </div>
+        <div class="checklist-item">
+            <span class="check">✓</span>
+            <div>
+                <strong>Use multi-stage builds</strong><br>
+                <span style="color: #888;">Reduce final image size</span>
+            </div>
+        </div>
+        <div class="checklist-item">
+            <span class="check">✓</span>
+            <div>
+                <strong>Run as non-root user</strong><br>
+                <span style="color: #888;">Security best practice</span>
+            </div>
+        </div>
+        <div class="checklist-item">
+            <span class="check">✓</span>
+            <div>
+                <strong>Use .dockerignore</strong><br>
+                <span style="color: #888;">Exclude unnecessary files</span>
+            </div>
+        </div>
+        <div class="checklist-item">
+            <span class="check">✓</span>
+            <div>
+                <strong>Order Dockerfile instructions</strong><br>
+                <span style="color: #888;">Least frequently changed first</span>
+            </div>
+        </div>
+        <div class="checklist-item">
+            <span class="check">✓</span>
+            <div>
+                <strong>Use health checks</strong><br>
+                <span style="color: #888;">HEALTHCHECK instruction</span>
+            </div>
+        </div>
+        <div class="checklist-item">
+            <span class="check">✓</span>
+            <div>
+                <strong>Don't store data in containers</strong><br>
+                <span style="color: #888;">Use volumes for persistent data</span>
+            </div>
+        </div>
+        <div class="checklist-item">
+            <span class="check">✓</span>
+            <div>
+                <strong>Use environment variables</strong><br>
+                <span style="color: #888;">Configuration, not hardcoded values</span>
+            </div>
+        </div>
+    </div>
+    <div class="progress-bar" style="width: 70%;"></div>
+    <div class="slide-number">13 / 15</div>
+</div>
+
+<!-- Slide 14: Common Issues -->
+<div class="slide">
+    <h2>⚠️ Common Issues & Solutions</h2>
+    <div class="card" style="margin-bottom: 20px;">
+        <h3>Issue 1: npm ci fails</h3>
+        <p><strong>Problem:</strong> package.json and package-lock.json not in sync</p>
+        <p><strong>Solution:</strong> Use <code>npm install</code> instead of <code>npm ci</code></p>
+    </div>
+    <div class="card" style="margin-bottom: 20px;">
+        <h3>Issue 2: Native module build fails</h3>
+        <p><strong>Problem:</strong> Missing build tools (python, make, g++)</p>
+        <p><strong>Solution:</strong> Install system dependencies in Dockerfile</p>
+    </div>
+    <div class="card" style="margin-bottom: 20px;">
+        <h3>Issue 3: TypeScript errors</h3>
+        <p><strong>Problem:</strong> Build fails due to TS errors</p>
+        <p><strong>Solution:</strong> Use <code>--ignore-ts-errors</code> flag or skipLibCheck</p>
+    </div>
+    <div class="card">
+        <h3>Issue 4: Env variables not working</h3>
+        <p><strong>Problem:</strong> Vite/React embeds env at build time</p>
+        <p><strong>Solution:</strong> Copy .env file before build or rebuild image</p>
+    </div>
+    <div class="progress-bar" style="width: 80%;"></div>
+    <div class="slide-number">14 / 15</div>
+</div>
+
+<!-- Slide 15: Summary & Q&A -->
+<div class="slide">
+    <h2>🎉 Summary</h2>
+    <div class="two-column">
+        <div class="card">
+            <h3>What We Learned</h3>
+            <ul>
+                <li>Docker basics and container concepts</li>
+                <li>Why containerize legacy applications</li>
+                <li>Step-by-step containerization process</li>
+                <li>Dockerfile best practices</li>
+                <li>Docker Compose for orchestration</li>
+                <li>Common issues and solutions</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3>Next Steps</h3>
+            <ul>
+                <li>Try containerizing your own apps</li>
+                <li>Explore Kubernetes for production</li>
+                <li>Set up CI/CD pipelines</li>
+                <li>Implement monitoring & logging</li>
+                <li>Consider microservices migration</li>
+            </ul>
+        </div>
+    </div>
+    <div style="text-align: center; margin-top: 40px;">
+        <h2>❓ Questions?</h2>
+        <p style="color: #00d9ff; font-size: 1.5rem;">Thank you! 🚀</p>
+    </div>
+    <div class="progress-bar" style="width: 100%;"></div>
+    <div class="slide-number">15 / 15</div>
+</div>
+
+<div class="nav-buttons">
+    <button class="nav-btn" onclick="prevSlide()">← Previous</button>
+    <button class="nav-btn" onclick="nextSlide()">Next →</button>
+</div>
+
+<script>
+let currentSlide = 0;
+const slides = document.querySelectorAll('.slide');
+
+function showSlide(n) {
+    slides[currentSlide].classList.remove('active');
+    currentSlide = (n + slides.length) % slides.length;
+    slides[currentSlide].classList.add('active');
+}
+
+function nextSlide() {
+    showSlide(currentSlide + 1);
+}
+
+function prevSlide() {
+    showSlide(currentSlide - 1);
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === ' ') {
+        nextSlide();
+    } else if (e.key === 'ArrowLeft') {
+        prevSlide();
+    }
+});
+</script>
+
+</body>
+</html>
