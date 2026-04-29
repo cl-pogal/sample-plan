@@ -730,7 +730,7 @@
         </div>
         <div style="text-align:center;color:var(--green);font-size:11px;font-weight:600;min-width:120px;">⟵ AWS DMS CDC ↔ ⟶<br>⟵ Debezium+Kafka ↔ ⟶</div>
         <div style="flex:1;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:6px;padding:8px;font-size:clamp(10px,1vw,12px);">
-          PostgreSQL (Patroni HA) &nbsp;|&nbsp; Cassandra / ScyllaDB &nbsp;|&nbsp; Redis Enterprise
+          PostgreSQL (Patroni HA) &nbsp;|&nbsp; Redis Enterprise
         </div>
       </div>
     </div>
@@ -1105,9 +1105,8 @@
       </table>
     </div>
     <div class="note-box green" style="margin-top:10px;font-size:clamp(10px,1vw,12px);">
-      ✅ <strong>RECOMMENDED PHASED APPROACH:</strong> &nbsp;
-      <strong>Phase 1:</strong> Deploy Workload Partitioning with Zerto (Tier 0) + Veeam (Tier 1–3) + AWS DMS + Aurora Global DB &nbsp;|&nbsp;
-      <strong>Phase 2:</strong> Extend to Azure/GCP using same stack (Zerto and Veeam both support multi-cloud natively)
+      ✅ <strong>PHASE 1 — RECOMMENDED APPROACH (Achievable Now):</strong> &nbsp;
+      Deploy Workload Partitioning with <strong>Zerto</strong> (Tier 0) + <strong>Veeam</strong> (Tier 1–3) + <strong>AWS DMS</strong> + <strong>Aurora Global DB</strong>. This is what 90% of enterprises with hybrid DR actually run. It is honest, achievable, and well-understood.
     </div>
   </div>
 </div>
