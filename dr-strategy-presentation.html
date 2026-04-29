@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hybrid Cloud Disaster Recovery Strategy</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0F172A;
+    --card: #1E293B;
+    --card2: #263348;
+    --blue: #3B82F6;
+    --green: #10B981;
+    --orange: #F59E0B;
+    --red: #EF4444;
+    --purple: #8B5CF6;
+    --text: #F8FAFC;
+    --muted: #94A3B8;
+    --border: #334155;
+  }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: var(--bg); color: var(--text);
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+  #presentation {
+    width: 100vw; height: 100vh;
+    position: relative; overflow: hidden;
+  }
+  .slide {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.4s ease;
+    overflow: hidden;
+  }
+  .slide.active {
+    opacity: 1; pointer-events: all;
+  }
+  /* Progress bar */
+  #progress-bar-wrap {
+    position: fixed; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--border); z-index: 100;
+  }
+  #progress-bar {
+    height: 100%; background: var(--blue);
+    transition: width 0.4s ease;
+  }
+  /* Navigation */
+  #nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    height: 48px; background: rgba(15,23,42,0.95);
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    gap: 16px; z-index: 100;
+  }
+  #nav button {
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--text); padding: 6px 18px; border-radius: 6px;
+    cursor: pointer; font-size: 13px; transition: background 0.2s;
+  }
+  #nav button:hover { background: var(--blue); border-color: var(--blue); }
+  #nav button:disabled { opacity: 0.3; cursor: default; }
+  #slide-counter { color: var(--muted); font-size: 13px; min-width: 60px; text-align: center; }
+  /* Dot indicators */
+  #dots {
+    position: fixed; bottom: 56px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 5px; z-index: 100;
+  }
+  .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--border); cursor: pointer; transition: background 0.2s;
+  }
+  .dot.active { background: var(--blue); }
+  /* Slide title bar */
+  .slide-titlebar {
+    background: rgba(30,41,59,0.8);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 32px;
+    font-size: 11px; color: var(--muted);
+    letter-spacing: 0.08em; text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  /* Slide content area */
+  .slide-body {
+    flex: 1; overflow: hidden;
+    display: flex; flex-direction: column;
+    padding: 20px 40px 8px;
+  }
+  .slide-body.center {
+    align-items: center; justify-content: center; text-align: center;
+  }
+  /* Typography */
+  h1.main-title {
+    font-size: clamp(28px, 4vw, 52px);
+    font-weight: 800; line-height: 1.1;
+    background: linear-gradient(135deg, #F8FAFC 0%, #93C5FD 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  h2.slide-title {
+    font-size: clamp(18px, 2.2vw, 28px);
+    font-weight: 700; color: var(--text);
+    margin-bottom: 16px; flex-shrink: 0;
+  }
+  h3 { font-size: clamp(13px, 1.4vw, 17px); font-weight: 600; }
+  p, li { font-size: clamp(11px, 1.1vw, 14px); line-height: 1.5; color: var(--muted); }
+  /* Cards */
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px;
+  }
+  .card.blue { border-color: var(--blue); }
+  .card.green { border-color: var(--green); }
+  .card.orange { border-color: var(--orange); }
+  .card.red { border-color: var(--red); }
+  .card.purple { border-color: var(--purple); }
+  /* Tags */
+  .tag {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .tag.grey { background: #374151; color: #9CA3AF; }
+  .tag.blue { background: rgba(59,130,246,0.2); color: var(--blue); }
+  .tag.orange { background: rgba(245,158,11,0.2); color: var(--orange); }
+  .tag.green { background: rgba(16,185,129,0.2); color: var(--green); }
+  .tag.red { background: rgba(239,68,68,0.2); color: var(--red); }
+  /* Flex helpers */
+  .row { display: flex; gap: 12px; }
+  .col { display: flex; flex-direction: column; gap: 8px; }
+  .flex1 { flex: 1; }
+  /* Note box */
+  .note-box {
+    border: 1px solid var(--orange); border-radius: 8px;
+    background: rgba(245,158,11,0.08); padding: 10px 14px;
+    font-size: clamp(10px, 1vw, 13px); color: var(--text);
+  }
+  .note-box.green { border-color: var(--green); background: rgba(16,185,129,0.08); }
+  /* Table */
+  table { width: 100%; border-collapse: collapse; font-size: clamp(9px, 0.9vw, 12px); }
+  th {
+    background: var(--card2); color: var(--muted);
+    padding: 7px 8px; text-align: left;
+    font-size: clamp(9px, 0.85vw, 11px); letter-spacing: 0.05em;
+    text-transform: uppercase; border-bottom: 1px solid var(--border);
+  }
+  td { padding: 6px 8px; border-bottom: 1px solid rgba(51,65,85,0.5); color: var(--text); vertical-align: middle; }
+  tr:hover td { background: rgba(30,41,59,0.6); }
+  .c-green { color: var(--green); }
+  .c-orange { color: var(--orange); }
+  .c-red { color: var(--red); }
+  .c-blue { color: var(--blue); }
+  .c-muted { color: var(--muted); }
+  /* Divider slide */
+  .divider-slide {
+    background: linear-gradient(135deg, #0F172A 0%, #1E3A5F 50%, #0F172A 100%);
+  }
+  .part-label {
+    font-size: clamp(60px, 10vw, 120px);
+    font-weight: 900; color: var(--blue);
+    opacity: 0.15; line-height: 1;
+    position: absolute;
+  }
+  .part-content { position: relative; z-index: 1; }
+  .part-number {
+    font-size: clamp(40px, 6vw, 72px);
+    font-weight: 800; color: var(--blue);
+  }
+  .part-subtitle {
+    font-size: clamp(16px, 2vw, 26px);
+    color: var(--muted); margin-top: 8px;
+  }
+  /* Pros/Cons */
+  .pro { color: var(--green); font-size: clamp(10px, 1vw, 13px); margin-bottom: 4px; }
+  .con { color: var(--red); font-size: clamp(10px, 1vw, 13px); margin-bottom: 4px; }
+  /* Layer boxes */
+  .layer {
+    border-radius: 8px; padding: 10px 14px;
+    margin-bottom: 6px; font-size: clamp(10px, 1vw, 12px);
+  }
+  .layer-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; margin-bottom: 4px;
+  }
+  /* Timeline */
+  .timeline-step {
+    display: flex; gap: 12px; align-items: flex-start;
+    margin-bottom: 8px;
+  }
+  .step-dot {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0;
+  }
+  .step-content { flex: 1; }
+  .step-title { font-size: clamp(11px, 1.1vw, 14px); font-weight: 700; margin-bottom: 2px; }
+  .step-desc { font-size: clamp(10px, 0.95vw, 12px); color: var(--muted); }
+  /* Phase boxes */
+  .phase-box {
+    flex: 1; background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px; text-align: center;
+  }
+  .phase-num {
+    font-size: 10px; font-weight: 700; color: var(--blue);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;
+  }
+  .phase-title { font-size: clamp(11px, 1.1vw, 14px); font-weight: 700; margin-bottom: 4px; }
+  .phase-desc { font-size: clamp(9px, 0.9vw, 11px); color: var(--muted); }
+  .phase-arrow { color: var(--blue); font-size: 18px; display: flex; align-items: center; }
+  /* Decision tree */
+  .decision-branch {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 8px; padding: 8px 12px;
+    background: var(--card); border-radius: 8px;
+    border-left: 3px solid var(--blue);
+  }
+  .decision-branch.green { border-left-color: var(--green); }
+  .decision-branch.orange { border-left-color: var(--orange); }
+  .decision-branch.grey { border-left-color: var(--muted); }
+  /* Takeaway grid */
+  .takeaway-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 12px; flex: 1;
+  }
+  .takeaway-box {
+    background: var(--card); border-radius: 10px;
+    padding: 16px; border-top: 3px solid var(--blue);
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .takeaway-box.orange { border-top-color: var(--orange); }
+  .takeaway-box.green { border-top-color: var(--green); }
+  /* Flow diagram */
+  .flow-box {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 14px;
+    text-align: center; font-size: clamp(10px, 1vw, 13px);
+    font-weight: 600;
+  }
+  .flow-arrow { text-align: center; color: var(--muted); font-size: 16px; line-height: 1.2; }
+  .repl-arrow { font-size: clamp(9px, 0.9vw, 11px); color: var(--muted); }
+  /* Tier table */
+  .tier-row {
+    display: flex; gap: 8px; align-items: center;
+    padding: 6px 10px; border-radius: 6px;
+    background: var(--card); margin-bottom: 4px;
+    font-size: clamp(10px, 1vw, 12px);
+  }
+  .tier-badge {
+    padding: 2px 8px; border-radius: 4px; font-size: 10px;
+    font-weight: 700; min-width: 50px; text-align: center;
+  }
+</style>
+</head>
+<body>
+<div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+<div id="presentation">
+
+<!-- SLIDE 1: Title -->
+<div class="slide active" id="slide-1">
+  <div class="slide-titlebar">Enterprise Cloud Architecture | Slide 1 of 19</div>
+  <div class="slide-body center" style="background: linear-gradient(135deg, #0F172A 0%, #1a2d4a 40%, #0F172A 100%); position:relative; overflow:hidden;">
+    <div style="position:absolute;top:-60px;right:-60px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%);"></div>
+    <div style="position:absolute;bottom:-80px;left:-80px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle, rgba(16,185,129,0.08) 0%, transparent 70%);"></div>
+    <div style="position:relative;z-index:1;max-width:800px;">
+      <div style="display:inline-block;padding:4px 14px;border-radius:20px;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);color:var(--blue);font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:24px;">Enterprise Architecture Presentation</div>
+      <h1 class="main-title" style="margin-bottom:20px;">Hybrid Cloud Disaster<br>Recovery Strategy</h1>
+      <div style="font-size:clamp(16px,2vw,24px);color:var(--muted);margin-bottom:40px;font-weight:400;">AWS ↔ On-Premises Active-Active Architecture</div>
+      <div style="width:60px;height:3px;background:linear-gradient(90deg,var(--blue),var(--green));border-radius:2px;margin:0 auto 40px;"></div>
+      <div style="font-size:13px;color:#475569;letter-spacing:0.1em;text-transform:uppercase;">Enterprise Cloud Architecture &nbsp;|&nbsp; 2025</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 2: Agenda -->
+<div class="slide" id="slide-2">
+  <div class="slide-titlebar">Agenda</div>
+  <div class="slide-body center" style="justify-content:center;">
+    <h2 class="slide-title" style="font-size:clamp(22px,3vw,36px);margin-bottom:28px;">Agenda</h2>
+    <div style="max-width:680px;width:100%;">
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:center;gap:16px;background:var(--card);border-radius:10px;padding:14px 20px;border-left:3px solid var(--blue);">
+          <span style="font-size:22px;font-weight:800;color:var(--blue);min-width:32px;">1</span>
+          <span style="font-size:clamp(13px,1.4vw,17px);font-weight:500;">DR Strategy Overview — The 4 Strategies &amp; Why We Choose Workload Partitioning</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;background:var(--card);border-radius:10px;padding:14px 20px;border-left:3px solid var(--orange);">
+          <span style="font-size:22px;font-weight:800;color:var(--orange);min-width:32px;">2</span>
+          <span style="font-size:clamp(13px,1.4vw,17px);font-weight:500;">Strategy 2: Active-Active with Workload Partitioning — Architecture &amp; Design</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;background:var(--card);border-radius:10px;padding:14px 20px;border-left:3px solid var(--green);">
+          <span style="font-size:22px;font-weight:800;color:var(--green);min-width:32px;">3</span>
+          <span style="font-size:clamp(13px,1.4vw,17px);font-weight:500;">DR Tools — Capabilities, Pros &amp; Cons</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;background:var(--card);border-radius:10px;padding:14px 20px;border-left:3px solid var(--blue);">
+          <span style="font-size:22px;font-weight:800;color:var(--blue);min-width:32px;">4</span>
+          <span style="font-size:clamp(13px,1.4vw,17px);font-weight:500;">Best Solution: Multi-Tool Active-Active Stack</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;background:var(--card);border-radius:10px;padding:14px 20px;border-left:3px solid var(--orange);">
+          <span style="font-size:22px;font-weight:800;color:var(--orange);min-width:32px;">5</span>
+          <span style="font-size:clamp(13px,1.4vw,17px);font-weight:500;">Replication Flow Architecture</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;background:var(--card);border-radius:10px;padding:14px 20px;border-left:3px solid var(--green);">
+          <span style="font-size:22px;font-weight:800;color:var(--green);min-width:32px;">6</span>
+          <span style="font-size:clamp(13px,1.4vw,17px);font-weight:500;">Failover Process &amp; Runbook</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;background:var(--card);border-radius:10px;padding:14px 20px;border-left:3px solid var(--purple);">
+          <span style="font-size:22px;font-weight:800;color:var(--purple);min-width:32px;">7</span>
+          <span style="font-size:clamp(13px,1.4vw,17px);font-weight:500;">Recommendations &amp; Decision Framework</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3: Part 1 Divider -->
+<div class="slide divider-slide" id="slide-3">
+  <div class="slide-titlebar">Section Divider</div>
+  <div class="slide-body center" style="position:relative;">
+    <div class="part-label" style="top:50%;left:50%;transform:translate(-50%,-50%);">PART 1</div>
+    <div class="part-content">
+      <div class="part-number">Part 1</div>
+      <div class="part-subtitle">DR Strategy Overview &amp;<br>Why Workload Partitioning</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 4: The 4 DR Strategies — context only, Strategy 2 highlighted -->
+<div class="slide" id="slide-4">
+  <div class="slide-titlebar">Part 1 — DR Strategy Overview</div>
+  <div class="slide-body">
+    <h2 class="slide-title">The 4 DR Strategies — Our Choice: Workload Partitioning</h2>
+    <div class="row" style="flex:1;align-items:stretch;">
+      <!-- Box 1 — dimmed -->
+      <div class="card flex1 col" style="border-color:#374151;opacity:0.45;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <h3 style="color:#9CA3AF;">Backup &amp; Restore</h3>
+          <span class="tag grey">COLD</span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <span style="font-size:11px;background:rgba(55,65,81,0.5);padding:2px 8px;border-radius:4px;color:#9CA3AF;">RPO: Hours</span>
+          <span style="font-size:11px;background:rgba(55,65,81,0.5);padding:2px 8px;border-radius:4px;color:#9CA3AF;">RTO: Hours</span>
+        </div>
+        <div style="font-size:clamp(18px,2.5vw,32px);font-weight:800;color:#6B7280;">$</div>
+        <p style="flex:1;">Cold recovery. Restore from backup when disaster strikes. Nothing runs on standby.</p>
+        <div style="font-size:10px;color:#6B7280;font-weight:600;">Cost: LOW</div>
+      </div>
+      <!-- Box 2 — dimmed -->
+      <div class="card flex1 col blue" style="opacity:0.45;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <h3 style="color:var(--blue);">Pilot Light</h3>
+          <span class="tag blue">MINIMAL</span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <span style="font-size:11px;background:rgba(59,130,246,0.15);padding:2px 8px;border-radius:4px;color:var(--blue);">RPO: 30-60 min</span>
+          <span style="font-size:11px;background:rgba(59,130,246,0.15);padding:2px 8px;border-radius:4px;color:var(--blue);">RTO: 30-60 min</span>
+        </div>
+        <div style="font-size:clamp(18px,2.5vw,32px);font-weight:800;color:var(--blue);">$$</div>
+        <p style="flex:1;">Minimal core services running (DB only). App servers started on failover.</p>
+        <div style="font-size:10px;color:var(--blue);font-weight:600;">Cost: MEDIUM</div>
+      </div>
+      <!-- Box 3 — dimmed -->
+      <div class="card flex1 col" style="border-color:var(--muted);opacity:0.45;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <h3 style="color:var(--muted);">Warm Standby</h3>
+          <span class="tag grey">HOT SWAP</span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <span style="font-size:11px;background:rgba(148,163,184,0.15);padding:2px 8px;border-radius:4px;color:var(--muted);">RPO: Minutes</span>
+          <span style="font-size:11px;background:rgba(148,163,184,0.15);padding:2px 8px;border-radius:4px;color:var(--muted);">RTO: 5-30 min</span>
+        </div>
+        <div style="font-size:clamp(18px,2.5vw,32px);font-weight:800;color:var(--muted);">$$$</div>
+        <p style="flex:1;">Fully running at reduced capacity. Scale up on failover. Single site active at a time.</p>
+        <div style="font-size:10px;color:var(--muted);font-weight:600;">Cost: HIGH</div>
+      </div>
+      <!-- Box 4 — HIGHLIGHTED as chosen -->
+      <div class="card flex1 col" style="border-color:var(--orange);border-width:2px;box-shadow:0 0 24px rgba(245,158,11,0.25);position:relative;">
+        <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--orange);color:#000;font-size:10px;font-weight:800;padding:2px 12px;border-radius:10px;letter-spacing:0.08em;white-space:nowrap;">✅ OUR STRATEGY</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+          <h3 style="color:var(--orange);">Active-Active</h3>
+          <span class="tag orange">WORKLOAD PARTITIONING</span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <span style="font-size:11px;background:rgba(245,158,11,0.15);padding:2px 8px;border-radius:4px;color:var(--orange);">RPO: Seconds–Minutes</span>
+          <span style="font-size:11px;background:rgba(245,158,11,0.15);padding:2px 8px;border-radius:4px;color:var(--orange);">RTO: 5-30 min</span>
+        </div>
+        <div style="font-size:clamp(18px,2.5vw,32px);font-weight:800;color:var(--orange);">$$$</div>
+        <p style="flex:1;">Both sites serve live traffic simultaneously for <strong style="color:var(--text);">different app groups</strong>. Each app has a warm standby on the other site. Achievable today without DB redesign.</p>
+        <div style="font-size:10px;color:var(--orange);font-weight:600;">Cost: HIGH — ACHIEVABLE TODAY</div>
+      </div>
+    </div>
+    <div class="note-box" style="margin-top:10px;">
+      ✅ Strategy 2 (Workload Partitioning) is selected because it delivers genuine Active-Active at the site level, is achievable with existing tooling, and does not require replacing databases or redesigning applications.
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 5: Strategy 2 — Workload Partitioning Deep Dive -->
+<div class="slide" id="slide-5">
+  <div class="slide-titlebar">Part 1 — Strategy 2: Active-Active with Workload Partitioning</div>
+  <div class="slide-body">
+    <h2 class="slide-title">Strategy 2: Active-Active with Workload Partitioning</h2>
+    <div class="row" style="flex:1;align-items:stretch;gap:14px;">
+      <!-- Left: How it works -->
+      <div class="col flex1" style="gap:10px;">
+        <div class="card" style="border-color:var(--orange);">
+          <div style="font-size:10px;font-weight:700;color:var(--orange);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">How It Works</div>
+          <div style="display:flex;gap:10px;align-items:stretch;">
+            <div style="flex:1;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:6px;padding:10px;font-size:clamp(10px,1vw,12px);">
+              <div style="color:var(--blue);font-weight:700;margin-bottom:6px;">☁️ AWS (Active)</div>
+              <div style="color:var(--text);">App Group A — PRIMARY</div>
+              <div style="color:var(--text);">App Group C — PRIMARY</div>
+              <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);color:var(--muted);">App Group B — warm standby</div>
+              <div style="color:var(--muted);">App Group D — warm standby</div>
+            </div>
+            <div style="display:flex;align-items:center;color:var(--orange);font-size:20px;font-weight:700;">⟷</div>
+            <div style="flex:1;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:6px;padding:10px;font-size:clamp(10px,1vw,12px);">
+              <div style="color:var(--green);font-weight:700;margin-bottom:6px;">🏢 On-Premises (Active)</div>
+              <div style="color:var(--text);">App Group B — PRIMARY</div>
+              <div style="color:var(--text);">App Group D — PRIMARY</div>
+              <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);color:var(--muted);">App Group A — warm standby</div>
+              <div style="color:var(--muted);">App Group C — warm standby</div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="border-color:var(--blue);">
+          <div style="font-size:10px;font-weight:700;color:var(--blue);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">On Failure</div>
+          <div style="display:flex;gap:8px;">
+            <div style="flex:1;font-size:clamp(10px,1vw,12px);">
+              <div style="color:var(--red);font-weight:700;margin-bottom:4px;">AWS fails →</div>
+              <div style="color:var(--muted);">On-prem promotes App A &amp; C warm standbys. On-prem serves 100% of all traffic.</div>
+            </div>
+            <div style="flex:1;font-size:clamp(10px,1vw,12px);">
+              <div style="color:var(--red);font-weight:700;margin-bottom:4px;">On-prem fails →</div>
+              <div style="color:var(--muted);">AWS promotes App B &amp; D warm standbys. AWS serves 100% of all traffic.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Right: Classification + metrics -->
+      <div class="col" style="gap:10px;min-width:220px;max-width:260px;">
+        <div class="card" style="border-color:var(--green);">
+          <div style="font-size:10px;font-weight:700;color:var(--green);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">Classification</div>
+          <div style="font-size:clamp(11px,1.1vw,13px);margin-bottom:6px;"><span style="color:var(--green);">✅</span> <strong style="color:var(--text);">Site level:</strong> <span style="color:var(--green);">True Active-Active</span></div>
+          <div style="font-size:clamp(11px,1.1vw,13px);margin-bottom:6px;"><span style="color:var(--orange);">⚠️</span> <strong style="color:var(--text);">App level:</strong> <span style="color:var(--orange);">Warm Standby per app</span></div>
+          <div style="font-size:clamp(11px,1.1vw,13px);"><span style="color:var(--green);">✅</span> <strong style="color:var(--text);">Achievable:</strong> <span style="color:var(--green);">Today, no DB redesign</span></div>
+        </div>
+        <div class="card" style="border-color:var(--blue);">
+          <div style="font-size:10px;font-weight:700;color:var(--blue);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">Target Metrics</div>
+          <div style="font-size:clamp(11px,1.1vw,13px);margin-bottom:5px;"><span style="color:var(--muted);">RPO:</span> <span style="color:var(--green);font-weight:700;">Seconds – Minutes</span></div>
+          <div style="font-size:clamp(11px,1.1vw,13px);margin-bottom:5px;"><span style="color:var(--muted);">RTO:</span> <span style="color:var(--green);font-weight:700;">5 – 30 minutes</span></div>
+          <div style="font-size:clamp(11px,1.1vw,13px);margin-bottom:5px;"><span style="color:var(--muted);">Tier 0:</span> <span style="color:var(--text);">&lt;15s RPO (Zerto)</span></div>
+          <div style="font-size:clamp(11px,1.1vw,13px);"><span style="color:var(--muted);">Tier 1-2:</span> <span style="color:var(--text);">&lt;30 min RPO (Veeam)</span></div>
+        </div>
+        <div class="card" style="border-color:var(--purple);">
+          <div style="font-size:10px;font-weight:700;color:var(--purple);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">Key Requirement</div>
+          <div style="font-size:clamp(10px,1vw,12px);color:var(--muted);">Both sites must always run at <strong style="color:var(--text);">reduced but live capacity</strong>. Failover is a scale-up event, not a cold start.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 6: Part 2 Divider -->
+<div class="slide divider-slide" id="slide-6">
+  <div class="slide-titlebar">Section Divider</div>
+  <div class="slide-body center" style="position:relative;">
+    <div class="part-label" style="top:50%;left:50%;transform:translate(-50%,-50%);">PART 2</div>
+    <div class="part-content">
+      <div class="part-number">Part 2</div>
+      <div class="part-subtitle">DR Tools — Capabilities,<br>Pros &amp; Cons</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 7: DR Tools Table -->
+<div class="slide" id="slide-7">
+  <div class="slide-titlebar">Part 2 — DR Tools Overview</div>
+  <div class="slide-body" style="padding-top:14px;">
+    <h2 class="slide-title" style="margin-bottom:10px;">DR Tools — Honest Classification</h2>
+    <div style="overflow:auto;flex:1;">
+      <table>
+        <thead>
+          <tr>
+            <th>Tool</th>
+            <th>DR Approach</th>
+            <th>RPO</th>
+            <th>RTO</th>
+            <th>Bidirectional</th>
+            <th>Active-Active?</th>
+            <th>Best For</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Zerto</strong></td>
+            <td>Continuous journal replication</td>
+            <td class="c-green">&lt;15 sec</td>
+            <td class="c-green">&lt;5 min</td>
+            <td class="c-green">✅ Yes</td>
+            <td class="c-orange">⚠️ Warm Standby (fast)</td>
+            <td>Tier 0-1 critical VMs</td>
+          </tr>
+          <tr>
+            <td><strong>Veeam B&amp;R</strong></td>
+            <td>Snapshot replication</td>
+            <td class="c-orange">15-30 min</td>
+            <td class="c-orange">15-30 min</td>
+            <td class="c-orange">⚠️ Manual reconfig</td>
+            <td class="c-orange">⚠️ Warm Standby</td>
+            <td>Tier 1-3 broad workloads</td>
+          </tr>
+          <tr>
+            <td><strong>Commvault</strong></td>
+            <td>Live Sync + snapshot</td>
+            <td class="c-orange">Minutes</td>
+            <td class="c-orange">10-20 min</td>
+            <td class="c-green">✅ Yes</td>
+            <td class="c-orange">⚠️ Warm Standby</td>
+            <td>Mixed workloads, Oracle, SAP</td>
+          </tr>
+          <tr>
+            <td><strong>Rubrik</strong></td>
+            <td>Snapshot + immutable</td>
+            <td class="c-orange">Minutes</td>
+            <td class="c-orange">15-30 min</td>
+            <td class="c-orange">⚠️ Manual</td>
+            <td class="c-orange">⚠️ Warm Standby</td>
+            <td>Security-first, ransomware</td>
+          </tr>
+          <tr>
+            <td><strong>Cohesity</strong></td>
+            <td>SiteContinuity + CloudSpin</td>
+            <td class="c-orange">Minutes</td>
+            <td class="c-orange">15-30 min</td>
+            <td class="c-green">✅ Yes</td>
+            <td class="c-orange">⚠️ Warm Standby</td>
+            <td>Unified backup+DR</td>
+          </tr>
+          <tr>
+            <td><strong>Druva</strong></td>
+            <td>SaaS agent-based</td>
+            <td class="c-orange">Minutes</td>
+            <td class="c-orange">15-30 min</td>
+            <td class="c-red">❌ One direction</td>
+            <td class="c-red">❌ Active-Passive</td>
+            <td>Cloud-native, no appliance</td>
+          </tr>
+          <tr>
+            <td><strong>VMware SRM</strong></td>
+            <td>vSphere Replication</td>
+            <td class="c-orange">5 min min</td>
+            <td class="c-orange">15-30 min</td>
+            <td class="c-green">✅ VMware only</td>
+            <td class="c-red">❌ Active-Passive</td>
+            <td>VMware-heavy environments</td>
+          </tr>
+          <tr>
+            <td><strong>AWS Elastic DRS</strong></td>
+            <td>Continuous block replication</td>
+            <td class="c-green">Seconds</td>
+            <td class="c-green">5-20 min</td>
+            <td class="c-red">❌ One direction</td>
+            <td class="c-red">❌ Active-Passive</td>
+            <td>On-prem → AWS only</td>
+          </tr>
+          <tr>
+            <td><strong>Aurora Global DB</strong></td>
+            <td>Physical redo log shipping</td>
+            <td class="c-green">&lt;1 sec</td>
+            <td class="c-green">&lt;1 min</td>
+            <td class="c-orange">⚠️ Single writer</td>
+            <td class="c-red">❌ Single write master</td>
+            <td>AWS multi-region DB</td>
+          </tr>
+          <tr>
+            <td><strong>AWS DMS</strong></td>
+            <td>CDC log-based replication</td>
+            <td class="c-green">30-60 sec</td>
+            <td class="c-muted">N/A (sync tool)</td>
+            <td class="c-green">✅ Bidirectional</td>
+            <td class="c-muted">N/A (DB sync only)</td>
+            <td>DB replication layer</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note-box" style="margin-top:8px;font-size:clamp(10px,0.95vw,12px);">
+      ⚠️ No DR tool alone achieves true Active-Active. All require AWS DMS + Aurora Global DB for database-native consistency.
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 8: Zerto Deep Dive -->
+<div class="slide" id="slide-8">
+  <div class="slide-titlebar">Part 2 — Zerto Deep Dive</div>
+  <div class="slide-body">
+    <h2 class="slide-title">Zerto — Closest to Active-Active (But Still Warm Standby)</h2>
+    <div class="row" style="flex:1;align-items:stretch;gap:16px;">
+      <!-- Pros -->
+      <div class="card flex1 col" style="border-color:var(--green);">
+        <div style="font-size:11px;font-weight:700;color:var(--green);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid rgba(16,185,129,0.3);">✅ Strengths</div>
+        <div class="pro">✅ Sub-15 second RPO (journal-based)</div>
+        <div class="pro">✅ Sub-5 minute RTO</div>
+        <div class="pro">✅ Bidirectional failover (both directions)</div>
+        <div class="pro">✅ Non-disruptive DR testing</div>
+        <div class="pro">✅ Automated orchestrated runbooks</div>
+        <div class="pro">✅ Supports VMware, Hyper-V, AWS, Azure, GCP</div>
+        <div class="pro">✅ No snapshot scheduling — continuous I/O intercept</div>
+      </div>
+      <!-- Cons -->
+      <div class="card flex1 col" style="border-color:var(--red);">
+        <div style="font-size:11px;font-weight:700;color:var(--red);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid rgba(239,68,68,0.3);">❌ Limitations</div>
+        <div class="con">❌ Most expensive tool in this category</div>
+        <div class="con">❌ Still Warm Standby — not true Active-Active</div>
+        <div class="con">❌ Requires ZVM + VRA on every ESXi host</div>
+        <div class="con">❌ DB replication still needs AWS DMS alongside</div>
+        <div class="con">❌ K8s requires separate Kasten K10 product</div>
+        <div class="con">❌ HPE acquisition — roadmap uncertainty</div>
+      </div>
+    </div>
+    <div style="margin-top:12px;background:rgba(245,158,11,0.1);border:1px solid var(--orange);border-radius:8px;padding:12px 16px;">
+      <div style="font-size:11px;font-weight:700;color:var(--orange);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;">Classification</div>
+      <div style="font-size:clamp(12px,1.2vw,15px);color:var(--text);">Active-Passive with fastest automated failover. Marketed as Active-Active. <strong style="color:var(--orange);">Actual DR pattern = Warm Standby.</strong></div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 9: Veeam + Commvault -->
+<div class="slide" id="slide-9">
+  <div class="slide-titlebar">Part 2 — Veeam B&R vs Commvault</div>
+  <div class="slide-body">
+    <h2 class="slide-title">Veeam B&amp;R vs Commvault — Enterprise Workhorses</h2>
+    <div class="row" style="flex:1;align-items:stretch;gap:16px;">
+      <!-- Veeam -->
+      <div class="flex1 col" style="gap:8px;">
+        <div style="font-size:clamp(14px,1.6vw,20px);font-weight:700;color:var(--blue);padding-bottom:8px;border-bottom:2px solid var(--blue);">Veeam B&amp;R</div>
+        <div class="card flex1 col" style="border-color:var(--green);">
+          <div style="font-size:10px;font-weight:700;color:var(--green);letter-spacing:0.08em;margin-bottom:6px;">PROS</div>
+          <div class="pro">✅ Most widely deployed DR tool globally</div>
+          <div class="pro">✅ Broad workload support (VMware, Hyper-V, physical, cloud)</div>
+          <div class="pro">✅ Kasten K10 for Kubernetes DR</div>
+          <div class="pro">✅ Cost-effective vs Zerto</div>
+          <div class="pro">✅ Strong AWS, Azure, GCP native integration</div>
+          <div class="pro">✅ Veeam Orchestrator for runbooks</div>
+        </div>
+        <div class="card flex1 col" style="border-color:var(--red);">
+          <div style="font-size:10px;font-weight:700;color:var(--red);letter-spacing:0.08em;margin-bottom:6px;">CONS</div>
+          <div class="con">❌ 15-30 min RPO (snapshot-based, not continuous)</div>
+          <div class="con">❌ Bidirectional requires manual reconfiguration</div>
+          <div class="con">❌ Not true Active-Active</div>
+          <div class="con">❌ DB needs AWS DMS alongside</div>
+        </div>
+        <div style="background:rgba(245,158,11,0.1);border:1px solid var(--orange);border-radius:6px;padding:8px 12px;font-size:12px;">
+          <span style="color:var(--orange);font-weight:700;">Classification:</span> <span style="color:var(--text);">Warm Standby</span>
+        </div>
+      </div>
+      <!-- Commvault -->
+      <div class="flex1 col" style="gap:8px;">
+        <div style="font-size:clamp(14px,1.6vw,20px);font-weight:700;color:var(--purple);padding-bottom:8px;border-bottom:2px solid var(--purple);">Commvault</div>
+        <div class="card flex1 col" style="border-color:var(--green);">
+          <div style="font-size:10px;font-weight:700;color:var(--green);letter-spacing:0.08em;margin-bottom:6px;">PROS</div>
+          <div class="pro">✅ Broadest workload coverage (Oracle, SAP, Unix)</div>
+          <div class="pro">✅ Live Sync for near-continuous replication</div>
+          <div class="pro">✅ Native Kubernetes protection</div>
+          <div class="pro">✅ Cleanroom Recovery for ransomware</div>
+          <div class="pro">✅ Single vendor for backup + DR</div>
+          <div class="pro">✅ Strong compliance and audit features</div>
+        </div>
+        <div class="card flex1 col" style="border-color:var(--red);">
+          <div style="font-size:10px;font-weight:700;color:var(--red);letter-spacing:0.08em;margin-bottom:6px;">CONS</div>
+          <div class="con">❌ Complex licensing and pricing</div>
+          <div class="con">❌ Still Warm Standby despite Live Sync</div>
+          <div class="con">❌ DB needs AWS DMS alongside</div>
+          <div class="con">❌ Steeper learning curve</div>
+        </div>
+        <div style="background:rgba(245,158,11,0.1);border:1px solid var(--orange);border-radius:6px;padding:8px 12px;font-size:12px;">
+          <span style="color:var(--orange);font-weight:700;">Classification:</span> <span style="color:var(--text);">Warm Standby</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 10: Part 3 Divider -->
+<div class="slide divider-slide" id="slide-10">
+  <div class="slide-titlebar">Section Divider</div>
+  <div class="slide-body center" style="position:relative;">
+    <div class="part-label" style="top:50%;left:50%;transform:translate(-50%,-50%);">PART 3</div>
+    <div class="part-content">
+      <div class="part-number">Part 3</div>
+      <div class="part-subtitle">Best Solution: Multi-Tool<br>Active-Active Stack</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 11: Recommended Stack -->
+<div class="slide" id="slide-11">
+  <div class="slide-titlebar">Part 3 — Best Practice Multi-Tool Stack</div>
+  <div class="slide-body" style="padding-top:12px;">
+    <h2 class="slide-title" style="margin-bottom:10px;">Best Practice: Multi-Tool Stack for Active-Active Hybrid DR</h2>
+    <!-- Layer 1 -->
+    <div class="layer" style="background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.4);">
+      <div class="layer-label" style="color:var(--blue);">🌐 Traffic Layer</div>
+      <div style="font-size:clamp(10px,1vw,13px);color:var(--text);text-align:center;">Route53 Weighted Routing + Health Checks &nbsp;|&nbsp; AWS Global Accelerator &nbsp;|&nbsp; F5 / HAProxy (On-prem)</div>
+    </div>
+    <!-- Layer 2 -->
+    <div class="layer" style="background:rgba(30,41,59,0.8);border:1px solid var(--border);padding:8px;">
+      <div class="layer-label" style="color:var(--muted);text-align:center;">💻 Compute Layer</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <div style="flex:1;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:6px;padding:8px;font-size:clamp(10px,1vw,12px);">
+          <div style="color:var(--blue);font-weight:700;margin-bottom:4px;">☁️ AWS</div>
+          EKS / ECS / EC2 &nbsp;|&nbsp; Zerto ZVM + VRA &nbsp;|&nbsp; Kasten K10
+        </div>
+        <div style="text-align:center;color:var(--orange);font-size:11px;font-weight:600;min-width:120px;">⟵ Zerto Continuous<br>Replication ↔ ⟶</div>
+        <div style="flex:1;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:6px;padding:8px;font-size:clamp(10px,1vw,12px);">
+          <div style="color:var(--green);font-weight:700;margin-bottom:4px;">🏢 On-Premises</div>
+          VMware K8s / Bare Metal &nbsp;|&nbsp; Zerto ZVM + VRA &nbsp;|&nbsp; Kasten K10
+        </div>
+      </div>
+    </div>
+    <!-- Layer 3 -->
+    <div class="layer" style="background:rgba(30,41,59,0.8);border:1px solid var(--border);padding:8px;">
+      <div class="layer-label" style="color:var(--muted);text-align:center;">🗄️ Database Layer</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <div style="flex:1;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:6px;padding:8px;font-size:clamp(10px,1vw,12px);">
+          Aurora Global DB (writer) &nbsp;|&nbsp; DynamoDB Global Tables &nbsp;|&nbsp; Redis Enterprise
+        </div>
+        <div style="text-align:center;color:var(--green);font-size:11px;font-weight:600;min-width:120px;">⟵ AWS DMS CDC ↔ ⟶<br>⟵ Debezium+Kafka ↔ ⟶</div>
+        <div style="flex:1;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:6px;padding:8px;font-size:clamp(10px,1vw,12px);">
+          PostgreSQL (Patroni HA) &nbsp;|&nbsp; Cassandra / ScyllaDB &nbsp;|&nbsp; Redis Enterprise
+        </div>
+      </div>
+    </div>
+    <!-- Layer 4 -->
+    <div class="layer" style="background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.4);">
+      <div class="layer-label" style="color:var(--purple);">⚙️ Orchestration Layer</div>
+      <div style="font-size:clamp(10px,1vw,13px);color:var(--text);text-align:center;">AWS Step Functions + EventBridge &nbsp;|&nbsp; Zerto Runbooks &nbsp;|&nbsp; Ansible (On-prem) &nbsp;|&nbsp; HashiCorp Vault (Secrets)</div>
+    </div>
+    <!-- Layer 5 -->
+    <div class="layer" style="background:rgba(15,23,42,0.9);border:1px solid var(--border);">
+      <div class="layer-label" style="color:var(--muted);">🔌 Connectivity Layer</div>
+      <div style="font-size:clamp(10px,1vw,13px);color:var(--text);text-align:center;">AWS Direct Connect (Primary 10Gbps) &nbsp;|&nbsp; IPSec VPN (Backup) &nbsp;|&nbsp; BGP Auto-failover</div>
+    </div>
+    <!-- Tier table -->
+    <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">
+      <div class="tier-row" style="flex:1;min-width:180px;"><span class="tier-badge" style="background:rgba(239,68,68,0.2);color:var(--red);">Tier 0</span><span style="color:var(--muted);">&lt;15s RPO:</span><span style="color:var(--text);margin-left:4px;">Zerto + Aurora Global DB + AWS DMS</span></div>
+      <div class="tier-row" style="flex:1;min-width:180px;"><span class="tier-badge" style="background:rgba(245,158,11,0.2);color:var(--orange);">Tier 1</span><span style="color:var(--muted);">&lt;1 min RPO:</span><span style="color:var(--text);margin-left:4px;">Zerto + AWS DMS</span></div>
+      <div class="tier-row" style="flex:1;min-width:180px;"><span class="tier-badge" style="background:rgba(59,130,246,0.2);color:var(--blue);">Tier 2</span><span style="color:var(--muted);">&lt;30 min RPO:</span><span style="color:var(--text);margin-left:4px;">Veeam + AWS DMS</span></div>
+      <div class="tier-row" style="flex:1;min-width:180px;"><span class="tier-badge" style="background:rgba(148,163,184,0.2);color:var(--muted);">Tier 3</span><span style="color:var(--muted);">&lt;4 hr RPO:</span><span style="color:var(--text);margin-left:4px;">Veeam Backup only</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 12: Part 4 Divider -->
+<div class="slide divider-slide" id="slide-12">
+  <div class="slide-titlebar">Section Divider</div>
+  <div class="slide-body center" style="position:relative;">
+    <div class="part-label" style="top:50%;left:50%;transform:translate(-50%,-50%);">PART 4</div>
+    <div class="part-content">
+      <div class="part-number">Part 4</div>
+      <div class="part-subtitle">Replication Flow Architecture</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 13: Normal Operation Replication Flow -->
+<div class="slide" id="slide-13">
+  <div class="slide-titlebar">Part 4 — Replication Flow: Normal Operation</div>
+  <div class="slide-body" style="padding-top:12px;">
+    <h2 class="slide-title" style="margin-bottom:10px;">Replication Flow — Normal Operation</h2>
+    <div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:0;">
+      <!-- Users -->
+      <div class="flow-box" style="width:160px;background:rgba(139,92,246,0.15);border-color:var(--purple);">👥 USERS</div>
+      <div class="flow-arrow">↓</div>
+      <!-- Route53 -->
+      <div class="flow-box" style="width:340px;background:rgba(59,130,246,0.12);border-color:var(--blue);">🌐 Route53 (GeoDNS + Health Checks)</div>
+      <!-- Split -->
+      <div style="display:flex;width:100%;max-width:900px;gap:0;align-items:flex-start;margin-top:0;">
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+          <div style="color:var(--muted);font-size:12px;margin:4px 0;">↙ 50% traffic</div>
+          <div class="flow-box" style="width:100%;max-width:320px;background:rgba(59,130,246,0.12);border-color:var(--blue);">
+            <div style="color:var(--blue);font-weight:700;font-size:12px;margin-bottom:4px;">☁️ AWS us-east-1</div>
+            <div style="font-size:11px;color:var(--muted);">ALB → EKS Pods</div>
+          </div>
+          <div style="margin-top:8px;width:100%;max-width:320px;">
+            <div style="background:rgba(30,41,59,0.8);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:10px;">
+              <div style="color:var(--blue);margin-bottom:2px;">🔵 Zerto continuous replication →</div>
+              <div style="color:var(--green);margin-bottom:2px;">🟢 AWS DMS CDC → (Aurora → On-prem PG)</div>
+              <div style="color:var(--orange);">🟠 Kafka MirrorMaker 2 →</div>
+            </div>
+            <div style="margin-top:6px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.3);border-radius:6px;padding:6px 10px;font-size:10px;color:var(--muted);">
+              Aurora Global DB (writer)<br>→ Aurora us-west-2 (reader) [sub-1s]
+            </div>
+          </div>
+        </div>
+        <!-- Middle arrows -->
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:80px;padding-top:40px;gap:4px;">
+          <div style="font-size:18px;color:var(--blue);">⟷</div>
+          <div style="font-size:9px;color:var(--muted);text-align:center;">Bidirectional<br>Replication</div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+          <div style="color:var(--muted);font-size:12px;margin:4px 0;">50% traffic ↘</div>
+          <div class="flow-box" style="width:100%;max-width:320px;background:rgba(16,185,129,0.12);border-color:var(--green);">
+            <div style="color:var(--green);font-weight:700;font-size:12px;margin-bottom:4px;">🏢 On-Premises DC</div>
+            <div style="font-size:11px;color:var(--muted);">F5 → App Servers</div>
+          </div>
+          <div style="margin-top:8px;width:100%;max-width:320px;">
+            <div style="background:rgba(30,41,59,0.8);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:10px;">
+              <div style="color:var(--blue);margin-bottom:2px;">← 🔵 Zerto continuous replication</div>
+              <div style="color:var(--green);margin-bottom:2px;">← 🟢 AWS DMS CDC (On-prem PG → Aurora)</div>
+              <div style="color:var(--orange);">← 🟠 Kafka MirrorMaker 2</div>
+            </div>
+            <div style="margin-top:6px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.3);border-radius:6px;padding:6px 10px;font-size:10px;color:var(--muted);">
+              PostgreSQL Primary (Patroni)<br>→ PG Replica
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Legend -->
+      <div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;justify-content:center;">
+        <div style="font-size:11px;color:var(--blue);">🔵 Blue = Compute replication (Zerto)</div>
+        <div style="font-size:11px;color:var(--green);">🟢 Green = DB replication (AWS DMS + Aurora)</div>
+        <div style="font-size:11px;color:var(--orange);">🟠 Orange = Event streaming (Kafka MM2)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 14: Failover Flow -->
+<div class="slide" id="slide-14">
+  <div class="slide-titlebar">Part 4 — Failover Process: AWS Site Failure</div>
+  <div class="slide-body" style="padding-top:12px;">
+    <h2 class="slide-title" style="margin-bottom:10px;">Failover Process — AWS Site Failure Scenario</h2>
+    <div style="flex:1;overflow:auto;">
+      <div class="timeline-step">
+        <div class="step-dot" style="background:rgba(239,68,68,0.2);border:2px solid var(--red);color:var(--red);">1</div>
+        <div class="step-content">
+          <div class="step-title" style="color:var(--red);">🚨 FAILURE DETECTED</div>
+          <div class="step-desc">AWS us-east-1 becomes unavailable. Route53 health checks fail on 3 consecutive checks (30s interval).</div>
+        </div>
+      </div>
+      <div class="timeline-step">
+        <div class="step-dot" style="background:rgba(245,158,11,0.2);border:2px solid var(--orange);color:var(--orange);">2</div>
+        <div class="step-content">
+          <div class="step-title" style="color:var(--orange);">⚡ AUTOMATED TRIGGER <span style="font-weight:400;font-size:11px;">(T+30 seconds)</span></div>
+          <div class="step-desc">EventBridge rule fires. Step Functions workflow initiated. PagerDuty alert sent to on-call team.</div>
+        </div>
+      </div>
+      <div class="timeline-step">
+        <div class="step-dot" style="background:rgba(245,158,11,0.2);border:2px solid var(--orange);color:var(--orange);">3</div>
+        <div class="step-content">
+          <div class="step-title" style="color:var(--orange);">🗄️ DATABASE PROMOTION <span style="font-weight:400;font-size:11px;">(T+60 seconds)</span></div>
+          <div class="step-desc">On-prem PostgreSQL (Patroni) promoted from replica to writer. AWS DMS reverse task activated. Aurora us-west-2 promoted to writer for AWS-side apps.</div>
+        </div>
+      </div>
+      <div class="timeline-step">
+        <div class="step-dot" style="background:rgba(59,130,246,0.2);border:2px solid var(--blue);color:var(--blue);">4</div>
+        <div class="step-content">
+          <div class="step-title" style="color:var(--blue);">💻 COMPUTE SCALE-UP <span style="font-weight:400;font-size:11px;">(T+2 minutes)</span></div>
+          <div class="step-desc">Zerto initiates failover of AWS-primary VMs to on-prem replicas. On-prem K8s scales up (KEDA). Pre-warmed instances absorb traffic.</div>
+        </div>
+      </div>
+      <div class="timeline-step">
+        <div class="step-dot" style="background:rgba(59,130,246,0.2);border:2px solid var(--blue);color:var(--blue);">5</div>
+        <div class="step-content">
+          <div class="step-title" style="color:var(--blue);">🌐 DNS FAILOVER <span style="font-weight:400;font-size:11px;">(T+3 minutes)</span></div>
+          <div class="step-desc">Route53 updates weighted records. TTL 30s ensures fast propagation. 100% traffic now routed to on-prem. Global Accelerator anycast updated.</div>
+        </div>
+      </div>
+      <div class="timeline-step">
+        <div class="step-dot" style="background:rgba(16,185,129,0.2);border:2px solid var(--green);color:var(--green);">6</div>
+        <div class="step-content">
+          <div class="step-title" style="color:var(--green);">✅ FAILOVER COMPLETE <span style="font-weight:400;font-size:11px;">(T+5 minutes)</span></div>
+          <div class="step-desc">On-prem serving 100% of traffic. All app groups active. Monitoring confirms healthy state. <strong style="color:var(--green);">RTO achieved: &lt; 5 minutes.</strong></div>
+        </div>
+      </div>
+      <div class="timeline-step">
+        <div class="step-dot" style="background:rgba(148,163,184,0.2);border:2px solid var(--muted);color:var(--muted);">7</div>
+        <div class="step-content">
+          <div class="step-title" style="color:var(--muted);">🔄 FAILBACK <span style="font-weight:400;font-size:11px;">(Manual, T+hours)</span></div>
+          <div class="step-desc">1. Confirm AWS restored (15 min observation). &nbsp;2. Re-sync data delta. &nbsp;3. Verify replication lag &lt; RPO. &nbsp;4. Gradual traffic shift 10%→25%→50%→100%. &nbsp;5. Post-incident review.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 15: Failback Process -->
+<div class="slide" id="slide-15">
+  <div class="slide-titlebar">Part 4 — Failback Process</div>
+  <div class="slide-body">
+    <h2 class="slide-title">Failback Process — Controlled Return to AWS</h2>
+    <div style="display:flex;align-items:center;gap:4px;flex:1;flex-wrap:wrap;">
+      <div class="phase-box" style="flex:1;min-width:100px;">
+        <div class="phase-num">Phase 1</div>
+        <div class="phase-title" style="color:var(--blue);">VERIFY</div>
+        <div class="phase-desc">Confirm AWS site fully healthy. 15-minute observation window. All health checks green.</div>
+      </div>
+      <div class="phase-arrow">→</div>
+      <div class="phase-box" style="flex:1;min-width:100px;">
+        <div class="phase-num">Phase 2</div>
+        <div class="phase-title" style="color:var(--orange);">RESYNC</div>
+        <div class="phase-desc">Re-enable AWS DMS replication. Sync data delta from on-prem back to Aurora. Monitor replication lag.</div>
+      </div>
+      <div class="phase-arrow">→</div>
+      <div class="phase-box" style="flex:1;min-width:100px;">
+        <div class="phase-num">Phase 3</div>
+        <div class="phase-title" style="color:var(--green);">VALIDATE</div>
+        <div class="phase-desc">Confirm replication lag &lt; RPO threshold. Run automated smoke tests on AWS. Verify app functionality.</div>
+      </div>
+      <div class="phase-arrow">→</div>
+      <div class="phase-box" style="flex:1;min-width:100px;">
+        <div class="phase-num">Phase 4</div>
+        <div class="phase-title" style="color:var(--blue);">GRADUAL SHIFT</div>
+        <div class="phase-desc">10% → monitor 5 min. 25% → monitor 5 min. 50% → monitor 10 min. 100% → complete.</div>
+      </div>
+      <div class="phase-arrow">→</div>
+      <div class="phase-box" style="flex:1;min-width:100px;">
+        <div class="phase-num">Phase 5</div>
+        <div class="phase-title" style="color:var(--orange);">CLEANUP</div>
+        <div class="phase-desc">Disable failover-mode config. Reset Zerto replication direction. Update runbook documentation.</div>
+      </div>
+      <div class="phase-arrow">→</div>
+      <div class="phase-box" style="flex:1;min-width:100px;">
+        <div class="phase-num">Phase 6</div>
+        <div class="phase-title" style="color:var(--green);">REVIEW</div>
+        <div class="phase-desc">Post-incident review. Update RTO/RPO measurements. Improve runbook if gaps found.</div>
+      </div>
+    </div>
+    <div class="note-box" style="margin-top:12px;">
+      ⚠️ Failback is <strong>ALWAYS manual and gated</strong>. Never automate failback. Automated failback causes flip-flopping and can make outages worse.
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 16: Part 5 Divider -->
+<div class="slide divider-slide" id="slide-16">
+  <div class="slide-titlebar">Section Divider</div>
+  <div class="slide-body center" style="position:relative;">
+    <div class="part-label" style="top:50%;left:50%;transform:translate(-50%,-50%);">PART 5</div>
+    <div class="part-content">
+      <div class="part-number">Part 5</div>
+      <div class="part-subtitle">Recommendations &amp;<br>Decision Framework</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 17: Decision Framework -->
+<div class="slide" id="slide-17">
+  <div class="slide-titlebar">Part 5 — Tool Selection Decision Framework</div>
+  <div class="slide-body">
+    <h2 class="slide-title">Tool Selection Decision Framework</h2>
+    <div style="flex:1;display:flex;flex-direction:column;gap:10px;">
+      <!-- Start node -->
+      <div style="text-align:center;">
+        <div style="display:inline-block;background:rgba(139,92,246,0.2);border:2px solid var(--purple);border-radius:10px;padding:10px 28px;font-size:clamp(13px,1.4vw,17px);font-weight:700;color:var(--purple);">What is your RPO requirement?</div>
+      </div>
+      <!-- Branches -->
+      <div style="display:flex;gap:12px;flex:1;align-items:stretch;">
+        <!-- Branch 1 -->
+        <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+          <div style="text-align:center;color:var(--red);font-size:12px;font-weight:700;">↓</div>
+          <div style="background:rgba(239,68,68,0.1);border:1px solid var(--red);border-radius:8px;padding:8px 12px;text-align:center;">
+            <div style="font-size:11px;font-weight:700;color:var(--red);margin-bottom:4px;">BRANCH 1</div>
+            <div style="font-size:clamp(12px,1.2vw,15px);font-weight:700;color:var(--text);">&lt; 15 seconds</div>
+            <div style="font-size:11px;color:var(--muted);">Tier 0 — Mission Critical</div>
+          </div>
+          <div style="text-align:center;color:var(--muted);font-size:12px;">↓</div>
+          <div style="background:rgba(16,185,129,0.1);border:1px solid var(--green);border-radius:8px;padding:10px 12px;flex:1;">
+            <div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:6px;">✅ SOLUTION</div>
+            <div style="font-size:clamp(11px,1.1vw,14px);font-weight:600;color:var(--text);">ZERTO + AWS DMS + Aurora Global DB</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:4px;">Continuous journal replication + CDC + physical redo log shipping</div>
+          </div>
+        </div>
+        <!-- Branch 2 -->
+        <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+          <div style="text-align:center;color:var(--orange);font-size:12px;font-weight:700;">↓</div>
+          <div style="background:rgba(245,158,11,0.1);border:1px solid var(--orange);border-radius:8px;padding:8px 12px;text-align:center;">
+            <div style="font-size:11px;font-weight:700;color:var(--orange);margin-bottom:4px;">BRANCH 2</div>
+            <div style="font-size:clamp(12px,1.2vw,15px);font-weight:700;color:var(--text);">&lt; 30 minutes</div>
+            <div style="font-size:11px;color:var(--muted);">Tier 1-2 — Business Critical</div>
+          </div>
+          <div style="text-align:center;color:var(--muted);font-size:12px;">↓ Already have Veeam?</div>
+          <div style="display:flex;gap:6px;flex:1;">
+            <div style="flex:1;background:rgba(59,130,246,0.1);border:1px solid var(--blue);border-radius:8px;padding:8px;">
+              <div style="font-size:10px;font-weight:700;color:var(--blue);margin-bottom:4px;">YES →</div>
+              <div style="font-size:clamp(10px,1vw,12px);color:var(--text);">Extend with AWS DMS + Aurora Global DB</div>
+            </div>
+            <div style="flex:1;background:rgba(16,185,129,0.1);border:1px solid var(--green);border-radius:8px;padding:8px;">
+              <div style="font-size:10px;font-weight:700;color:var(--green);margin-bottom:4px;">NO →</div>
+              <div style="font-size:clamp(10px,1vw,12px);color:var(--text);">Use Veeam B&amp;R + AWS DMS + Aurora Global DB</div>
+            </div>
+          </div>
+        </div>
+        <!-- Branch 3 -->
+        <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+          <div style="text-align:center;color:var(--muted);font-size:12px;font-weight:700;">↓</div>
+          <div style="background:rgba(148,163,184,0.1);border:1px solid var(--muted);border-radius:8px;padding:8px 12px;text-align:center;">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px;">BRANCH 3</div>
+            <div style="font-size:clamp(12px,1.2vw,15px);font-weight:700;color:var(--text);">&lt; 4 hours</div>
+            <div style="font-size:11px;color:var(--muted);">Tier 3 — Standard</div>
+          </div>
+          <div style="text-align:center;color:var(--muted);font-size:12px;">↓</div>
+          <div style="background:rgba(148,163,184,0.08);border:1px solid var(--border);border-radius:8px;padding:10px 12px;flex:1;">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;">SOLUTION</div>
+            <div style="font-size:clamp(11px,1.1vw,14px);font-weight:600;color:var(--text);">Veeam Backup Only</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:4px;">Snapshot-based backup with restore capability</div>
+          </div>
+        </div>
+      </div>
+      <!-- Cost note -->
+      <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.4);border-radius:8px;padding:10px 14px;font-size:clamp(11px,1.1vw,13px);color:var(--text);">
+        💡 <strong style="color:var(--green);">Cost Optimization:</strong> Use Zerto ONLY for Tier 0 workloads (fewer VMs = lower cost). Use Veeam for Tier 1-3. This reduces Zerto licensing cost by <strong style="color:var(--green);">60-80%</strong> while maintaining near-zero RPO where it matters.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 18: Summary Comparison -->
+<div class="slide" id="slide-18">
+  <div class="slide-titlebar">Part 5 — Final Summary</div>
+  <div class="slide-body" style="padding-top:12px;">
+    <h2 class="slide-title" style="margin-bottom:10px;">Final Summary — Strategy 2: Workload Partitioning with Multi-Tool Stack</h2>
+    <div style="overflow:auto;flex:1;">
+      <table>
+        <thead>
+          <tr>
+            <th>Layer</th>
+            <th>Tool</th>
+            <th>Role in Workload Partitioning</th>
+            <th>RPO</th>
+            <th>RTO</th>
+            <th>Tier</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Traffic</strong></td>
+            <td class="c-blue">Route53 + Global Accelerator</td>
+            <td>Split traffic across AWS &amp; on-prem per app group. Health-check-driven failover.</td>
+            <td class="c-green">30s (DNS TTL)</td>
+            <td class="c-green">30–60s</td>
+            <td>All</td>
+          </tr>
+          <tr>
+            <td><strong>Compute DR</strong></td>
+            <td class="c-green">Zerto</td>
+            <td>Continuous journal replication of VMs. Bidirectional. Orchestrated failover runbooks.</td>
+            <td class="c-green">&lt;15 sec</td>
+            <td class="c-green">&lt;5 min</td>
+            <td class="c-red">Tier 0–1</td>
+          </tr>
+          <tr>
+            <td><strong>Compute DR</strong></td>
+            <td class="c-blue">Veeam B&amp;R</td>
+            <td>Snapshot-based VM replication. Broad workload coverage. Kasten K10 for K8s.</td>
+            <td class="c-orange">15–30 min</td>
+            <td class="c-orange">15–30 min</td>
+            <td class="c-orange">Tier 1–3</td>
+          </tr>
+          <tr>
+            <td><strong>DB Sync (AWS↔AWS)</strong></td>
+            <td class="c-green">Aurora Global DB</td>
+            <td>Sub-second cross-region replication within AWS. Automatic failover to reader.</td>
+            <td class="c-green">&lt;1 sec</td>
+            <td class="c-green">&lt;1 min</td>
+            <td>All</td>
+          </tr>
+          <tr>
+            <td><strong>DB Sync (AWS↔On-prem)</strong></td>
+            <td class="c-orange">AWS DMS (CDC)</td>
+            <td>Continuous row-level replication between Aurora and on-prem PostgreSQL. Bidirectional.</td>
+            <td class="c-green">30–60 sec</td>
+            <td class="c-muted">N/A (sync)</td>
+            <td>All</td>
+          </tr>
+          <tr>
+            <td><strong>Event Streaming</strong></td>
+            <td class="c-orange">Kafka + MirrorMaker 2</td>
+            <td>Bidirectional event replication between AWS MSK and on-prem Kafka clusters.</td>
+            <td class="c-green">&lt;5 sec</td>
+            <td class="c-muted">N/A (sync)</td>
+            <td>All</td>
+          </tr>
+          <tr>
+            <td><strong>K8s DR</strong></td>
+            <td class="c-blue">Kasten K10</td>
+            <td>PVC, manifest, Helm release backup and replication across EKS and on-prem K8s.</td>
+            <td class="c-orange">15 min</td>
+            <td class="c-orange">15–30 min</td>
+            <td class="c-orange">Tier 1–2</td>
+          </tr>
+          <tr>
+            <td><strong>Orchestration</strong></td>
+            <td class="c-blue">Step Functions + Zerto Runbooks</td>
+            <td>Automated failover sequencing. Triggers DB promotion, compute scale-up, DNS flip.</td>
+            <td class="c-muted">—</td>
+            <td class="c-green">Automated</td>
+            <td>All</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note-box green" style="margin-top:10px;font-size:clamp(10px,1vw,12px);">
+      ✅ <strong>RECOMMENDED PHASED APPROACH:</strong> &nbsp;
+      <strong>Phase 1:</strong> Deploy Workload Partitioning with Zerto (Tier 0) + Veeam (Tier 1–3) + AWS DMS + Aurora Global DB &nbsp;|&nbsp;
+      <strong>Phase 2:</strong> Extend to Azure/GCP using same stack (Zerto and Veeam both support multi-cloud natively)
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 19: Key Takeaways -->
+<div class="slide" id="slide-19">
+  <div class="slide-titlebar">Key Takeaways</div>
+  <div class="slide-body">
+    <h2 class="slide-title">Key Takeaways — Strategy 2: Active-Active Workload Partitioning</h2>
+    <div class="takeaway-grid" style="flex:1;">
+      <div class="takeaway-box">
+        <div style="font-size:24px;">🔀</div>
+        <h3 style="color:var(--blue);">Both Sites Are Always Active</h3>
+        <p>AWS and on-prem both serve live traffic simultaneously — for different app groups. Neither site is idle.</p>
+      </div>
+      <div class="takeaway-box orange">
+        <div style="font-size:24px;">⚡</div>
+        <h3 style="color:var(--orange);">Failover = Scale-Up, Not Cold Start</h3>
+        <p>Warm standbys run at reduced capacity at all times. On failure, they scale up to absorb 100% of traffic.</p>
+      </div>
+      <div class="takeaway-box green">
+        <div style="font-size:24px;">🔗</div>
+        <h3 style="color:var(--green);">Always Layer Your Tools</h3>
+        <p>Zerto/Veeam (compute) + AWS DMS (database) + Route53 (traffic) must all work together. No single tool covers all layers.</p>
+      </div>
+      <div class="takeaway-box">
+        <div style="font-size:24px;">🗄️</div>
+        <h3 style="color:var(--blue);">DB Sync Is Separate from DR Tool</h3>
+        <p>Zerto and Veeam handle VM replication. AWS DMS + Aurora Global DB handle database consistency. Both are required.</p>
+      </div>
+      <div class="takeaway-box orange">
+        <div style="font-size:24px;">⚠️</div>
+        <h3 style="color:var(--orange);">Failback Must Be Manual</h3>
+        <p>Never automate failback. Always use gradual traffic shifting (10%→25%→50%→100%) with monitoring at each step.</p>
+      </div>
+      <div class="takeaway-box green">
+        <div style="font-size:24px;">💰</div>
+        <h3 style="color:var(--green);">Scope Zerto to Tier 0 Only</h3>
+        <p>Use Zerto only for mission-critical Tier 0 workloads. Veeam handles Tier 1–3 at significantly lower cost — saving 60–80% on licensing.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end #presentation -->
+
+<!-- Dots -->
+<div id="dots"></div>
+
+<!-- Navigation -->
+<div id="nav">
+  <button id="btn-prev" onclick="changeSlide(-1)" disabled>← Prev</button>
+  <span id="slide-counter">1 / 19</span>
+  <button id="btn-next" onclick="changeSlide(1)">Next →</button>
+</div>
+
+<script>
+  const TOTAL = 19;
+  let current = 1;
+
+  function goTo(n) {
+    if (n < 1 || n > TOTAL) return;
+    document.getElementById('slide-' + current).classList.remove('active');
+    document.querySelectorAll('.dot')[current - 1].classList.remove('active');
+    current = n;
+    document.getElementById('slide-' + current).classList.add('active');
+    document.querySelectorAll('.dot')[current - 1].classList.add('active');
+    document.getElementById('slide-counter').textContent = current + ' / ' + TOTAL;
+    document.getElementById('btn-prev').disabled = current === 1;
+    document.getElementById('btn-next').disabled = current === TOTAL;
+    document.getElementById('progress-bar').style.width = ((current / TOTAL) * 100) + '%';
+  }
+
+  function changeSlide(dir) { goTo(current + dir); }
+
+  // Build dots
+  const dotsEl = document.getElementById('dots');
+  for (let i = 1; i <= TOTAL; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 1 ? ' active' : '');
+    d.title = 'Slide ' + i;
+    d.onclick = () => goTo(i);
+    dotsEl.appendChild(d);
+  }
+
+  // Keyboard navigation
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); changeSlide(1); }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); changeSlide(-1); }
+    if (e.key === 'Home') { e.preventDefault(); goTo(1); }
+    if (e.key === 'End') { e.preventDefault(); goTo(TOTAL); }
+  });
+
+  // Init progress bar
+  document.getElementById('progress-bar').style.width = ((1 / TOTAL) * 100) + '%';
+</script>
+</body>
+</html>
