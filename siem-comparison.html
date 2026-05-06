@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SIEM Tools Comparison — IAS Requirements</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #F7F7F5;
+    --surface: #FFFFFF;
+    --surface2: #F2F1EE;
+    --border: rgba(0,0,0,0.10);
+    --border-strong: rgba(0,0,0,0.18);
+    --text: #1A1A18;
+    --text-2: #5A5A56;
+    --text-3: #9A9A95;
+    --accent: #1A3A5C;
+    --accent-light: #E8EFF6;
+    --full-bg: #E8F5E8; --full-text: #2A6030; --full-border: #A8D4A8;
+    --partial-bg: #FDF3E3; --partial-text: #7A4F10; --partial-border: #E8C87A;
+    --none-bg: #FDE8E8; --none-text: #8A2020; --none-border: #E8A8A8;
+    --dot-full: #4A9A50; --dot-partial: #C8882A; --dot-empty: #D0CFC8;
+    --radius: 10px; --radius-sm: 6px; --radius-lg: 14px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.10);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141412; --surface: #1E1E1B; --surface2: #252521;
+      --border: rgba(255,255,255,0.08); --border-strong: rgba(255,255,255,0.15);
+      --text: #EEEEE8; --text-2: #9A9A90; --text-3: #5A5A55;
+      --accent: #6A9EC8; --accent-light: #1A2A3A;
+      --full-bg: #1A3A1A; --full-text: #88C888; --full-border: #2A5A2A;
+      --partial-bg: #3A2A0A; --partial-text: #D8A858; --partial-border: #5A4010;
+      --none-bg: #3A1A1A; --none-text: #D88888; --none-border: #5A2A2A;
+      --dot-full: #5AAA60; --dot-partial: #D89830; --dot-empty: #3A3A36;
+    }
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg); color: var(--text);
+    font-size: 14px; line-height: 1.6;
+    min-height: 100vh;
+  }
+  .page { max-width: 960px; margin: 0 auto; padding: 40px 24px 80px; }
+  .page-header { margin-bottom: 36px; }
+  .page-header-top { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+  .page-eyebrow { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); margin-bottom: 6px; }
+  h1 { font-size: 26px; font-weight: 600; color: var(--text); line-height: 1.25; }
+  .page-desc { font-size: 13px; color: var(--text-2); max-width: 640px; line-height: 1.7; }
+  .reqs-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+  .req-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 5px 12px; font-size: 12px; color: var(--text-2);
+  }
+  .req-pill-num {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .legend-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; align-items: center; }
+  .leg { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2); }
+  .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .dot-full { background: var(--dot-full); }
+  .dot-partial { background: var(--dot-partial); }
+  .dot-empty { background: var(--dot-empty); }
+  .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-bottom: 20px; }
+  .tool-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px; cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .tool-card:hover { border-color: var(--border-strong); box-shadow: var(--shadow); }
+  .tool-card.active { border: 2px solid var(--accent); box-shadow: var(--shadow-md); }
+  .tool-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .tool-type { font-size: 11px; color: var(--text-3); margin-bottom: 10px; line-height: 1.4; }
+  .tool-dots { display: flex; gap: 4px; margin-bottom: 8px; }
+  .tool-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .tag {
+    display: inline-block; font-size: 10px; font-weight: 500;
+    padding: 2px 8px; border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface2); color: var(--text-2);
+  }
+  .tag-rec { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
+  .tag-oss { background: var(--full-bg); color: var(--full-text); border-color: var(--full-border); }
+  .tag-ent { background: #EDE8FD; color: #4A3890; border-color: #B8A8E8; }
+  .tag-budget { background: var(--partial-bg); color: var(--partial-text); border-color: var(--partial-border); }
+  @media (prefers-color-scheme: dark) {
+    .tag-rec { background: #1A2A3A; color: #6A9EC8; border-color: #2A4A6A; }
+    .tag-oss { background: var(--full-bg); color: var(--full-text); border-color: var(--full-border); }
+    .tag-ent { background: #2A1A4A; color: #A898D8; border-color: #4A3870; }
+    .tag-budget { background: var(--partial-bg); color: var(--partial-text); border-color: var(--partial-border); }
+  }
+  .detail-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 24px; margin-bottom: 24px;
+    box-shadow: var(--shadow);
+  }
+  .detail-head { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+  .detail-name { font-size: 20px; font-weight: 600; color: var(--text); }
+  .detail-sub { font-size: 12px; color: var(--text-2); margin-top: 3px; }
+  .detail-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+  .section-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-3); margin-bottom: 10px; }
+  .req-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 8px; margin-bottom: 20px; }
+  .req-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    background: var(--surface2); border-radius: var(--radius-sm); padding: 10px 12px;
+  }
+  .req-icon {
+    width: 30px; height: 30px; border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0;
+  }
+  .icon-full { background: var(--full-bg); }
+  .icon-partial { background: var(--partial-bg); }
+  .icon-none { background: var(--none-bg); }
+  .req-content-label { font-size: 12px; font-weight: 500; color: var(--text); }
+  .req-content-note { font-size: 11px; color: var(--text-2); margin-top: 2px; line-height: 1.5; }
+  .badge { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+  .b-full { background: var(--full-bg); color: var(--full-text); border: 1px solid var(--full-border); }
+  .b-partial { background: var(--partial-bg); color: var(--partial-text); border: 1px solid var(--partial-border); }
+  .b-none { background: var(--none-bg); color: var(--none-text); border: 1px solid var(--none-border); }
+  .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .meta-box { background: var(--surface2); border-radius: var(--radius-sm); padding: 10px 12px; }
+  .meta-box-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-3); margin-bottom: 6px; }
+  .meta-item { font-size: 12px; color: var(--text-2); padding: 2px 0; }
+  .deploy-pill {
+    display: inline-block; font-size: 11px; padding: 3px 10px;
+    border-radius: 20px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text-2); margin: 2px 2px 2px 0;
+    font-family: 'DM Mono', monospace;
+  }
+  .pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .pc-box { background: var(--surface2); border-radius: var(--radius-sm); padding: 12px; }
+  .pc-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; }
+  .pc-title.pros { color: var(--full-text); }
+  .pc-title.cons { color: var(--none-text); }
+  .pc-item { font-size: 12px; color: var(--text-2); padding: 5px 0; border-bottom: 1px solid var(--border); line-height: 1.5; display: flex; gap: 6px; }
+  .pc-item:last-child { border-bottom: none; }
+  .pc-sym { flex-shrink: 0; font-weight: 600; }
+  .pc-sym.plus { color: var(--dot-full); }
+  .pc-sym.minus { color: #C84040; }
+  .score-row {
+    display: flex; align-items: center; gap: 16px;
+    background: var(--surface2); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 12px;
+  }
+  .score-num { font-size: 32px; font-weight: 600; line-height: 1; font-family: 'DM Mono', monospace; }
+  .score-label { font-size: 12px; color: var(--text-2); }
+  .score-bar-wrap { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .score-bar { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+  .verdict-box {
+    font-size: 13px; color: var(--text-2); line-height: 1.7;
+    padding: 12px 14px; background: var(--accent-light);
+    border-radius: var(--radius-sm); border-left: 3px solid var(--accent);
+  }
+  .btn-deep {
+    display: inline-block; margin-top: 16px; font-size: 13px; font-weight: 500;
+    padding: 9px 18px; border-radius: var(--radius-sm);
+    background: var(--accent); color: #fff; border: none; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: opacity 0.15s;
+  }
+  .btn-deep:hover { opacity: 0.88; }
+  .summary-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow); }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { padding: 8px 10px; text-align: left; color: var(--text-3); font-weight: 500; font-size: 11px; border-bottom: 1px solid var(--border-strong); }
+  th:not(:first-child) { text-align: center; }
+  td { padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  td:not(:first-child) { text-align: center; }
+  tr:last-child td { border-bottom: none; }
+  .summary-req { font-size: 12px; color: var(--text); }
+  .score-cell { font-weight: 600; font-size: 14px; font-family: 'DM Mono', monospace; }
+  .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  .footer-left { font-size: 11px; color: var(--text-3); }
+  .footer-right { font-size: 11px; color: var(--text-3); font-family: 'DM Mono', monospace; }
+  @media (max-width: 600px) {
+    .pros-cons, .meta-grid { grid-template-columns: 1fr; }
+    .tools-grid { grid-template-columns: repeat(2, 1fr); }
+    h1 { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-header">
+    <div class="page-eyebrow">Xtremax — Security Consulting</div>
+    <div class="page-header-top">
+      <div>
+        <h1>SIEM Tools Comparison</h1>
+        <p class="page-desc" style="margin-top:8px">Evaluation of mature SIEM solutions against IAS requirements for a centralised security monitoring platform covering hybrid and multi-cloud workloads.</p>
+      </div>
+    </div>
+    <div class="reqs-row">
+      <span class="req-pill"><span class="req-pill-num">1</span>Cloud resources (AWS · Azure · GCP)</span>
+      <span class="req-pill"><span class="req-pill-num">2</span>User endpoints (laptops, PCs)</span>
+      <span class="req-pill"><span class="req-pill-num">3</span>Network devices (FW, routers)</span>
+      <span class="req-pill"><span class="req-pill-num">4</span>Non-cloud servers (on-prem / colo)</span>
+      <span class="req-pill"><span class="req-pill-num">5</span>SaaS &amp; in-house applications</span>
+    </div>
+  </div>
+
+  <div class="legend-row">
+    <span class="leg"><span class="dot dot-full"></span>Full coverage</span>
+    <span class="leg"><span class="dot dot-partial"></span>Partial coverage</span>
+    <span class="leg"><span class="dot dot-empty"></span>Not covered</span>
+    <span style="font-size:11px;color:var(--text-3);margin-left:4px">— dots represent requirements 1–5 in order</span>
+  </div>
+
+  <div class="tools-grid" id="toolsGrid"></div>
+  <div id="detailPanel"></div>
+
+  <div class="summary-section">
+    <div class="section-label" style="margin-bottom:14px">Overall coverage matrix</div>
+    <div id="summaryTable"></div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-left">Prepared by Xtremax · Security Advisory</div>
+    <div class="footer-right">IAS SIEM Evaluation · <span id="dateStr"></span></div>
+  </div>
+
+</div>
+
+<script>
+document.getElementById('dateStr').textContent = new Date().toLocaleDateString('en-GB',{year:'numeric',month:'short',day:'numeric'});
+
+const reqs = [
+  { id:'cloud', label:'Cloud (AWS / Azure / GCP)', icon:'☁' },
+  { id:'endpoint', label:'User endpoints (laptops, PCs)', icon:'💻' },
+  { id:'network', label:'Network devices (FW, routers)', icon:'⇄' },
+  { id:'onprem', label:'Non-cloud servers (on-prem / colo)', icon:'■' },
+  { id:'saas', label:'SaaS & in-house applications', icon:'◈' },
+];
+
+const tools = [
+  {
+    id:'sentinel', name:'Microsoft Sentinel', nameShort:'Sentinel',
+    type:'Cloud-native SIEM (SaaS)',
+    tags:[{cls:'tag-rec',label:'Recommended'},{cls:'tag-ent',label:'Enterprise'}],
+    deploy:['AWS cross-cloud connectors','Azure-native hosting','No infra to manage'],
+    pricing:'Pay-per-GB ingestion (~$2.46 / GB)',
+    coverage:{
+      cloud:{level:'full',note:'Native AWS connectors: CloudTrail, GuardDuty, Security Hub, S3. GCP via connector. Azure native.'},
+      endpoint:{level:'full',note:'Defender for Endpoint integration + CEF/Syslog agents for non-Windows endpoints.'},
+      network:{level:'full',note:'500+ built-in connectors: Palo Alto, Fortinet, Cisco, Check Point, F5 via Syslog/CEF.'},
+      onprem:{level:'full',note:'Log Analytics Agent / AMA for Linux & Windows servers on-prem and colo.'},
+      saas:{level:'full',note:'200+ SaaS connectors: Office 365, Okta, Salesforce, GitHub, ServiceNow, custom REST API.'},
+    },
+    pros:['Largest connector library (500+)','Strong UEBA via dedicated module','Native SOAR via Azure Logic Apps','MITRE ATT&CK coverage mapping built-in','No infrastructure to provision or manage'],
+    cons:['Requires Azure subscription for hosting','Cost can escalate at high log volumes','Best when O365 / Azure already in use','Advanced features need Defender E5 licence'],
+    overall:94,
+    note:'Best all-around fit for IAS — covers all 5 requirements natively with the largest connector library and minimal infrastructure overhead. Recommended if IAS accepts Azure as the SIEM hosting platform alongside AWS workloads.'
+  },
+  {
+    id:'splunk', name:'Splunk Enterprise Security', nameShort:'Splunk ES',
+    type:'Market-leader SIEM (self-hosted / cloud)',
+    tags:[{cls:'tag-ent',label:'Enterprise'}],
+    deploy:['AWS Marketplace (AMI)','Splunk Cloud (SaaS)','Self-hosted on EC2'],
+    pricing:'Per-GB ingestion or workload-based (premium pricing)',
+    coverage:{
+      cloud:{level:'full',note:'Splunk Add-on for AWS: CloudTrail, GuardDuty, Config, VPC Flow. Azure & GCP add-ons available.'},
+      endpoint:{level:'full',note:'Splunk UBA + CrowdStrike / SentinelOne / Defender integrations. Universal Forwarder for servers.'},
+      network:{level:'full',note:'Add-ons for all major vendors: Cisco, Palo Alto, Juniper, Fortinet, F5 via Syslog / API.'},
+      onprem:{level:'full',note:'Universal Forwarder agent for Linux / Windows on-prem — lightweight, battle-tested.'},
+      saas:{level:'full',note:'Splunkbase has 2000+ apps — Okta, Salesforce, O365, custom REST inputs.'},
+    },
+    pros:['Most mature and feature-rich SIEM available','Deepest SPL query language for threat hunting','Largest ecosystem: 2000+ Splunkbase apps','Full SOAR via Splunk SOAR (formerly Phantom)','Fully deployable on AWS natively'],
+    cons:['Very expensive licensing + infrastructure','High operational complexity to maintain','Significant tuning effort required upfront','Steep SPL learning curve for new analysts'],
+    overall:96,
+    note:'Most comprehensive SIEM on the market, covers all 5 IAS requirements fully. Best choice if budget is not a constraint. Can be self-hosted on AWS EC2 or use Splunk Cloud for managed operation.'
+  },
+  {
+    id:'elastic', name:'Elastic Security', nameShort:'Elastic',
+    type:'Open-core SIEM (fully deployable on AWS)',
+    tags:[{cls:'tag-rec',label:'Good value'},{cls:'tag-oss',label:'Open-core'}],
+    deploy:['AWS EC2 / EKS self-managed','Elastic Cloud on AWS','Hybrid cluster'],
+    pricing:'Free (open-source core) or Elastic Cloud from ~$95/mo',
+    coverage:{
+      cloud:{level:'full',note:'AWS integration via Elastic Agent: CloudTrail, GuardDuty, VPC Flow, WAF. Azure & GCP integrations available.'},
+      endpoint:{level:'full',note:'Elastic Agent with Endpoint Security replaces EDR — deep telemetry on Windows, Linux, macOS.'},
+      network:{level:'full',note:'Network packet capture + integrations for Palo Alto, Cisco, pfSense via Syslog / CEF / API.'},
+      onprem:{level:'full',note:'Elastic Agent lightweight agent for Linux and Windows on-prem; Beats (Filebeat, Winlogbeat) for legacy.'},
+      saas:{level:'partial',note:'Integrations for Okta, O365, GitHub, Google Workspace available; fewer SaaS connectors than Splunk or Sentinel.'},
+    },
+    pros:['Fully deployable on AWS — no Azure dependency','Elastic Agent = SIEM + EDR in one agent','Strong threat hunting with EQL (Event Query Language)','Cost-effective vs Splunk / Sentinel at scale','Active open-source community and documentation'],
+    cons:['Operational burden: you manage the cluster','SaaS connector library smaller than Splunk / Sentinel','Requires Elasticsearch engineering expertise','Advanced ML features need paid Platinum licence'],
+    overall:86,
+    note:'Best fit if IAS wants full AWS-native deployment without Azure dependency. Elastic Agent combines SIEM forwarder and EDR in one, reducing tooling footprint. Good value for money with professional services to operate it.'
+  },
+  {
+    id:'wazuh', name:'Wazuh + OpenSearch', nameShort:'Wazuh',
+    type:'Open-source SIEM (self-hosted)',
+    tags:[{cls:'tag-oss',label:'Open-source'},{cls:'tag-budget',label:'Budget-friendly'}],
+    deploy:['AWS EC2 / EKS','On-prem self-hosted','Hybrid'],
+    pricing:'Free (open-source) — pay only for AWS infrastructure',
+    coverage:{
+      cloud:{level:'partial',note:'AWS via CloudWatch / S3 log ingestion. No native GuardDuty / Security Hub connector; community modules available.'},
+      endpoint:{level:'full',note:'Wazuh Agent is purpose-built for endpoints — FIM, vulnerability detection, compliance on Windows / Linux / macOS.'},
+      network:{level:'partial',note:'Syslog ingestion from network devices supported; limited vendor-specific parsers out-of-the-box.'},
+      onprem:{level:'full',note:'Wazuh Agent excels on on-prem Linux and Windows servers — HIDS, log collection, compliance checks.'},
+      saas:{level:'partial',note:'Basic REST API ingestion; limited native SaaS connectors. Requires custom integration development.'},
+    },
+    pros:['Zero license cost','Strong endpoint and on-prem coverage (HIDS)','FIM, vulnerability detection, compliance built-in','Active community, well documented','Pairs well with AWS Security Lake + Athena'],
+    cons:['Significant engineering effort to maintain','AWS and SaaS coverage is limited natively','No UEBA or SOAR built-in','Commercial support requires Wazuh Pro subscription','Scalability needs careful capacity planning'],
+    overall:62,
+    note:'Best as a supplementary tool or for budget-constrained phases. Strong for on-prem and endpoint coverage, but gaps in cloud-native and SaaS coverage make it insufficient as a standalone SIEM for all 5 IAS requirements.'
+  },
+  {
+    id:'qradar', name:'IBM QRadar SIEM', nameShort:'QRadar',
+    type:'Enterprise SIEM (on-prem / AWS / SaaS)',
+    tags:[{cls:'tag-ent',label:'Enterprise'}],
+    deploy:['AWS Marketplace','QRadar on Cloud (SaaS)','On-prem appliance'],
+    pricing:'Per EPS (events/sec) or FPS (flows/sec) — enterprise pricing',
+    coverage:{
+      cloud:{level:'full',note:'AWS DSM: CloudTrail, GuardDuty, VPC Flow. Azure Sentinel connector. GCP via API.'},
+      endpoint:{level:'partial',note:'Integrates with CrowdStrike, SentinelOne, Carbon Black via API; no native endpoint agent.'},
+      network:{level:'full',note:'700+ DSMs for network devices: Cisco, Juniper, Palo Alto, Fortinet, Check Point, all major vendors.'},
+      onprem:{level:'full',note:'QRadar agent / log sources for Windows and Linux servers; WinCollect agent for Windows.'},
+      saas:{level:'partial',note:'App Exchange has connectors for major SaaS; fewer than Splunk. Some require custom DSM development.'},
+    },
+    pros:['Strong network flow analytics (QRadar QFlow)','700+ DSMs out of the box','Mature compliance reporting: PCI, SOC 2, ISO 27001','Available on AWS Marketplace','Strong for network-heavy environments'],
+    cons:['Complex EPS/FPS licensing model','UI is dated compared to modern SIEMs','Heavy operational overhead','Slower innovation vs cloud-native competitors','Endpoint coverage depends on third-party EDR'],
+    overall:78,
+    note:'Solid enterprise choice with especially strong network device coverage. Good fit if IAS has heavy network visibility requirements. Available on AWS Marketplace for cloud deployment without on-prem appliance.'
+  },
+];
+
+function dotEl(level) {
+  const cls = level==='full'?'dot-full':level==='partial'?'dot-partial':'dot-empty';
+  return `<span class="dot ${cls}"></span>`;
+}
+function badgeEl(level) {
+  const cls = level==='full'?'b-full':level==='partial'?'b-partial':'b-none';
+  const lbl = level==='full'?'Full':level==='partial'?'Partial':'None';
+  return `<span class="badge ${cls}">${lbl}</span>`;
+}
+function scoreColor(s) { return s>=90?'#3A8A40':s>=75?'#C07820':'#B83030'; }
+
+function renderCards(activeId) {
+  document.getElementById('toolsGrid').innerHTML = tools.map(t => {
+    const dots = reqs.map(r => dotEl(t.coverage[r.id].level)).join('');
+    const tags = t.tags.map(tag => `<span class="tag ${tag.cls}">${tag.label}</span>`).join('');
+    return `<div class="tool-card${t.id===activeId?' active':''}" onclick="select('${t.id}')">
+      <div class="tool-name">${t.name}</div>
+      <div class="tool-type">${t.type}</div>
+      <div class="tool-dots">${dots}</div>
+      <div class="tool-tags">${tags}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderDetail(tool) {
+  const tags = tool.tags.map(t => `<span class="tag ${t.cls}">${t.label}</span>`).join('');
+  const reqRows = reqs.map(r => {
+    const c = tool.coverage[r.id];
+    const iconCls = c.level==='full'?'icon-full':c.level==='partial'?'icon-partial':'icon-none';
+    return `<div class="req-row">
+      <div class="req-icon ${iconCls}">${r.icon}</div>
+      <div>
+        <div class="req-content-label">${r.label}</div>
+        <div class="req-content-note">${c.note}</div>
+      </div>
+    </div>`;
+  }).join('');
+  const deploys = tool.deploy.map(d => `<span class="deploy-pill">${d}</span>`).join('');
+  const pros = tool.pros.map(p => `<div class="pc-item"><span class="pc-sym plus">+</span><span>${p}</span></div>`).join('');
+  const cons = tool.cons.map(c => `<div class="pc-item"><span class="pc-sym minus">−</span><span>${c}</span></div>`).join('');
+  const sc = scoreColor(tool.overall);
+  const barW = tool.overall;
+
+  document.getElementById('detailPanel').innerHTML = `<div class="detail-panel">
+    <div class="detail-head">
+      <div>
+        <div class="detail-name">${tool.name}</div>
+        <div class="detail-sub">${tool.type}</div>
+      </div>
+      <div class="detail-tags">${tags}</div>
+    </div>
+
+    <div class="section-label">Coverage against IAS requirements</div>
+    <div class="req-grid">${reqRows}</div>
+
+    <div class="meta-grid">
+      <div class="meta-box">
+        <div class="meta-box-label">Deployment options</div>
+        <div>${deploys}</div>
+      </div>
+      <div class="meta-box">
+        <div class="meta-box-label">Pricing model</div>
+        <div class="meta-item">${tool.pricing}</div>
+      </div>
+    </div>
+
+    <div class="section-label">Strengths &amp; limitations</div>
+    <div class="pros-cons">
+      <div class="pc-box">
+        <div class="pc-title pros">Strengths</div>
+        ${pros}
+      </div>
+      <div class="pc-box">
+        <div class="pc-title cons">Limitations</div>
+        ${cons}
+      </div>
+    </div>
+
+    <div class="section-label">Overall fit score</div>
+    <div class="score-row">
+      <div>
+        <div class="score-label">IAS requirement coverage</div>
+      </div>
+      <div class="score-bar-wrap">
+        <div class="score-bar" style="width:${barW}%;background:${sc}"></div>
+      </div>
+      <div class="score-num" style="color:${sc}">${tool.overall}</div>
+      <div style="font-size:12px;color:var(--text-3)">/100</div>
+    </div>
+    <div class="verdict-box">${tool.note}</div>
+  </div>`;
+}
+
+function renderSummary() {
+  const header = `<table>
+    <thead><tr>
+      <th style="width:28%">Requirement</th>
+      ${tools.map(t=>`<th>${t.nameShort}</th>`).join('')}
+    </tr></thead>
+    <tbody>
+      ${reqs.map(r=>`<tr>
+        <td class="summary-req">${r.icon} ${r.label}</td>
+        ${tools.map(t=>`<td>${badgeEl(t.coverage[r.id].level)}</td>`).join('')}
+      </tr>`).join('')}
+      <tr style="border-top:2px solid var(--border-strong)">
+        <td style="font-weight:600;font-size:12px">Overall fit score</td>
+        ${tools.map(t=>`<td class="score-cell" style="color:${scoreColor(t.overall)}">${t.overall}</td>`).join('')}
+      </tr>
+    </tbody>
+  </table>`;
+  document.getElementById('summaryTable').innerHTML = header;
+}
+
+let active = 'sentinel';
+window.select = function(id) {
+  active = id;
+  renderCards(id);
+  renderDetail(tools.find(t=>t.id===id));
+};
+
+renderCards(active);
+renderDetail(tools[0]);
+renderSummary();
+</script>
+</body>
+</html>
