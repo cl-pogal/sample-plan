@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security Audit & Compliance Checklist</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:         #F4F6FA;
+    --surface:    #FFFFFF;
+    --surface2:   #F8F9FC;
+    --border:     #E2E8F0;
+    --border2:    #CBD5E1;
+    --txt:        #0F1F35;
+    --txt-mid:    #3D5470;
+    --txt-dim:    #7A92AE;
+    --txt-dimmer: #A8BDD0;
+
+    --implement:  #0E8A5A;
+    --impl-bg:    #EDFAF4;
+    --impl-bdr:   #A8E8CB;
+
+    --skip:       #8A94A0;
+    --skip-bg:    #F2F4F6;
+    --skip-bdr:   #CDD5DC;
+
+    --pending:    #1A6FAA;
+    --pend-bg:    #EBF5FF;
+    --pend-bdr:   #A8CEED;
+
+    --critical:   #C0392B;
+    --crit-bg:    #FEF0EE;
+    --crit-bdr:   #F5A89A;
+
+    --high:       #B06010;
+    --high-bg:    #FEF6EC;
+    --high-bdr:   #F5CB8A;
+
+    --timeline:   #0E5E9A;
+    --tl-bg:      #EBF3FF;
+    --tl-bdr:     #90BEF0;
+
+    --shadow-sm:  0 1px 3px rgba(15,31,53,.06), 0 1px 2px rgba(15,31,53,.04);
+    --shadow-md:  0 4px 12px rgba(15,31,53,.08), 0 2px 4px rgba(15,31,53,.04);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--txt);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 44px 56px 36px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .header-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 2.5px;
+    text-transform: uppercase; color: var(--timeline);
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .header-eyebrow::before {
+    content: ''; width: 24px; height: 2px;
+    background: var(--timeline); display: block;
+  }
+
+  header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 34px; font-weight: 800;
+    letter-spacing: -0.8px; line-height: 1.15;
+    color: var(--txt); margin-bottom: 8px;
+  }
+  header h1 span { color: var(--timeline); }
+
+  .header-sub {
+    color: var(--txt-dim); font-size: 13.5px; margin-bottom: 28px;
+  }
+
+  /* ── LEGEND ── */
+  .legend {
+    display: flex; gap: 20px; flex-wrap: wrap;
+    margin-bottom: 24px; padding: 14px 18px;
+    background: var(--surface2); border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 12px; color: var(--txt-mid); font-weight: 500;
+  }
+  .legend-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+
+  /* ── PROGRESS ── */
+  .progress-section {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;
+    margin-bottom: 6px;
+  }
+  .prog-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 18px;
+  }
+  .prog-card-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--txt-dim);
+    font-family: 'DM Mono', monospace; margin-bottom: 8px;
+  }
+  .prog-bar-row { display: flex; align-items: center; gap: 10px; }
+  .prog-track {
+    flex: 1; height: 7px; background: var(--border);
+    border-radius: 99px; overflow: hidden;
+  }
+  .prog-fill {
+    height: 100%; border-radius: 99px;
+    transition: width .4s ease; width: 0%;
+  }
+  .fill-impl  { background: var(--implement); }
+  .fill-skip  { background: var(--skip); }
+  .fill-pend  { background: var(--pending); }
+  .prog-nums {
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    color: var(--txt-mid); white-space: nowrap;
+  }
+
+  /* ── MAIN ── */
+  .main { max-width: 1080px; margin: 0 auto; padding: 36px 56px 100px; }
+
+  /* ── TIMELINE REF ── */
+  .timeline-ref {
+    background: var(--tl-bg);
+    border: 1px solid var(--tl-bdr);
+    border-radius: 12px; padding: 18px 22px; margin-bottom: 24px;
+  }
+  .timeline-ref h3 {
+    font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700;
+    color: var(--timeline); text-transform: uppercase;
+    letter-spacing: 1px; margin-bottom: 12px;
+  }
+  .ref-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 7px;
+  }
+  .ref-row { display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--txt-mid); }
+  .ref-wk {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    padding: 2px 8px; border-radius: 8px; white-space: nowrap;
+    background: var(--tl-bg); color: var(--timeline);
+    border: 1px solid var(--tl-bdr); flex-shrink: 0; margin-top: 1px;
+  }
+
+  /* ── CONTROLS ── */
+  .controls {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    align-items: center; margin-bottom: 24px;
+  }
+  .filter-btn {
+    padding: 6px 16px; border-radius: 20px; cursor: pointer;
+    font-size: 12px; font-weight: 500; border: 1.5px solid var(--border2);
+    color: var(--txt-mid); background: var(--surface);
+    font-family: 'Inter', sans-serif; transition: all .18s;
+  }
+  .filter-btn:hover { border-color: var(--timeline); color: var(--timeline); }
+  .filter-btn.active {
+    background: var(--timeline); border-color: var(--timeline);
+    color: #fff;
+  }
+  .spacer { flex: 1; }
+  .expand-all-btn {
+    font-size: 12px; color: var(--txt-dim); cursor: pointer;
+    background: none; border: none; font-family: 'Inter', sans-serif;
+    padding: 6px 0; transition: color .18s;
+  }
+  .expand-all-btn:hover { color: var(--timeline); }
+
+  /* ── SECTION ── */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px; margin-bottom: 16px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden; transition: box-shadow .2s;
+  }
+  .section:hover { box-shadow: var(--shadow-md); }
+
+  .sec-header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 20px; cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: background .15s; user-select: none;
+  }
+  .sec-header:hover { background: var(--surface2); }
+
+  .sec-icon {
+    width: 36px; height: 36px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+
+  .sec-info { flex: 1; }
+  .sec-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 1.5px; color: var(--txt-dimmer);
+    text-transform: uppercase; margin-bottom: 1px;
+  }
+  .sec-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14.5px; font-weight: 700; color: var(--txt);
+  }
+
+  .sec-meta { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .mini-bars { display: flex; gap: 4px; align-items: center; }
+  .mini-seg {
+    height: 5px; border-radius: 99px; transition: width .3s;
+  }
+  .seg-impl { background: var(--implement); }
+  .seg-skip { background: var(--skip); }
+  .seg-base { background: var(--border); flex: 1; }
+
+  .sec-count {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--txt-dim); white-space: nowrap;
+  }
+  .chevron { color: var(--txt-dimmer); font-size: 12px; transition: transform .22s; }
+  .section.collapsed .chevron { transform: rotate(-90deg); }
+
+  /* ── BODY ── */
+  .sec-body { padding: 4px 0 8px; }
+  .section.collapsed .sec-body { display: none; }
+
+  .sub-label {
+    padding: 12px 20px 5px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--txt-dimmer);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .sub-label::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+
+  /* ── ITEM ── */
+  .item {
+    display: flex; align-items: center;
+    gap: 10px; padding: 8px 20px;
+    border-radius: 8px; margin: 0 8px;
+    transition: background .12s;
+  }
+  .item:hover { background: var(--surface2); }
+
+  /* State visuals */
+  .item.state-implement { background: var(--impl-bg); }
+  .item.state-implement:hover { background: #E0F5EC; }
+  .item.state-skip { background: var(--skip-bg); }
+  .item.state-skip:hover { background: #ECEEF0; }
+
+  .item-text {
+    flex: 1; font-size: 13px; color: var(--txt-mid);
+    line-height: 1.5; user-select: none;
+  }
+  .item.state-implement .item-text { color: var(--txt); font-weight: 500; }
+  .item.state-skip .item-text {
+    color: var(--txt-dimmer); text-decoration: line-through;
+    text-decoration-color: var(--border2);
+  }
+
+  /* Tags */
+  .item-tags { display: flex; gap: 4px; flex-shrink: 0; align-items: center; }
+  .tag {
+    font-family: 'DM Mono', monospace; font-size: 9.5px;
+    padding: 2px 7px; border-radius: 8px; letter-spacing: .4px;
+    text-transform: uppercase; font-weight: 500; white-space: nowrap;
+  }
+  .tag-critical { background: var(--crit-bg); color: var(--critical); border: 1px solid var(--crit-bdr); }
+  .tag-high     { background: var(--high-bg); color: var(--high);     border: 1px solid var(--high-bdr); }
+  .tag-timeline { background: var(--tl-bg);   color: var(--timeline); border: 1px solid var(--tl-bdr); }
+
+  /* Action buttons */
+  .item-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+  .act-btn {
+    width: 28px; height: 28px; border-radius: 7px;
+    border: 1.5px solid var(--border2); background: var(--surface);
+    cursor: pointer; font-size: 13px; display: flex;
+    align-items: center; justify-content: center;
+    transition: all .15s; flex-shrink: 0;
+    font-family: 'Inter', sans-serif; color: var(--txt-dim);
+  }
+  .act-btn:hover { transform: scale(1.08); }
+
+  /* Implement button */
+  .btn-impl:hover { background: var(--impl-bg); border-color: var(--implement); color: var(--implement); }
+  .item.state-implement .btn-impl {
+    background: var(--implement); border-color: var(--implement); color: #fff;
+  }
+  .item.state-implement .btn-impl:hover { background: #0B7A50; }
+
+  /* Skip button */
+  .btn-skip:hover { background: var(--skip-bg); border-color: var(--skip); color: var(--skip); }
+  .item.state-skip .btn-skip {
+    background: var(--skip); border-color: var(--skip); color: #fff;
+  }
+  .item.state-skip .btn-skip:hover { background: #6B7A86; }
+
+  /* State badge (shown when decided) */
+  .state-badge {
+    font-size: 10.5px; font-weight: 600; padding: 2px 9px;
+    border-radius: 8px; white-space: nowrap; flex-shrink: 0;
+    display: none;
+  }
+  .item.state-implement .state-badge {
+    display: inline-flex; background: var(--impl-bg);
+    color: var(--implement); border: 1px solid var(--impl-bdr);
+  }
+  .item.state-skip .state-badge {
+    display: inline-flex; background: var(--skip-bg);
+    color: var(--skip); border: 1px solid var(--skip-bdr);
+  }
+
+  /* ── BACK TOP ── */
+  .back-top {
+    position: fixed; bottom: 28px; right: 28px;
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--surface); border: 1.5px solid var(--border2);
+    color: var(--txt-dim); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; box-shadow: var(--shadow-md);
+    transition: all .18s; z-index: 10;
+  }
+  .back-top:hover { border-color: var(--timeline); color: var(--timeline); }
+
+  @media (max-width: 720px) {
+    header, .main { padding-left: 20px; padding-right: 20px; }
+    .progress-section { grid-template-columns: 1fr; }
+    .ref-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-eyebrow">AWS Infrastructure Modernisation · PT Customer</div>
+  <h1>Security Audit &amp; <span>Compliance Checklist</span></h1>
+  <p class="header-sub">14 domains · AWS FSBP, CIS Benchmark & project timeline aligned · Review each item and decide: Implement or Not Needed</p>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--implement)"></div>Will Implement</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--skip)"></div>Not Needed / Skip</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--border2)"></div>Pending Review</div>
+    <div class="legend-item" style="margin-left:auto">
+      <span class="tag tag-critical">Critical</span>&nbsp;Must-have security control
+    </div>
+    <div class="legend-item">
+      <span class="tag tag-high">High</span>&nbsp;Strongly recommended
+    </div>
+    <div class="legend-item">
+      <span class="tag tag-timeline">In Timeline</span>&nbsp;In your project plan
+    </div>
+  </div>
+
+  <div class="progress-section">
+    <div class="prog-card">
+      <div class="prog-card-label">Will Implement</div>
+      <div class="prog-bar-row">
+        <div class="prog-track"><div class="prog-fill fill-impl" id="fillImpl"></div></div>
+        <span class="prog-nums" id="numImpl">0 / 0</span>
+      </div>
+    </div>
+    <div class="prog-card">
+      <div class="prog-card-label">Not Needed / Skip</div>
+      <div class="prog-bar-row">
+        <div class="prog-track"><div class="prog-fill fill-skip" id="fillSkip"></div></div>
+        <span class="prog-nums" id="numSkip">0 / 0</span>
+      </div>
+    </div>
+    <div class="prog-card">
+      <div class="prog-card-label">Pending Review</div>
+      <div class="prog-bar-row">
+        <div class="prog-track"><div class="prog-fill fill-pend" id="fillPend"></div></div>
+        <span class="prog-nums" id="numPend">0 / 0</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="main">
+
+  <div class="timeline-ref">
+    <h3>📅 Timeline Reference — Items in Your Project Plan</h3>
+    <div class="ref-grid">
+      <div class="ref-row"><span class="ref-wk">W1–W2</span>Audit SCPs, OU structure, IAM users/roles & MFA</div>
+      <div class="ref-row"><span class="ref-wk">W3–W4</span>Enforce SCPs; enable GuardDuty, CloudTrail, Config</div>
+      <div class="ref-row"><span class="ref-wk">W4</span>Configure VPC Flow Logs and Security Hub</div>
+      <div class="ref-row"><span class="ref-wk">W5–W6</span>IRSA, EKS node security, Secrets Manager</div>
+      <div class="ref-row"><span class="ref-wk">W6</span>SonarQube quality gate + ECR image scan in pipeline</div>
+      <div class="ref-row"><span class="ref-wk">W9</span>Container & IaC (Checkov) security scans</div>
+      <div class="ref-row"><span class="ref-wk">W11</span>CloudWatch alarms + AWS X-Ray tracing</div>
+      <div class="ref-row"><span class="ref-wk">W12</span>AWS WAF WebACLs + Shield Standard + Route 53</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="filter-btn active" onclick="filterItems('all',this)">All Items</button>
+    <button class="filter-btn" onclick="filterItems('critical',this)">🔴 Critical</button>
+    <button class="filter-btn" onclick="filterItems('high',this)">🟠 High</button>
+    <button class="filter-btn" onclick="filterItems('timeline',this)">🔵 In Timeline</button>
+    <button class="filter-btn" onclick="filterItems('implement',this)">✅ Will Implement</button>
+    <button class="filter-btn" onclick="filterItems('skip',this)">⬜ Not Needed</button>
+    <button class="filter-btn" onclick="filterItems('pending',this)">⏳ Pending</button>
+    <div class="spacer"></div>
+    <button class="expand-all-btn" id="expandBtn" onclick="toggleAll()">Collapse All ▲</button>
+  </div>
+
+  <div id="sections-container"></div>
+</div>
+
+<button class="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+const SECTIONS = [
+  {
+    id:'s1', num:'01', title:'Identity & Access Management', icon:'🔐', color:'#1B5E8A',
+    subsections:[
+      { label:'Account & Root Security', items:[
+        {t:'Root account has MFA enabled on all accounts', tags:['critical','timeline']},
+        {t:'Root account has no active access keys', tags:['critical','timeline']},
+        {t:'Root account is not used for any day-to-day operations', tags:['critical']},
+        {t:'Alternate contacts (billing, security, operations) configured per account', tags:[]},
+      ]},
+      { label:'IAM Users & Policies', items:[
+        {t:'No IAM users with console access without MFA enforced', tags:['critical','timeline']},
+        {t:'No IAM users with AdministratorAccess attached directly', tags:['critical']},
+        {t:'All IAM policies follow least-privilege principle', tags:['high','timeline']},
+        {t:'No inline policies — all policies are managed policies', tags:['high']},
+        {t:'No wildcard * actions in production IAM policies', tags:['high']},
+        {t:'IAM access keys rotated within 90 days', tags:['high']},
+        {t:'Unused IAM users and access keys identified and removed', tags:['high','timeline']},
+        {t:'IAM password policy enforced: min 14 chars, complexity, 90-day rotation', tags:['timeline']},
+      ]},
+      { label:'IAM Roles', items:[
+        {t:'All EC2 and EKS workloads use IAM roles, not access keys', tags:['critical']},
+        {t:'IRSA (IAM Roles for Service Accounts) configured for all EKS pods', tags:['critical','timeline']},
+        {t:'Cross-account roles have explicit trust policies with condition constraints', tags:['high']},
+        {t:'No overly permissive trust policies ("Principal": "*")', tags:['critical']},
+      ]},
+    ]
+  },
+  {
+    id:'s2', num:'02', title:'AWS Organizations & SCP', icon:'🏢', color:'#5E2A8A',
+    subsections:[
+      { label:'Structure & Enrollment', items:[
+        {t:'All accounts enrolled under AWS Organizations with Control Tower', tags:['timeline']},
+        {t:'OU structure reflects environment separation (Dev, Staging, Prod, Log Archive, Security)', tags:['timeline']},
+      ]},
+      { label:'Service Control Policies', items:[
+        {t:'SCP: Deny root account usage across all member accounts', tags:['critical','timeline']},
+        {t:'SCP: Deny disabling CloudTrail', tags:['critical','timeline']},
+        {t:'SCP: Deny disabling GuardDuty', tags:['critical','timeline']},
+        {t:'SCP: Deny leaving AWS Organizations', tags:['critical']},
+        {t:'SCP: Deny creating IAM users without MFA', tags:['high','timeline']},
+        {t:'SCP: Deny S3 public access at the account level', tags:['high','timeline']},
+        {t:'SCP: Restrict AWS regions to approved regions only (e.g. ap-southeast-1)', tags:['high']},
+        {t:'SCP: Deny deletion of log archive S3 buckets', tags:['critical']},
+        {t:'SCPs applied at OU level, not directly on individual accounts', tags:[]},
+      ]},
+    ]
+  },
+  {
+    id:'s3', num:'03', title:'CloudTrail', icon:'📋', color:'#0E6E46',
+    subsections:[
+      { label:'Configuration', items:[
+        {t:'Organisation-level CloudTrail enabled — covers all member accounts', tags:['critical','timeline']},
+        {t:'CloudTrail logs delivered to centralised Log Archive S3 bucket', tags:['critical','timeline']},
+        {t:'CloudTrail S3 bucket has Object Lock enabled (immutable logs)', tags:['high']},
+        {t:'CloudTrail S3 bucket is not public', tags:['critical']},
+        {t:'CloudTrail log file validation enabled', tags:['high']},
+        {t:'CloudTrail logs encrypted with KMS CMK', tags:['high']},
+        {t:'Management events (read + write) enabled', tags:['timeline']},
+        {t:'S3 data events enabled for sensitive buckets', tags:[]},
+        {t:'CloudTrail log delivery confirmed via Athena query (not just console)', tags:['timeline']},
+      ]},
+    ]
+  },
+  {
+    id:'s4', num:'04', title:'AWS Config', icon:'⚙️', color:'#7A4010',
+    subsections:[
+      { label:'Enablement', items:[
+        {t:'AWS Config enabled in all regions in use', tags:['timeline']},
+        {t:'AWS Config records all resource types', tags:['timeline']},
+        {t:'Config delivery channel points to centralised S3 bucket', tags:[]},
+      ]},
+      { label:'Rules & Conformance', items:[
+        {t:'CIS AWS Foundations Benchmark conformance pack applied', tags:['high','timeline']},
+        {t:'AWS Security Best Practices conformance pack applied', tags:['high']},
+        {t:'Config rules: MFA on root, CloudTrail enabled, S3 public access blocked', tags:['critical','timeline']},
+        {t:'Config rules: SG unrestricted ports, EBS encryption, RDS encryption', tags:['high']},
+        {t:'Config remediation actions configured for critical rules', tags:['high']},
+        {t:'Config aggregator set up in Security account to view all accounts', tags:[]},
+      ]},
+    ]
+  },
+  {
+    id:'s5', num:'05', title:'AWS Security Hub', icon:'🛡️', color:'#0A5E7A',
+    subsections:[
+      { label:'Setup', items:[
+        {t:'Security Hub enabled and delegated admin set to Security account', tags:['timeline']},
+        {t:'AWS Foundational Security Best Practices (FSBP) standard enabled', tags:['critical','timeline']},
+        {t:'CIS AWS Foundations Benchmark standard enabled', tags:['high','timeline']},
+        {t:'All member accounts auto-enrolled', tags:['timeline']},
+      ]},
+      { label:'Operations', items:[
+        {t:'Baseline FSBP score documented at start of engagement (W1)', tags:['timeline']},
+        {t:'Target FSBP score ≥ 80% confirmed by end of W4', tags:['high','timeline']},
+        {t:'Critical and High findings reviewed weekly', tags:['high']},
+        {t:'Suppressed findings documented with justification', tags:[]},
+        {t:'Security Hub findings integrated with notification channel (email / Teams)', tags:[]},
+      ]},
+    ]
+  },
+  {
+    id:'s6', num:'06', title:'Amazon GuardDuty', icon:'👁️', color:'#8A2020',
+    subsections:[
+      { label:'Enablement & Enrollment', items:[
+        {t:'GuardDuty enabled in all accounts and all regions in use', tags:['critical','timeline']},
+        {t:'Delegated admin configured in Security account', tags:['critical','timeline']},
+        {t:'All member accounts auto-enrolled', tags:['timeline']},
+        {t:'GuardDuty findings delivered to Security Hub', tags:['high']},
+      ]},
+      { label:'Protection Features', items:[
+        {t:'S3 Protection enabled', tags:['high']},
+        {t:'EKS Audit Log Monitoring enabled', tags:['high','timeline']},
+        {t:'EKS Runtime Monitoring enabled (GuardDuty agent on EKS nodes)', tags:['high']},
+        {t:'Malware Protection enabled', tags:[]},
+        {t:'GuardDuty findings notification configured via SNS', tags:[]},
+        {t:'Suppressed finding types documented with justification', tags:[]},
+      ]},
+    ]
+  },
+  {
+    id:'s7', num:'07', title:'Network Security', icon:'🌐', color:'#1A4A7A',
+    subsections:[
+      { label:'VPC & Subnets', items:[
+        {t:'No default VPC in use in production accounts', tags:['high']},
+        {t:'Public, private, and data subnets separated per AZ', tags:['critical','timeline']},
+        {t:'No resources with public IPs in private or data subnets', tags:['critical']},
+        {t:'VPC Flow Logs enabled and delivered to Log Archive S3 / CloudWatch', tags:['high','timeline']},
+        {t:'VPC Flow Logs cover both ACCEPT and REJECT traffic', tags:['timeline']},
+      ]},
+      { label:'Security Groups', items:[
+        {t:'No Security Group allows 0.0.0.0/0 inbound on port 22 (SSH)', tags:['critical','timeline']},
+        {t:'No Security Group allows 0.0.0.0/0 inbound on port 3389 (RDP)', tags:['critical']},
+        {t:'No Security Group allows unrestricted inbound on all ports (-1)', tags:['critical']},
+        {t:'Security Groups follow least-privilege — source is specific SG not CIDR', tags:['high','timeline']},
+        {t:'RDS Security Group only allows inbound from EKS node Security Group', tags:['high','timeline']},
+        {t:'ALB Security Group only allows 80/443 from internet or CloudFront prefix list', tags:['high']},
+        {t:'EKS node Security Group does not allow direct inbound from internet', tags:['critical']},
+      ]},
+      { label:'NAT & VPC Endpoints', items:[
+        {t:'All outbound internet traffic from private subnets routes through NAT Gateway', tags:['high']},
+        {t:'No internet-facing NAT instance (use managed NAT Gateway)', tags:['high']},
+        {t:'VPC Interface Endpoints configured: S3, ECR, ECR API, SSM, Secrets Manager, CloudWatch Logs', tags:['timeline']},
+      ]},
+    ]
+  },
+  {
+    id:'s8', num:'08', title:'S3 Security', icon:'🪣', color:'#5A3A0A',
+    subsections:[
+      { label:'Access Control', items:[
+        {t:'S3 Block Public Access enabled at account level for all accounts', tags:['critical','timeline']},
+        {t:'S3 Block Public Access enabled at bucket level for all buckets', tags:['critical']},
+        {t:'S3 bucket policies restrict access to specific principals only', tags:['high']},
+        {t:'No S3 bucket ACLs (use bucket policies instead)', tags:['high']},
+      ]},
+      { label:'Data Protection', items:[
+        {t:'All S3 buckets encrypted (SSE-S3 or SSE-KMS)', tags:['high']},
+        {t:'S3 bucket versioning enabled for critical buckets (logs, Terraform state)', tags:['high']},
+        {t:'MFA Delete enabled on Log Archive S3 bucket', tags:['high']},
+        {t:'S3 access logging enabled on critical buckets', tags:[]},
+      ]},
+    ]
+  },
+  {
+    id:'s9', num:'09', title:'Encryption', icon:'🔑', color:'#3A1470',
+    subsections:[
+      { label:'At Rest', items:[
+        {t:'All EBS volumes encrypted at rest', tags:['high']},
+        {t:'All RDS / Aurora instances encrypted at rest using KMS', tags:['high','timeline']},
+        {t:'All Secrets Manager secrets encrypted with CMK (not default key)', tags:['high','timeline']},
+        {t:'All CloudTrail logs encrypted with KMS CMK', tags:['high']},
+        {t:'KMS CMK rotation enabled (annual automatic rotation)', tags:[]},
+        {t:'Kubernetes Secrets encrypted at rest via envelope encryption (KMS)', tags:['high']},
+      ]},
+      { label:'Secrets Management', items:[
+        {t:'No secrets or credentials stored in env variables, code, or SSM plain text', tags:['critical','timeline']},
+        {t:'All application secrets stored in AWS Secrets Manager', tags:['critical','timeline']},
+        {t:'All data in transit uses TLS 1.2 minimum (ALB listeners, RDS connections)', tags:['high']},
+      ]},
+    ]
+  },
+  {
+    id:'s10', num:'10', title:'EKS Security', icon:'☸️', color:'#0A5A3A',
+    subsections:[
+      { label:'Control Plane', items:[
+        {t:'EKS cluster endpoint: public disabled OR restricted to corporate IP CIDR only', tags:['critical','timeline']},
+        {t:'EKS control plane logging enabled: API server, audit, authenticator, controller manager, scheduler', tags:['high','timeline']},
+      ]},
+      { label:'Node Security', items:[
+        {t:'EKS nodes use IMDSv2 only (hop limit = 1)', tags:['high','timeline']},
+        {t:'EKS nodes have no public IP addresses', tags:['critical']},
+        {t:'EKS nodes managed via SSM — no SSH key pairs attached', tags:['high']},
+      ]},
+      { label:'Workload Security', items:[
+        {t:'IRSA configured per pod — no node-level IAM permissions used by workloads', tags:['critical','timeline']},
+        {t:'Kubernetes RBAC configured — no cluster-admin for application service accounts', tags:['high']},
+        {t:'Network Policy configured to restrict pod-to-pod traffic', tags:['high']},
+        {t:'ECR image scan on push enabled for all repositories', tags:['high','timeline']},
+        {t:'Only images from ECR allowed in EKS — no public Docker Hub pulls in production', tags:['high']},
+        {t:'Container images run as non-root user', tags:['high','timeline']},
+        {t:'No privileged containers in production workloads', tags:['critical']},
+      ]},
+    ]
+  },
+  {
+    id:'s11', num:'11', title:'CI/CD Pipeline Security (DevSecOps)', icon:'🔄', color:'#5A1A5A',
+    subsections:[
+      { label:'Pipeline Configuration', items:[
+        {t:'CodeBuild runs in VPC — no internet access via public IP', tags:['high','timeline']},
+        {t:'CodeBuild IAM role follows least-privilege', tags:['high']},
+        {t:'GitHub branch protection enabled — no direct push to main branch', tags:['high']},
+        {t:'GitHub webhooks use HTTPS with secret token validation', tags:['high']},
+        {t:'Pipeline approval gate requires named Team Lead — not open to all', tags:['timeline']},
+      ]},
+      { label:'Security Gates', items:[
+        {t:'SonarQube quality gate blocks pipeline on Critical severity findings', tags:['critical','timeline']},
+        {t:'ECR image security scan result checked — blocks on HIGH/CRITICAL', tags:['critical','timeline']},
+        {t:'Checkov or similar IaC scanner runs on Terraform before apply', tags:['high','timeline']},
+        {t:'No hardcoded secrets in buildspec.yml or pipeline configuration', tags:['critical','timeline']},
+        {t:'Secrets in pipeline retrieved from Secrets Manager at runtime', tags:['critical','timeline']},
+      ]},
+    ]
+  },
+  {
+    id:'s12', num:'12', title:'Monitoring & Security Alerting', icon:'📊', color:'#1A3A7A',
+    subsections:[
+      { label:'Critical Alarms', items:[
+        {t:'CloudWatch alarm: root account login detected', tags:['critical','timeline']},
+        {t:'CloudWatch alarm: console login without MFA', tags:['critical','timeline']},
+        {t:'CloudWatch alarm: IAM policy change', tags:['high','timeline']},
+        {t:'CloudWatch alarm: SCP change', tags:['high']},
+        {t:'CloudWatch alarm: CloudTrail disabled or modified', tags:['critical']},
+        {t:'CloudWatch alarm: Security Group inbound rule change', tags:['high','timeline']},
+      ]},
+      { label:'Threat Detection', items:[
+        {t:'CloudWatch alarm: GuardDuty HIGH/CRITICAL finding', tags:['critical']},
+        {t:'CloudWatch alarm: Unauthorised API call (AccessDenied spike)', tags:['high']},
+        {t:'EKS audit logs monitored for anomalous kubectl activity', tags:['high','timeline']},
+        {t:'All alarms route to SNS → email / Teams notification', tags:['timeline']},
+      ]},
+    ]
+  },
+  {
+    id:'s13', num:'13', title:'WAF & DDoS Protection', icon:'🔒', color:'#7A3A0A',
+    subsections:[
+      { label:'WAF Configuration', items:[
+        {t:'AWS WAF WebACL attached to ALB for all 6 applications', tags:['high','timeline']},
+        {t:'AWS Managed Rules: Core Rule Set (CRS), Known Bad Inputs, SQL injection', tags:['high','timeline']},
+        {t:'Rate-based rule configured per IP (e.g. max 2000 requests per 5 minutes)', tags:['high']},
+        {t:'WAF logging enabled — logs delivered to S3 or CloudWatch', tags:[]},
+        {t:'ALB access logs enabled', tags:[]},
+      ]},
+      { label:'DDoS Protection', items:[
+        {t:'AWS Shield Standard active — confirm DDoS protection coverage', tags:['high','timeline']},
+        {t:'CloudFront distribution fronting ALB where applicable', tags:[]},
+      ]},
+    ]
+  },
+  {
+    id:'s14', num:'14', title:'Compliance & Governance', icon:'📁', color:'#0A5A2A',
+    subsections:[
+      { label:'Tagging & Cost', items:[
+        {t:'Resource tagging policy enforced via Config rule: Environment, Project, Owner, CostCentre', tags:['timeline']},
+        {t:'AWS Cost Anomaly Detection configured with alert threshold', tags:[]},
+        {t:'All accounts have billing alerts configured', tags:[]},
+        {t:'Unused resources (idle EC2, unattached EBS, old snapshots) identified', tags:[]},
+      ]},
+      { label:'Governance & Documentation', items:[
+        {t:'AWS Trusted Advisor checks reviewed (security category minimum)', tags:[]},
+        {t:'Incident response runbook documented and handed over in W13', tags:['timeline']},
+        {t:'Data retention policy defined for logs (CloudTrail, VPC Flow Logs, ALB logs)', tags:[]},
+        {t:'Security findings remediation log maintained throughout engagement', tags:[]},
+      ]},
+    ]
+  },
+];
+
+// ── RENDER ────────────────────────────────────────────────
+const container = document.getElementById('sections-container');
+let allExpanded = true;
+
+function buildTagHTML(tags) {
+  const seen = new Set();
+  return (tags||[]).map(t => {
+    if (seen.has(t)) return '';
+    seen.add(t);
+    if (t==='critical') return '<span class="tag tag-critical">Critical</span>';
+    if (t==='high')     return '<span class="tag tag-high">High</span>';
+    if (t==='timeline') return '<span class="tag tag-timeline">In Timeline</span>';
+    return '';
+  }).join('');
+}
+
+function renderSections() {
+  container.innerHTML = '';
+  SECTIONS.forEach(sec => {
+    const el = document.createElement('div');
+    el.className = 'section'; el.id = sec.id;
+
+    const total = sec.subsections.flatMap(s=>s.items).length;
+
+    let bodyHTML = '';
+    sec.subsections.forEach(sub => {
+      bodyHTML += `<div class="sub-label">${sub.label}</div>`;
+      sub.items.forEach(item => {
+        const tagData = (item.tags||[]).join(',');
+        bodyHTML += `
+        <div class="item" data-tags="${tagData}">
+          <span class="item-text">${item.t}</span>
+          <div class="item-tags">${buildTagHTML(item.tags)}</div>
+          <span class="state-badge" id="badge"></span>
+          <div class="item-actions">
+            <button class="act-btn btn-impl" title="Will Implement" onclick="setState(this,'implement')">✓</button>
+            <button class="act-btn btn-skip" title="Not Needed / Skip" onclick="setState(this,'skip')">✕</button>
+          </div>
+        </div>`;
+      });
+    });
+
+    el.innerHTML = `
+      <div class="sec-header" onclick="toggleSection('${sec.id}')">
+        <div class="sec-icon" style="background:${sec.color}18;border:1px solid ${sec.color}33;">${sec.icon}</div>
+        <div class="sec-info">
+          <div class="sec-num">Domain ${sec.num}</div>
+          <div class="sec-title">${sec.title}</div>
+        </div>
+        <div class="sec-meta">
+          <div class="mini-bars">
+            <div class="mini-seg seg-impl" id="mimpl-${sec.id}" style="width:0px;min-width:0px"></div>
+            <div class="mini-seg seg-skip" id="mskip-${sec.id}" style="width:0px;min-width:0px"></div>
+            <div class="mini-seg seg-base" style="width:60px"></div>
+          </div>
+          <span class="sec-count" id="scnt-${sec.id}">0 / ${total} reviewed</span>
+          <span class="chevron">▾</span>
+        </div>
+      </div>
+      <div class="sec-body">${bodyHTML}</div>`;
+
+    container.appendChild(el);
+  });
+  updateGlobal();
+}
+
+function toggleSection(id) {
+  document.getElementById(id).classList.toggle('collapsed');
+}
+
+function toggleAll() {
+  const btn = document.getElementById('expandBtn');
+  if (allExpanded) {
+    document.querySelectorAll('.section').forEach(s=>s.classList.add('collapsed'));
+    btn.textContent = 'Expand All ▼'; allExpanded = false;
+  } else {
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('collapsed'));
+    btn.textContent = 'Collapse All ▲'; allExpanded = true;
+  }
+}
+
+function setState(btn, newState) {
+  const item = btn.closest('.item');
+  const badge = item.querySelector('.state-badge');
+  const current = item.dataset.state || 'pending';
+
+  // Toggle off if clicking same state
+  if (current === newState) {
+    item.className = 'item';
+    item.dataset.state = 'pending';
+    badge.textContent = '';
+  } else {
+    item.className = 'item state-' + newState;
+    item.dataset.state = newState;
+    badge.textContent = newState === 'implement' ? '✓ Will Implement' : '✕ Not Needed';
+  }
+
+  updateSectionMeta(item.closest('.section'));
+  updateGlobal();
+}
+
+function updateSectionMeta(sec) {
+  const items = sec.querySelectorAll('.item');
+  const total = items.length;
+  const impl  = sec.querySelectorAll('.item.state-implement').length;
+  const skip  = sec.querySelectorAll('.item.state-skip').length;
+  const reviewed = impl + skip;
+  const id = sec.id;
+
+  const BAR_W = 60;
+  document.getElementById('mimpl-'+id).style.width = (impl/total*BAR_W) + 'px';
+  document.getElementById('mskip-'+id).style.width = (skip/total*BAR_W) + 'px';
+  document.getElementById('scnt-'+id).textContent  = reviewed + ' / ' + total + ' reviewed';
+}
+
+function updateGlobal() {
+  const all   = document.querySelectorAll('.item');
+  const total = all.length;
+  const impl  = document.querySelectorAll('.item.state-implement').length;
+  const skip  = document.querySelectorAll('.item.state-skip').length;
+  const pend  = total - impl - skip;
+
+  const pImpl = total ? impl/total*100 : 0;
+  const pSkip = total ? skip/total*100 : 0;
+  const pPend = total ? pend/total*100 : 0;
+
+  document.getElementById('fillImpl').style.width = pImpl+'%';
+  document.getElementById('fillSkip').style.width = pSkip+'%';
+  document.getElementById('fillPend').style.width = pPend+'%';
+
+  document.getElementById('numImpl').textContent = impl+' / '+total;
+  document.getElementById('numSkip').textContent = skip+' / '+total;
+  document.getElementById('numPend').textContent = pend+' / '+total;
+}
+
+// ── FILTER ────────────────────────────────────────────────
+function filterItems(filter, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+
+  document.querySelectorAll('.item').forEach(item => {
+    const tags  = item.dataset.tags || '';
+    const state = item.dataset.state || 'pending';
+    let show = true;
+
+    if      (filter==='critical')  show = tags.includes('critical');
+    else if (filter==='high')      show = tags.includes('high');
+    else if (filter==='timeline')  show = tags.includes('timeline');
+    else if (filter==='implement') show = state==='implement';
+    else if (filter==='skip')      show = state==='skip';
+    else if (filter==='pending')   show = state==='pending';
+
+    item.style.display = show ? 'flex' : 'none';
+  });
+
+  document.querySelectorAll('.sub-label').forEach(lbl => {
+    let sib = lbl.nextElementSibling;
+    let any = false;
+    while (sib && !sib.classList.contains('sub-label')) {
+      if (sib.style.display !== 'none') any = true;
+      sib = sib.nextElementSibling;
+    }
+    lbl.style.display = any ? '' : 'none';
+  });
+}
+
+renderSections();
+</script>
+</body>
+</html>
