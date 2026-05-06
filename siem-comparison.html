@@ -327,6 +327,24 @@ const tools = [
     overall:78,
     note:'Solid enterprise choice with especially strong network device coverage. Good fit if IAS has heavy network visibility requirements. Available on AWS Marketplace for cloud deployment without on-prem appliance.'
   },
+  {
+    id:'log360', name:'ManageEngine Log360 Cloud', nameShort:'Log360',
+    type:'Cloud SIEM SaaS (mid-market)',
+    tags:[{cls:'tag-budget',label:'Cost-effective'},{cls:'tag-rec',label:'Mid-market fit'}],
+    deploy:['SaaS (cloud-hosted by ManageEngine)','Log360 On-Premises (self-hosted)','Hybrid (cloud SIEM + on-prem agents)'],
+    pricing:'Subscription per device / log source — competitive mid-market pricing',
+    coverage:{
+      cloud:{level:'partial',note:'AWS CloudTrail, VPC Flow Logs, S3, EC2 supported. Azure and GCP integrations available but shallower than Sentinel or Splunk.'},
+      endpoint:{level:'full',note:'Windows agent (Log360 agent) and Linux syslog forwarder; collects Windows Event Logs, PowerShell, process activity.'},
+      network:{level:'full',note:'Syslog / CEF ingestion from Palo Alto, Fortinet, Cisco, Juniper, Check Point, SonicWall and other major vendors.'},
+      onprem:{level:'full',note:'Lightweight agent for Windows and Linux on-prem servers; supports IIS, Apache, MSSQL, Oracle DB log collection.'},
+      saas:{level:'partial',note:'Native integrations for Microsoft 365, Azure AD, Salesforce, Google Workspace; fewer connectors than Splunk or Sentinel.'},
+    },
+    pros:['Most affordable pricing among mature SIEM options','Strong compliance reports: PCI DSS, HIPAA, ISO 27001, SOC 2, GDPR out-of-the-box','UEBA module included in base subscription','Built-in incident management and ticketing workflow','Wide adoption in Southeast Asia — good regional support'],
+    cons:['Cloud-source depth (AWS/GCP) less mature than Sentinel or Splunk','SaaS connector library narrower than top-tier SIEMs','SOAR capability limited vs Splunk SOAR or Logic Apps','Threat hunting query language less powerful than SPL or EQL','Scalability may be challenged at very high log volumes'],
+    overall:72,
+    note:'Strong value proposition for IAS as a mid-market option — covers all 5 source categories at least partially, with notably strong compliance reporting and built-in incident management. Best positioned if IAS prioritises cost-effectiveness and compliance over advanced threat hunting depth. Wide ManageEngine adoption in the region means local support and implementation partners are readily available.'
+  },
 ];
 
 function dotEl(level) {
