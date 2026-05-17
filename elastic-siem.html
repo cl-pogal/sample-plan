@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Elastic SIEM on AWS — Solution Proposal · IAS</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:#F5F4F0; --surface:#FFFFFF; --surface2:#F0EEE9; --surface3:#E8E5DF;
+  --border:rgba(0,0,0,0.09); --border2:rgba(0,0,0,0.16);
+  --text:#1A1916; --text2:#5A5854; --text3:#9A9894;
+  --elastic:#6B38B8; --elastic-light:#F0EAF9; --elastic-mid:#C4A8E0;
+  --aws:#CC6600; --aws-light:#FDF3E8; --aws-mid:#E8B87A;
+  --green:#1F6B3A; --green-light:#E8F5EE; --green-mid:#8CC8A4;
+  --red:#A82020; --red-light:#FAE8E8; --red-mid:#D89090;
+  --blue:#1A5C96; --blue-light:#E8F0F9; --blue-mid:#90B8DC;
+  --amber:#8C5C08; --amber-light:#FBF3E0; --amber-mid:#D4A840;
+  --teal:#1A7070; --teal-light:#E0F5F5; --teal-mid:#70BCBC;
+  --r:8px; --r2:12px; --r3:16px;
+  --sh:0 1px 3px rgba(0,0,0,0.07);
+  --sh2:0 3px 12px rgba(0,0,0,0.09);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.65;min-height:100vh}
+.page{max-width:1060px;margin:0 auto;padding:52px 32px 100px}
+
+/* COVER */
+.cover{padding:52px 0 44px;margin-bottom:52px;border-bottom:2px solid var(--border2)}
+.cover-eyebrow{font-family:'DM Mono',monospace;font-size:11px;color:var(--elastic);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.cover-eyebrow::after{content:'';flex:1;height:1px;background:var(--elastic-mid);opacity:.4}
+.cover-title{font-family:'DM Serif Display',serif;font-size:40px;line-height:1.18;color:var(--text);margin-bottom:10px}
+.cover-title em{color:var(--elastic);font-style:italic}
+.cover-sub{font-size:14px;color:var(--text2);max-width:680px;line-height:1.8;margin-bottom:28px}
+.cover-meta{display:flex;flex-wrap:wrap;gap:20px}
+.meta-item{display:flex;flex-direction:column;gap:2px}
+.meta-label{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3)}
+.meta-value{font-size:13px;font-weight:500;color:var(--text)}
+
+/* SECTION */
+.section{margin-bottom:52px}
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.section-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);width:24px;flex-shrink:0}
+.section-title{font-family:'DM Serif Display',serif;font-size:22px;color:var(--text);line-height:1.2}
+.section-rule{flex:1;height:1px;background:var(--border2)}
+
+/* CARDS */
+.box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r3);padding:24px;box-shadow:var(--sh)}
+.label{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px}
+
+/* APPROACH STEPS */
+.steps{display:flex;flex-direction:column;gap:0}
+.step{display:flex;gap:20px;padding:18px 0;border-bottom:1px solid var(--border)}
+.step:last-child{border-bottom:none}
+.step-num{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:var(--elastic);width:24px;flex-shrink:0;padding-top:2px}
+.step-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px}
+.step-desc{font-size:12px;color:var(--text2);line-height:1.65}
+.step-tag{display:inline-block;font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px;margin-top:6px;border:1px solid}
+.tag-mp{background:var(--aws-light);color:var(--aws);border-color:var(--aws-mid)}
+.tag-elastic{background:var(--elastic-light);color:var(--elastic);border-color:var(--elastic-mid)}
+.tag-aws{background:var(--aws-light);color:var(--aws);border-color:var(--aws-mid)}
+
+/* RESOURCE TABLE */
+.res-table{width:100%;border-collapse:collapse;font-size:12px}
+.res-table th{padding:8px 12px;font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);border-bottom:1.5px solid var(--border2);text-align:left;white-space:nowrap}
+.res-table th:not(:first-child){text-align:right}
+.res-table td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:middle}
+.res-table td:not(:first-child){text-align:right;font-family:'DM Mono',monospace;color:var(--text);font-size:12px}
+.res-table .subtotal td{background:var(--surface2);font-weight:500}
+.res-table .total-row td{background:var(--elastic-light);font-weight:600;border-bottom:none}
+.res-table .total-row td:not(:first-child){color:var(--elastic);font-size:13px}
+.comp-badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:500;border:1px solid}
+.cb-hot{background:var(--red-light);color:var(--red);border-color:var(--red-mid)}
+.cb-warm{background:var(--amber-light);color:var(--amber);border-color:var(--amber-mid)}
+.cb-kibana{background:var(--elastic-light);color:var(--elastic);border-color:var(--elastic-mid)}
+.cb-infra{background:var(--blue-light);color:var(--blue);border-color:var(--blue-mid)}
+.cb-free{background:var(--green-light);color:var(--green);border-color:var(--green-mid)}
+.note-row{background:var(--amber-light)}
+.note-row td{color:var(--amber);font-size:11px;border-bottom:none;padding:8px 12px}
+
+/* ARCHITECTURE SVG */
+.arch-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r3);padding:24px;box-shadow:var(--sh);overflow-x:auto}
+.arch-wrap svg{display:block;margin:0 auto;min-width:700px}
+
+/* SCOPE */
+.scope-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.scope-box{border-radius:var(--r2);padding:20px;border:1px solid}
+.scope-in{background:var(--green-light);border-color:var(--green-mid)}
+.scope-out{background:var(--red-light);border-color:var(--red-mid)}
+.scope-title{font-size:13px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.scope-item{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--text2);margin-bottom:8px;line-height:1.5}
+.scope-item:last-child{margin-bottom:0}
+.scope-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.dot-in{background:var(--green)}
+.dot-out{background:var(--red)}
+
+/* ASSUMPTIONS */
+.assum-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.assum-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px}
+.assum-num{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:4px}
+.assum-text{font-size:12px;color:var(--text);line-height:1.5}
+
+/* EFFORT TABLE */
+.effort-table{width:100%;border-collapse:collapse;font-size:12px}
+.effort-table th{padding:8px 12px;font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);border-bottom:1.5px solid var(--border2);text-align:left}
+.effort-table th:last-child{text-align:right}
+.effort-table td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top}
+.effort-table td:last-child{text-align:right;font-family:'DM Mono',monospace;font-weight:500;color:var(--text)}
+.effort-table .phase-header td{background:var(--surface2);font-weight:600;color:var(--text);font-size:11px;text-transform:uppercase;letter-spacing:0.05em;padding:6px 12px}
+.effort-table .phase-header td:last-child{color:var(--elastic)}
+.effort-table .total-row td{background:var(--elastic-light);font-weight:600;border-bottom:none}
+.effort-table .total-row td:last-child{color:var(--elastic);font-size:14px}
+.resource-pills{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.res-pill{font-size:9px;padding:1px 7px;border-radius:20px;border:1px solid;font-weight:500}
+.pill-pm{background:var(--blue-light);color:var(--blue);border-color:var(--blue-mid)}
+.pill-se{background:var(--elastic-light);color:var(--elastic);border-color:var(--elastic-mid)}
+
+/* TIMELINE */
+.timeline-wrap{overflow-x:auto}
+.timeline{min-width:700px}
+.tl-header{display:grid;font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:4px}
+.tl-row{display:grid;align-items:center;margin-bottom:6px;gap:0}
+.tl-label{font-size:11px;color:var(--text2);padding-right:12px;line-height:1.3}
+.tl-bar-wrap{position:relative;height:22px;background:var(--surface2);border-radius:4px;border:1px solid var(--border)}
+.tl-bar{position:absolute;top:0;height:100%;border-radius:4px;display:flex;align-items:center;padding-left:8px}
+.tl-bar span{font-size:10px;font-weight:500;color:#fff;white-space:nowrap}
+.tl-milestones{display:flex;margin-top:16px;gap:16px;flex-wrap:wrap}
+.tl-milestone{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)}
+.tl-m-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.summary-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px}
+.summary-cell{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:14px;text-align:center}
+.summary-val{font-family:'DM Serif Display',serif;font-size:26px;color:var(--elastic);line-height:1}
+.summary-lbl{font-size:11px;color:var(--text2);margin-top:4px}
+
+.footer{margin-top:52px;padding-top:20px;border-top:1px solid var(--border2);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.footer div{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace}
+.mb24{margin-bottom:24px}
+@media(max-width:680px){
+  .cover-title{font-size:28px}
+  .scope-grid{grid-template-columns:1fr}
+  .summary-strip{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- COVER -->
+<div class="cover">
+  <div class="cover-eyebrow">Xtremax · Security Advisory · Solution Proposal</div>
+  <div class="cover-title">SIEM Implementation<br>with <em>Elastic Security</em> on AWS</div>
+  <p class="cover-sub">A production-grade, hybrid-capable Security Information and Event Management solution for IAS, deployed via the AWS Marketplace, covering cloud workloads, user endpoints, network devices, on-premises servers, and SaaS applications.</p>
+  <div class="cover-meta">
+    <div class="meta-item"><span class="meta-label">Client</span><span class="meta-value">PT IAS (Insurance)</span></div>
+    <div class="meta-item"><span class="meta-label">Prepared by</span><span class="meta-value">Xtremax Security Advisory</span></div>
+    <div class="meta-item"><span class="meta-label">Platform</span><span class="meta-value">Elastic Cloud on AWS Marketplace</span></div>
+    <div class="meta-item"><span class="meta-label">AWS Region</span><span class="meta-value">ap-southeast-3 (Jakarta)</span></div>
+    <div class="meta-item"><span class="meta-label">Date</span><span class="meta-value" id="docDate"></span></div>
+    <div class="meta-item"><span class="meta-label">Version</span><span class="meta-value">1.0 — Draft</span></div>
+  </div>
+</div>
+
+<!-- 1. MARKETPLACE SETUP APPROACH -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <span class="section-title">AWS Marketplace Setup Approach</span>
+    <span class="section-rule"></span>
+  </div>
+  <div class="box">
+    <div class="label">Deployment Method — Elastic Cloud via AWS Marketplace (Recommended)</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div>
+          <div class="step-title">Subscribe via AWS Marketplace</div>
+          <div class="step-desc">Navigate to AWS Marketplace → search "Elastic Cloud" → select the Elastic Cloud (Elasticsearch Service) listing → click Subscribe. This links the Elastic Cloud subscription directly to the IAS AWS billing account — no separate Elastic invoice.</div>
+          <span class="step-tag tag-mp">AWS Marketplace · PAYG</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div>
+          <div class="step-title">Create Elastic Cloud Organisation</div>
+          <div class="step-desc">After subscribing, Elastic redirects to cloud.elastic.co to create an organisation linked to the AWS account. The billing flows through AWS Marketplace consolidated billing — Elastic usage appears as a single line item on the AWS bill alongside EC2, S3, and other services.</div>
+          <span class="step-tag tag-elastic">Elastic Cloud Console</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div>
+          <div class="step-title">Deploy Elastic Stack Cluster</div>
+          <div class="step-desc">Within the Elastic Cloud console, create a new deployment: select AWS as the cloud provider → choose region (Singapore ap-southeast-1 as the nearest supported region; Jakarta ap-southeast-3 is not yet listed in Elastic Cloud). Select Elastic Security as the solution template → configure hot/warm tiers and Kibana size.</div>
+          <span class="step-tag tag-elastic">Solution Template: Elastic Security</span>
+          <span class="step-tag tag-aws" style="margin-left:4px">Region: ap-southeast-1 (nearest to Jakarta)</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div>
+          <div class="step-title">Configure Fleet Server & Data Ingestion</div>
+          <div class="step-desc">Fleet Server (managed by Elastic Cloud) handles all Elastic Agent registrations. Agents are deployed to endpoints and on-prem servers via policy-based enrollment. AWS log sources are connected via the Elastic AWS integration (S3 + SQS pull model). Network devices are routed through a syslog forwarder running on a lightweight EC2 instance in Jakarta.</div>
+          <span class="step-tag tag-elastic">Fleet Server · Elastic Agent</span>
+          <span class="step-tag tag-aws" style="margin-left:4px">S3 · SQS · EC2 Forwarder</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">05</div>
+        <div>
+          <div class="step-title">Enable SIEM, UEBA, and Detection Rules</div>
+          <div class="step-desc">Activate the Elastic SIEM app in Kibana, enable ML-based anomaly detection jobs for UEBA, and import the pre-built detection rule library (800+ MITRE ATT&CK-mapped rules). Configure alert connectors for email, Slack, and ticketing system notifications. Set up role-based access for SOC analyst tiers.</div>
+          <span class="step-tag tag-elastic">Platinum Tier — all features included</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. CLOUD RESOURCE SPECIFICATION -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <span class="section-title">Cloud Resource Specification</span>
+    <span class="section-rule"></span>
+  </div>
+  <div class="box">
+    <div class="label">Elastic Cloud Components — PAYG · AWS Singapore (ap-southeast-1) · Platinum Tier</div>
+    <table class="res-table mb24">
+      <thead><tr>
+        <th>Component</th><th>Tier</th><th>Spec</th><th>Qty</th><th>Purpose</th><th>$/mo (est.)</th>
+      </tr></thead>
+      <tbody>
+        <tr><td><span class="comp-badge cb-hot">Hot Data Nodes</span></td><td>Hot</td><td>16 GB RAM · 2 vCPU · 240 GB SSD each</td><td>2 nodes</td><td>Primary index for last 30 days — full search speed</td><td>$520</td></tr>
+        <tr><td><span class="comp-badge cb-warm">Warm Data Nodes</span></td><td>Warm</td><td>8 GB RAM · 2 vCPU · 360 GB SSD each</td><td>2 nodes</td><td>Days 31–90 — lower cost, adequate search latency</td><td>$180</td></tr>
+        <tr><td><span class="comp-badge cb-kibana">Kibana</span></td><td>—</td><td>4 GB RAM</td><td>1 instance</td><td>SIEM UI, dashboards, alerting rules, ML jobs</td><td>$80</td></tr>
+        <tr class="subtotal"><td colspan="5" style="font-weight:600;font-family:'DM Mono',monospace;font-size:11px">Elastic Cloud subtotal (Platinum licence included)</td><td>$780</td></tr>
+      </tbody>
+    </table>
+
+    <div class="label">AWS Infrastructure — Jakarta (ap-southeast-3) · PAYG On-Demand</div>
+    <table class="res-table mb24">
+      <thead><tr>
+        <th>Component</th><th>Instance / Type</th><th>Spec</th><th>$/hr</th><th>Hours/mo</th><th>$/mo</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td>
+            <div style="font-weight:500;font-size:12px">Syslog Forwarder VM</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px">Receives syslog/CEF from network devices · routes to Elastic</div>
+          </td>
+          <td><code style="font-family:'DM Mono',monospace;background:var(--surface2);padding:2px 6px;border-radius:4px;font-size:11px">t3.medium</code></td>
+          <td>2 vCPU · 4 GB RAM</td>
+          <td>$0.052</td><td>730</td><td>$38</td>
+        </tr>
+        <tr>
+          <td>
+            <div style="font-weight:500;font-size:12px">EBS gp3 — Forwarder OS</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px">OS + Logstash buffer</div>
+          </td>
+          <td>gp3 · $0.096/GB/mo</td><td>30 GB</td><td>—</td><td>—</td><td>$3</td>
+        </tr>
+        <tr>
+          <td>
+            <div style="font-weight:500;font-size:12px">S3 Standard — Log Archive</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px">Cold archive months 4–15 · 1,800 GB total</div>
+          </td>
+          <td>S3 Standard · $0.025/GB/mo</td><td>1,800 GB</td><td>—</td><td>—</td><td>$45</td>
+        </tr>
+        <tr>
+          <td>
+            <div style="font-weight:500;font-size:12px">S3 + SQS — AWS Log Routing</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px">CloudTrail / GuardDuty / VPC Flow queue for Elastic pull</div>
+          </td>
+          <td>SQS Standard</td><td>~1M req/mo</td><td>—</td><td>—</td><td>$1</td>
+        </tr>
+        <tr>
+          <td>
+            <div style="font-weight:500;font-size:12px">Data transfer / misc</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px">Agent telemetry outbound · cross-region to Elastic Cloud</div>
+          </td>
+          <td>Outbound egress</td><td>~5 GB/day</td><td>—</td><td>—</td><td>$25</td>
+        </tr>
+        <tr class="subtotal"><td colspan="5" style="font-weight:600;font-family:'DM Mono',monospace;font-size:11px">AWS infrastructure subtotal (Jakarta)</td><td>$112</td></tr>
+      </tbody>
+    </table>
+
+    <table class="res-table">
+      <tbody>
+        <tr class="total-row">
+          <td colspan="5" style="font-family:'DM Sans',sans-serif;font-weight:600;font-size:13px">Total Estimated Monthly Cost (PAYG)</td>
+          <td>$892 / mo</td>
+        </tr>
+        <tr class="total-row" style="background:var(--surface2)!important">
+          <td colspan="5" style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text2)">Total Estimated Annual Cost (PAYG, no commitment)</td>
+          <td style="color:var(--text)!important;font-size:12px!important">$10,704 / yr</td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="font-size:11px;color:var(--amber);background:var(--amber-light);border:1px solid var(--amber-mid);border-radius:var(--r);padding:10px 14px;margin-top:14px;line-height:1.6">
+      <strong>⚠ Region note:</strong> Elastic Cloud does not currently list ap-southeast-3 (Jakarta) as a supported region. The nearest supported AWS region is <strong>ap-southeast-1 (Singapore)</strong>. Data residency implications should be confirmed with IAS compliance team before deployment. AWS infrastructure components (forwarder VM, S3, SQS) remain in Jakarta region.
+    </div>
+    <div style="font-size:11px;color:var(--blue);background:var(--blue-light);border:1px solid var(--blue-mid);border-radius:var(--r);padding:10px 14px;margin-top:10px;line-height:1.6">
+      <strong>💡 Annual commitment discount:</strong> Switching from PAYG to a 1-year Elastic Cloud commitment reduces the Elastic Cloud component by approximately 30%, bringing total to ~<strong>$657/mo ($7,884/yr)</strong>.
+    </div>
+  </div>
+</div>
+
+<!-- 3. LICENSE ESTIMATION -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <span class="section-title">Elastic Licence Estimation</span>
+    <span class="section-rule"></span>
+  </div>
+  <div class="box">
+    <div class="label">Licence Model — Platinum Tier (bundled in Elastic Cloud)</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:20px">
+      <div style="background:var(--elastic-light);border:1px solid var(--elastic-mid);border-radius:var(--r);padding:14px">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--elastic);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Licence tier</div>
+        <div style="font-size:16px;font-weight:600;color:var(--elastic)">Platinum</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:3px">All SIEM features included</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:14px">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Billing model</div>
+        <div style="font-size:16px;font-weight:600;color:var(--text)">PAYG</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:3px">Via AWS Marketplace · no upfront</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:14px">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Priced on</div>
+        <div style="font-size:16px;font-weight:600;color:var(--text)">RAM</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:3px">GB of cluster RAM consumed</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:14px">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Licence included in</div>
+        <div style="font-size:14px;font-weight:600;color:var(--green)">$780 / mo</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:3px">Elastic Cloud subscription above</div>
+      </div>
+    </div>
+
+    <div class="label">What Platinum Licence Unlocks for IAS</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px">
+      <div style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:var(--green-light);border:1px solid var(--green-mid);border-radius:var(--r)">
+        <span style="color:var(--green);font-size:14px;flex-shrink:0">✓</span>
+        <div style="font-size:11px;color:var(--text2);line-height:1.5"><strong style="color:var(--text)">Endpoint Security (EDR)</strong><br>Elastic Agent provides deep endpoint protection on Windows, Linux, macOS</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:var(--green-light);border:1px solid var(--green-mid);border-radius:var(--r)">
+        <span style="color:var(--green);font-size:14px;flex-shrink:0">✓</span>
+        <div style="font-size:11px;color:var(--text2);line-height:1.5"><strong style="color:var(--text)">UEBA & ML Anomaly Detection</strong><br>Behavioural baselines per user/entity; detects insider threat and unusual access</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:var(--green-light);border:1px solid var(--green-mid);border-radius:var(--r)">
+        <span style="color:var(--green);font-size:14px;flex-shrink:0">✓</span>
+        <div style="font-size:11px;color:var(--text2);line-height:1.5"><strong style="color:var(--text)">800+ Pre-built Detection Rules</strong><br>MITRE ATT&CK-mapped rules covering all 5 IAS source types</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:var(--green-light);border:1px solid var(--green-mid);border-radius:var(--r)">
+        <span style="color:var(--green);font-size:14px;flex-shrink:0">✓</span>
+        <div style="font-size:11px;color:var(--text2);line-height:1.5"><strong style="color:var(--text)">Role-Based Access Control</strong><br>Granular RBAC for SOC L1, L2, and management read-only roles</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:var(--green-light);border:1px solid var(--green-mid);border-radius:var(--r)">
+        <span style="color:var(--green);font-size:14px;flex-shrink:0">✓</span>
+        <div style="font-size:11px;color:var(--text2);line-height:1.5"><strong style="color:var(--text)">External Alerting (Email, Slack, Jira)</strong><br>Alert connectors to email, Slack, PagerDuty, ServiceNow, and Jira</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:var(--green-light);border:1px solid var(--green-mid);border-radius:var(--r)">
+        <span style="color:var(--green);font-size:14px;flex-shrink:0">✓</span>
+        <div style="font-size:11px;color:var(--text2);line-height:1.5"><strong style="color:var(--text)">Encrypted TLS Communications</strong><br>TLS between all nodes and agents — mandatory for production security data</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 4. ARCHITECTURE DIAGRAM -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <span class="section-title">High-Level Architecture Diagram</span>
+    <span class="section-rule"></span>
+  </div>
+  <div class="arch-wrap">
+    <svg viewBox="0 0 960 520" xmlns="http://www.w3.org/2000/svg" style="width:100%;font-family:'DM Sans',sans-serif">
+      <defs>
+        <marker id="arr" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#C4A8E0"/>
+        </marker>
+        <marker id="arr2" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#8CC8A4"/>
+        </marker>
+        <marker id="arr3" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#90B8DC"/>
+        </marker>
+        <filter id="sh" x="-5%" y="-10%" width="115%" height="130%">
+          <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#00000015"/>
+        </filter>
+      </defs>
+
+      <!-- Zone labels -->
+      <text x="95" y="18" text-anchor="middle" font-size="9" font-family="'DM Mono',monospace" letter-spacing="0.1em" fill="#9A9894" text-transform="uppercase">DATA SOURCES</text>
+      <text x="310" y="18" text-anchor="middle" font-size="9" font-family="'DM Mono',monospace" letter-spacing="0.1em" fill="#9A9894">COLLECTION</text>
+      <text x="570" y="18" text-anchor="middle" font-size="9" font-family="'DM Mono',monospace" letter-spacing="0.1em" fill="#9A9894">ELASTIC SIEM CORE</text>
+      <text x="855" y="18" text-anchor="middle" font-size="9" font-family="'DM Mono',monospace" letter-spacing="0.1em" fill="#9A9894">SOC &amp; RESPONSE</text>
+
+      <!-- Zone dividers -->
+      <line x1="194" y1="25" x2="194" y2="510" stroke="#E8E5DF" stroke-width="1" stroke-dasharray="4,4"/>
+      <line x1="418" y1="25" x2="418" y2="510" stroke="#E8E5DF" stroke-width="1" stroke-dasharray="4,4"/>
+      <line x1="740" y1="25" x2="740" y2="510" stroke="#E8E5DF" stroke-width="1" stroke-dasharray="4,4"/>
+
+      <!-- ── SOURCE BOXES ── -->
+      <!-- AWS Cloud -->
+      <rect x="10" y="30" width="176" height="76" rx="8" fill="#FDF3E8" stroke="#E8B87A" stroke-width="1" filter="url(#sh)"/>
+      <text x="22" y="48" font-size="9" font-family="'DM Mono',monospace" fill="#CC6600" letter-spacing="0.05em">AWS CLOUD LOGS</text>
+      <text x="22" y="63" font-size="11" fill="#1A1916" font-weight="500">CloudTrail · VPC Flow</text>
+      <text x="22" y="77" font-size="10" fill="#5A5854">GuardDuty · WAF · Security Hub</text>
+      <text x="22" y="94" font-size="10" fill="#5A5854">S3 → SQS (pull ingestion)</text>
+
+      <!-- User Endpoints -->
+      <rect x="10" y="120" width="176" height="68" rx="8" fill="#E8F0F9" stroke="#90B8DC" stroke-width="1" filter="url(#sh)"/>
+      <text x="22" y="138" font-size="9" font-family="'DM Mono',monospace" fill="#1A5C96" letter-spacing="0.05em">USER ENDPOINTS (100)</text>
+      <text x="22" y="155" font-size="11" fill="#1A1916" font-weight="500">Windows · macOS · Linux</text>
+      <text x="22" y="170" font-size="10" fill="#5A5854">Elastic Agent installed per device</text>
+      <text x="22" y="184" font-size="10" fill="#5A5854">EDR + log forwarding</text>
+
+      <!-- Network Devices -->
+      <rect x="10" y="204" width="176" height="68" rx="8" fill="#E8F5EE" stroke="#8CC8A4" stroke-width="1" filter="url(#sh)"/>
+      <text x="22" y="222" font-size="9" font-family="'DM Mono',monospace" fill="#1F6B3A" letter-spacing="0.05em">NETWORK DEVICES (10)</text>
+      <text x="22" y="239" font-size="11" fill="#1A1916" font-weight="500">Firewalls · Routers · IDS/IPS</text>
+      <text x="22" y="254" font-size="10" fill="#5A5854">Syslog / CEF via UDP 514</text>
+      <text x="22" y="268" font-size="10" fill="#5A5854">→ EC2 Syslog Forwarder (JKT)</text>
+
+      <!-- On-Prem Servers -->
+      <rect x="10" y="288" width="176" height="68" rx="8" fill="#F0EAF9" stroke="#C4A8E0" stroke-width="1" filter="url(#sh)"/>
+      <text x="22" y="306" font-size="9" font-family="'DM Mono',monospace" fill="#6B38B8" letter-spacing="0.05em">ON-PREM SERVERS (20)</text>
+      <text x="22" y="323" font-size="11" fill="#1A1916" font-weight="500">Windows · Linux</text>
+      <text x="22" y="338" font-size="10" fill="#5A5854">On-prem &amp; colocation DCs</text>
+      <text x="22" y="352" font-size="10" fill="#5A5854">Elastic Agent installed per host</text>
+
+      <!-- SaaS Apps -->
+      <rect x="10" y="372" width="176" height="68" rx="8" fill="#E0F5F5" stroke="#70BCBC" stroke-width="1" filter="url(#sh)"/>
+      <text x="22" y="390" font-size="9" font-family="'DM Mono',monospace" fill="#1A7070" letter-spacing="0.05em">SAAS &amp; IN-HOUSE APPS</text>
+      <text x="22" y="407" font-size="11" fill="#1A1916" font-weight="500">M365 · Okta · Salesforce</text>
+      <text x="22" y="422" font-size="10" fill="#5A5854">In-house apps (REST API)</text>
+      <text x="22" y="436" font-size="10" fill="#5A5854">API / webhook integrations</text>
+
+      <!-- ── COLLECTION LAYER ── -->
+      <!-- Fleet Server (managed) -->
+      <rect x="208" y="110" width="196" height="64" rx="8" fill="#F0EAF9" stroke="#C4A8E0" stroke-width="1.5" filter="url(#sh)"/>
+      <text x="306" y="132" text-anchor="middle" font-size="11" font-weight="600" fill="#6B38B8">Fleet Server</text>
+      <text x="306" y="148" text-anchor="middle" font-size="10" fill="#5A5854">Agent policy management</text>
+      <text x="306" y="162" text-anchor="middle" font-size="10" fill="#5A5854">Elastic Cloud managed</text>
+
+      <!-- Syslog Forwarder -->
+      <rect x="208" y="194" width="196" height="64" rx="8" fill="#E8F5EE" stroke="#8CC8A4" stroke-width="1" filter="url(#sh)"/>
+      <text x="306" y="216" text-anchor="middle" font-size="11" font-weight="600" fill="#1F6B3A">Syslog Forwarder</text>
+      <text x="306" y="232" text-anchor="middle" font-size="10" fill="#5A5854">t3.medium · EC2 Jakarta</text>
+      <text x="306" y="246" text-anchor="middle" font-size="10" fill="#5A5854">Logstash → Elastic</text>
+
+      <!-- S3 + SQS -->
+      <rect x="208" y="276" width="196" height="64" rx="8" fill="#FDF3E8" stroke="#E8B87A" stroke-width="1" filter="url(#sh)"/>
+      <text x="306" y="298" text-anchor="middle" font-size="11" font-weight="600" fill="#CC6600">S3 + SQS Router</text>
+      <text x="306" y="314" text-anchor="middle" font-size="10" fill="#5A5854">AWS log event queue</text>
+      <text x="306" y="328" text-anchor="middle" font-size="10" fill="#5A5854">Elastic pull ingestion</text>
+
+      <!-- ── ELASTIC CORE ── -->
+      <!-- ES Hot -->
+      <rect x="432" y="30" width="295" height="72" rx="8" fill="#FAE8E8" stroke="#D89090" stroke-width="1" filter="url(#sh)"/>
+      <text x="579" y="52" text-anchor="middle" font-size="11" font-weight="600" fill="#A82020">Elasticsearch — Hot Tier</text>
+      <text x="579" y="68" text-anchor="middle" font-size="10" fill="#5A5854">2 × 16 GB RAM nodes · Last 30 days</text>
+      <text x="579" y="82" text-anchor="middle" font-size="10" fill="#5A5854">Full search speed · 240 GB SSD each</text>
+
+      <!-- ES Warm -->
+      <rect x="432" y="116" width="295" height="72" rx="8" fill="#FBF3E0" stroke="#D4A840" stroke-width="1" filter="url(#sh)"/>
+      <text x="579" y="138" text-anchor="middle" font-size="11" font-weight="600" fill="#8C5C08">Elasticsearch — Warm Tier</text>
+      <text x="579" y="154" text-anchor="middle" font-size="10" fill="#5A5854">2 × 8 GB RAM nodes · Days 31–90</text>
+      <text x="579" y="168" text-anchor="middle" font-size="10" fill="#5A5854">Cost-efficient · 360 GB SSD each</text>
+
+      <!-- Kibana -->
+      <rect x="432" y="202" width="295" height="100" rx="8" fill="#F0EAF9" stroke="#C4A8E0" stroke-width="1.5" filter="url(#sh)"/>
+      <text x="579" y="224" text-anchor="middle" font-size="11" font-weight="600" fill="#6B38B8">Kibana — SIEM Platform</text>
+      <text x="579" y="242" text-anchor="middle" font-size="10" fill="#5A5854">Security app · Alerts · Dashboards</text>
+      <text x="579" y="258" text-anchor="middle" font-size="10" fill="#5A5854">UEBA · ML Anomaly Jobs</text>
+      <text x="579" y="274" text-anchor="middle" font-size="10" fill="#5A5854">MITRE ATT&amp;CK Coverage Map</text>
+      <text x="579" y="290" text-anchor="middle" font-size="10" fill="#5A5854">4 GB RAM · Elastic Cloud managed</text>
+
+      <!-- S3 Archive -->
+      <rect x="432" y="320" width="295" height="64" rx="8" fill="#FDF3E8" stroke="#E8B87A" stroke-width="1" filter="url(#sh)"/>
+      <text x="579" y="342" text-anchor="middle" font-size="11" font-weight="600" fill="#CC6600">S3 Frozen Archive</text>
+      <text x="579" y="358" text-anchor="middle" font-size="10" fill="#5A5854">Months 4–15 · 1,800 GB · Jakarta</text>
+      <text x="579" y="372" text-anchor="middle" font-size="10" fill="#5A5854">Searchable via Kibana lens</text>
+
+      <!-- ── SOC OUTPUT ── -->
+      <!-- Analysts -->
+      <rect x="754" y="30" width="196" height="64" rx="8" fill="#F0EAF9" stroke="#C4A8E0" stroke-width="1" filter="url(#sh)"/>
+      <text x="852" y="55" text-anchor="middle" font-size="11" font-weight="600" fill="#6B38B8">SOC Analysts</text>
+      <text x="852" y="72" text-anchor="middle" font-size="10" fill="#5A5854">L1 × 2 · L2 × 1 via Kibana</text>
+      <text x="852" y="86" text-anchor="middle" font-size="10" fill="#5A5854">RBAC-controlled access</text>
+
+      <!-- Alerting -->
+      <rect x="754" y="112" width="196" height="80" rx="8" fill="#E8F5EE" stroke="#8CC8A4" stroke-width="1" filter="url(#sh)"/>
+      <text x="852" y="135" text-anchor="middle" font-size="11" font-weight="600" fill="#1F6B3A">Alert Destinations</text>
+      <text x="852" y="152" text-anchor="middle" font-size="10" fill="#5A5854">Email notifications</text>
+      <text x="852" y="167" text-anchor="middle" font-size="10" fill="#5A5854">Slack / Teams channels</text>
+      <text x="852" y="182" text-anchor="middle" font-size="10" fill="#5A5854">Jira / ServiceNow tickets</text>
+
+      <!-- Reporting -->
+      <rect x="754" y="210" width="196" height="64" rx="8" fill="#E8F0F9" stroke="#90B8DC" stroke-width="1" filter="url(#sh)"/>
+      <text x="852" y="233" text-anchor="middle" font-size="11" font-weight="600" fill="#1A5C96">Executive Reporting</text>
+      <text x="852" y="250" text-anchor="middle" font-size="10" fill="#5A5854">Scheduled PDF dashboards</text>
+      <text x="852" y="264" text-anchor="middle" font-size="10" fill="#5A5854">KPI · MTTR · Coverage</text>
+
+      <!-- ── ARROWS ── -->
+      <!-- AWS Cloud → S3+SQS -->
+      <line x1="186" y1="58" x2="207" y2="302" stroke="#E8B87A" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+      <!-- Endpoints → Fleet Server -->
+      <line x1="186" y1="154" x2="207" y2="144" stroke="#90B8DC" stroke-width="1.2" marker-end="url(#arr3)"/>
+      <!-- On-prem → Fleet Server -->
+      <line x1="186" y1="322" x2="207" y2="162" stroke="#C4A8E0" stroke-width="1.2" marker-end="url(#arr)"/>
+      <!-- Network → Syslog -->
+      <line x1="186" y1="238" x2="207" y2="226" stroke="#8CC8A4" stroke-width="1.2" marker-end="url(#arr2)"/>
+      <!-- SaaS → Fleet (API) -->
+      <line x1="186" y1="406" x2="207" y2="300" stroke="#70BCBC" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+
+      <!-- Fleet → ES Hot -->
+      <line x1="404" y1="142" x2="431" y2="66" stroke="#C4A8E0" stroke-width="1.5" marker-end="url(#arr)"/>
+      <!-- Syslog → ES Hot -->
+      <line x1="404" y1="226" x2="431" y2="80" stroke="#8CC8A4" stroke-width="1.5" marker-end="url(#arr2)"/>
+      <!-- S3SQS → ES Hot -->
+      <line x1="404" y1="308" x2="431" y2="90" stroke="#E8B87A" stroke-width="1.5" marker-end="url(#arr)"/>
+
+      <!-- ES Hot → ES Warm (tiering) -->
+      <line x1="579" y1="102" x2="579" y2="115" stroke="#9A9894" stroke-width="1.2" marker-end="url(#arr)"/>
+      <!-- ES Warm → Kibana -->
+      <line x1="579" y1="188" x2="579" y2="201" stroke="#9A9894" stroke-width="1.2" marker-end="url(#arr)"/>
+      <!-- ES Warm → S3 Archive -->
+      <line x1="579" y1="302" x2="579" y2="319" stroke="#E8B87A" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+
+      <!-- Kibana → Analysts -->
+      <line x1="727" y1="240" x2="753" y2="60" stroke="#C4A8E0" stroke-width="1.5" marker-end="url(#arr)"/>
+      <!-- Kibana → Alerting -->
+      <line x1="727" y1="255" x2="753" y2="152" stroke="#8CC8A4" stroke-width="1.5" marker-end="url(#arr2)"/>
+      <!-- Kibana → Reporting -->
+      <line x1="727" y1="265" x2="753" y2="242" stroke="#90B8DC" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+      <!-- LEGEND -->
+      <rect x="10" y="460" width="930" height="50" rx="6" fill="#F5F4F0" stroke="#E8E5DF" stroke-width="1"/>
+      <text x="22" y="479" font-size="9" font-family="'DM Mono',monospace" fill="#9A9894" letter-spacing="0.08em">LEGEND</text>
+      <line x1="78" y1="475" x2="110" y2="475" stroke="#C4A8E0" stroke-width="1.5" marker-end="url(#arr)"/><text x="116" y="479" font-size="10" fill="#5A5854">Log forwarding (agent)</text>
+      <line x1="258" y1="475" x2="290" y2="475" stroke="#E8B87A" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arr)"/><text x="296" y="479" fill="#5A5854" font-size="10">API / S3 pull ingestion</text>
+      <line x1="438" y1="475" x2="470" y2="475" stroke="#8CC8A4" stroke-width="1.5" marker-end="url(#arr2)"/><text x="476" y="479" fill="#5A5854" font-size="10">Syslog / CEF</text>
+      <line x1="572" y1="475" x2="604" y2="475" stroke="#9A9894" stroke-width="1.2" marker-end="url(#arr)"/><text x="610" y="479" fill="#5A5854" font-size="10">Index tier rollover</text>
+      <rect x="22" y="487" width="930" height="1" fill="none"/>
+      <text x="22" y="502" font-size="9" fill="#9A9894">Elastic Cloud (Singapore ap-southeast-1) · AWS Infrastructure (Jakarta ap-southeast-3) · All agent traffic encrypted via TLS</text>
+    </svg>
+  </div>
+</div>
+
+<!-- 5. SCOPE OF WORKS -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <span class="section-title">Scope of Works</span>
+    <span class="section-rule"></span>
+  </div>
+  <div class="scope-grid">
+    <div class="scope-box scope-in">
+      <div class="scope-title" style="color:var(--green)">✓ In-Scope</div>
+      <div class="scope-item"><span class="scope-dot dot-in"></span><span><strong>Elastic Cloud deployment</strong> via AWS Marketplace — cluster provisioning, hot/warm tier configuration, Kibana setup, Fleet Server activation</span></div>
+      <div class="scope-item"><span class="scope-dot dot-in"></span><span><strong>AWS log source integration</strong> — CloudTrail, VPC Flow Logs, WAF Logs, GuardDuty findings, Security Hub findings via S3+SQS connector</span></div>
+      <div class="scope-item"><span class="scope-dot dot-in"></span><span><strong>Elastic Agent deployment on 100 endpoints</strong> — Windows, macOS, Linux; EDR policy configuration; enrollment via Fleet Server</span></div>
+      <div class="scope-item"><span class="scope-dot dot-in"></span><span><strong>Network device syslog integration (10 devices)</strong> — EC2 syslog forwarder setup, Logstash pipeline, CEF parsing for provided vendors</span></div>
+      <div class="scope-item"><span class="scope-dot dot-in"></span><span><strong>On-prem server agent deployment (20 servers)</strong> — Elastic Agent installation, Windows Event Log and Linux syslog collection policies</span></div>
+      <div class="scope-item"><span class="scope-dot dot-in"></span><span><strong>SaaS integration</strong> — M365, Okta (if in use), in-house app log ingestion via REST API / Logs Ingestion API</span></div>
+      <div class="scope-item"><span class="scope-dot dot-in"></span><span><strong>Detection rule configuration</strong> — enable and tune pre-built rules, map to IAS environment, set initial thresholds, MITRE coverage review</span></div>
+      <div class="scope-item"><span class="scope-dot dot-in"></span><span><strong>UEBA and ML job configuration</strong> — anomaly detection models per user, host, and network entity</span></div>
+      <div class="scope-item"><span class="scope-dot dot-in"></span><span><strong>Dashboards and reporting</strong> — SOC operations dashboard, executive summary dashboard, scheduled report setup</span></div>
+      <div class="scope-item"><span class="scope-dot dot-in"></span><span><strong>Alert and notification setup</strong> — email, Slack, and ticketing system connectors; severity-based routing rules</span></div>
+      <div class="scope-item"><span class="scope-dot dot-in"></span><span><strong>RBAC configuration</strong> — SOC L1, L2, and management read-only roles</span></div>
+      <div class="scope-item"><span class="scope-dot dot-in"></span><span><strong>System testing and UAT</strong> — end-to-end data flow validation, alert trigger testing, analyst workflow walkthrough</span></div>
+      <div class="scope-item"><span class="scope-dot dot-in"></span><span><strong>Knowledge transfer and documentation</strong> — SOC runbook, admin guide, handover sessions for IAS team</span></div>
+    </div>
+    <div class="scope-box scope-out">
+      <div class="scope-title" style="color:var(--red)">✗ Out-of-Scope</div>
+      <div class="scope-item"><span class="scope-dot dot-out"></span><span><strong>SOC managed operations</strong> — ongoing 24/7 alert monitoring, triage, and incident response after handover (available as separate managed service engagement)</span></div>
+      <div class="scope-item"><span class="scope-dot dot-out"></span><span><strong>Network device configuration changes</strong> — enabling syslog output on firewalls/routers is IAS/vendor responsibility; Xtremax only configures the receiver side</span></div>
+      <div class="scope-item"><span class="scope-dot dot-out"></span><span><strong>EDR active response actions</strong> — endpoint isolation, process kill, malware quarantine are policy configurations handled by IAS security team post-handover</span></div>
+      <div class="scope-item"><span class="scope-dot dot-out"></span><span><strong>Custom SOAR playbook development</strong> — automated response orchestration via external SOAR platform (can be added as a Phase 2 scope)</span></div>
+      <div class="scope-item"><span class="scope-dot dot-out"></span><span><strong>Compliance auditing and certification</strong> — Xtremax configures the technical controls; formal PCI DSS, ISO 27001, or SOC 2 audit readiness assessment is separate</span></div>
+      <div class="scope-item"><span class="scope-dot dot-out"></span><span><strong>In-house application code changes</strong> — if IAS apps require code modifications to emit structured logs, this is performed by IAS development team</span></div>
+      <div class="scope-item"><span class="scope-dot dot-out"></span><span><strong>Third-party SaaS connectors not listed in scope</strong> — e.g. Google Workspace, GitHub, Salesforce (only in-scope if explicitly listed and API access is provided)</span></div>
+      <div class="scope-item"><span class="scope-dot dot-out"></span><span><strong>Physical network access to on-prem servers</strong> — Xtremax performs remote agent installation; physical rack access or network patching is IAS responsibility</span></div>
+      <div class="scope-item"><span class="scope-dot dot-out"></span><span><strong>Procurement and licensing negotiation</strong> — Elastic AWS Marketplace subscription is set up by IAS using their AWS account; Xtremax provides guidance only</span></div>
+      <div class="scope-item"><span class="scope-dot dot-out"></span><span><strong>Threat intelligence feed integration</strong> — paid TI feeds (Recorded Future, CrowdStrike TI, etc.) are not included; only Elastic's built-in TI is configured</span></div>
+      <div class="scope-item"><span class="scope-dot dot-out"></span><span><strong>Post-go-live rule tuning beyond UAT</strong> — fine-tuning based on operational feedback after formal handover is a separate retainer scope</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- 6. ASSUMPTIONS -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <span class="section-title">Implementation Assumptions</span>
+    <span class="section-rule"></span>
+  </div>
+  <div class="box">
+    <div class="assum-grid">
+      <div class="assum-item"><div class="assum-num">A01</div><div class="assum-text">IAS has an active AWS account with sufficient IAM permissions (Administrator or Security Admin) to create IAM roles, S3 buckets, SQS queues, and EC2 instances in Jakarta region.</div></div>
+      <div class="assum-item"><div class="assum-num">A02</div><div class="assum-text">IAS will subscribe to Elastic Cloud on AWS Marketplace using their own AWS billing account. Xtremax provides guidance but does not purchase or hold the Elastic Cloud subscription on IAS's behalf.</div></div>
+      <div class="assum-item"><div class="assum-num">A03</div><div class="assum-text">Elastic Cloud does not currently support ap-southeast-3 (Jakarta). The Elastic cluster will be deployed in ap-southeast-1 (Singapore). IAS legal and compliance team to confirm this is acceptable for data residency requirements.</div></div>
+      <div class="assum-item"><div class="assum-num">A04</div><div class="assum-text">CloudTrail organisation trail is already enabled and logging to an S3 bucket. If not, this will be set up within the project scope but may require additional time.</div></div>
+      <div class="assum-item"><div class="assum-num">A05</div><div class="assum-text">IAS IT team provides remote access (SSH, RDP, or endpoint management platform) to all 100 endpoints and 20 on-prem servers for Elastic Agent installation. Agent deployment via GPO or Ansible is preferred for Windows environments.</div></div>
+      <div class="assum-item"><div class="assum-num">A06</div><div class="assum-text">All 10 network devices support Syslog or CEF output. IAS IT team or network vendor enables syslog forwarding to the Xtremax-configured EC2 syslog forwarder IP. Firewall rules allowing UDP/TCP 514 from devices to forwarder are IAS responsibility.</div></div>
+      <div class="assum-item"><div class="assum-num">A07</div><div class="assum-text">IAS provides API credentials or service accounts for SaaS integrations (M365 Global Reader role, Okta API token, etc.). Credentials are handled securely and not stored outside the Elastic Cloud keystore.</div></div>
+      <div class="assum-item"><div class="assum-num">A08</div><div class="assum-text">A dedicated IAS project coordinator and technical point of contact (IT/security team) is assigned for the duration of the project and available for daily standups during active implementation weeks.</div></div>
+      <div class="assum-item"><div class="assum-num">A09</div><div class="assum-text">Log volume is approximately 5 GB/day across all sources. If actual volume significantly exceeds this (e.g. above 10 GB/day), the Elastic Cloud cluster sizing may need to be upgraded, impacting monthly cost.</div></div>
+      <div class="assum-item"><div class="assum-num">A10</div><div class="assum-text">IAS existing ticketing system (Jira or ServiceNow) has an API available for Kibana alert connector integration. Credentials and webhook URLs will be provided by IAS during the alerting configuration phase.</div></div>
+      <div class="assum-item"><div class="assum-num">A11</div><div class="assum-text">On-premises servers have outbound internet access (port 443) to Elastic Cloud endpoints in Singapore for agent telemetry. If isolated networks require a proxy, IAS provides proxy credentials and Xtremax configures agent proxy settings.</div></div>
+      <div class="assum-item"><div class="assum-num">A12</div><div class="assum-text">The project operates in English and Bahasa Indonesia. All deliverable documents (runbook, admin guide, architecture diagrams) will be produced in English unless IAS explicitly requests Bahasa Indonesia versions.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 7. EFFORT ESTIMATION -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <span class="section-title">Effort Estimation</span>
+    <span class="section-rule"></span>
+  </div>
+  <div class="box">
+    <div class="label" style="margin-bottom:16px">Resource Legend</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px"><span class="res-pill pill-pm">PM</span> Project Manager (part-time, 30%)</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px"><span class="res-pill pill-se">SE</span> Senior Security Engineer</div>
+    </div>
+    <table class="effort-table">
+      <thead><tr>
+        <th style="width:50%">Activity</th>
+        <th>Resource</th>
+        <th style="text-align:right">Man-days</th>
+      </tr></thead>
+      <tbody>
+        <tr class="phase-header"><td colspan="2">Phase 1 — Foundation &amp; Infrastructure</td><td>12 MD</td></tr>
+        <tr><td><div style="font-size:12px;font-weight:500;color:var(--text)">Project kickoff, requirements validation, access provisioning</div><div style="font-size:11px;color:var(--text3);margin-top:2px">Kickoff meeting, environment checklist, access setup</div></td><td><div class="resource-pills"><span class="res-pill pill-pm">PM</span><span class="res-pill pill-se">SE</span></div></td><td>3</td></tr>
+        <tr><td><div style="font-size:12px;font-weight:500;color:var(--text)">Elastic Cloud subscription via AWS Marketplace</div><div style="font-size:11px;color:var(--text3);margin-top:2px">Org creation, cluster deployment, hot/warm tier, Kibana, Fleet Server</div></td><td><div class="resource-pills"><span class="res-pill pill-se">SE</span></div></td><td>3</td></tr>
+        <tr><td><div style="font-size:12px;font-weight:500;color:var(--text)">EC2 syslog forwarder setup (Jakarta)</div><div style="font-size:11px;color:var(--text3);margin-top:2px">t3.medium provisioning, Logstash installation, pipeline configuration, security group</div></td><td><div class="resource-pills"><span class="res-pill pill-se">SE</span></div></td><td>2</td></tr>
+        <tr><td><div style="font-size:12px;font-weight:500;color:var(--text)">S3 archive, SQS queue, and IAM role setup</div><div style="font-size:11px;color:var(--text3);margin-top:2px">S3 bucket lifecycle policy, SQS event notifications, IAM role for Elastic pull</div></td><td><div class="resource-pills"><span class="res-pill pill-se">SE</span></div></td><td>2</td></tr>
+        <tr><td><div style="font-size:12px;font-weight:500;color:var(--text)">RBAC, TLS, and security hardening</div><div style="font-size:11px;color:var(--text3);margin-top:2px">Kibana spaces, analyst roles, TLS validation, cluster health baseline</div></td><td><div class="resource-pills"><span class="res-pill pill-se">SE</span></div></td><td>2</td></tr>
+
+        <tr class="phase-header"><td colspan="2">Phase 2 — Log Source Integration</td><td>24 MD</td></tr>
+        <tr><td><div style="font-size:12px;font-weight:500;color:var(--text)">AWS log sources (CloudTrail, VPC Flow, WAF, GuardDuty, Security Hub)</div><div style="font-size:11px;color:var(--text3);margin-top:2px">S3+SQS integration, pipeline testing, field mapping, index template</div></td><td><div class="resource-pills"><span class="res-pill pill-se">SE</span></div></td><td>5</td></tr>
+        <tr><td><div style="font-size:12px;font-weight:500;color:var(--text)">Endpoint agent deployment — 100 devices</div><div style="font-size:11px;color:var(--text3);margin-top:2px">Fleet policy creation, agent enrollment via GPO/script, EDR policy activation, batch validation</div></td><td><div class="resource-pills"><span class="res-pill pill-se">SE</span></div></td><td>7</td></tr>
+        <tr><td><div style="font-size:12px;font-weight:500;color:var(--text)">Network device syslog integration — 10 devices</div><div style="font-size:11px;color:var(--text3);margin-top:2px">Logstash pipeline per vendor, CEF field parsing, connectivity test per device</div></td><td><div class="resource-pills"><span class="res-pill pill-se">SE</span></div></td><td>4</td></tr>
+        <tr><td><div style="font-size:12px;font-weight:500;color:var(--text)">On-prem server agent deployment — 20 servers</div><div style="font-size:11px;color:var(--text3);margin-top:2px">Elastic Agent installation (Windows + Linux), log collection policies, proxy config if needed</div></td><td><div class="resource-pills"><span class="res-pill pill-se">SE</span></div></td><td>4</td></tr>
+        <tr><td><div style="font-size:12px;font-weight:500;color:var(--text)">SaaS integration (M365, Okta, in-house app)</div><div style="font-size:11px;color:var(--text3);margin-top:2px">Elastic integration connectors, API credentials, custom pipeline for in-house app via Logs Ingestion API</div></td><td><div class="resource-pills"><span class="res-pill pill-se">SE</span></div></td><td>4</td></tr>
+
+        <tr class="phase-header"><td colspan="2">Phase 3 — Detection, UEBA &amp; Dashboards</td><td>20 MD</td></tr>
+        <tr><td><div style="font-size:12px;font-weight:500;color:var(--text)">Detection rules — enable, tune, and map to IAS environment</div><div style="font-size:11px;color:var(--text3);margin-top:2px">800+ pre-built rules review, enable relevant rules, suppress false positives, MITRE coverage mapping</div></td><td><div class="resource-pills"><span class="res-pill pill-se">SE</span></div></td><td>7</td></tr>
+        <tr><td><div style="font-size:12px;font-weight:500;color:var(--text)">UEBA and ML anomaly job configuration</div><div style="font-size:11px;color:var(--text3);margin-top:2px">Enable ML jobs per entity type, set anomaly thresholds, configure UEBA user risk scoring</div></td><td><div class="resource-pills"><span class="res-pill pill-se">SE</span></div></td><td>4</td></tr>
+        <tr><td><div style="font-size:12px;font-weight:500;color:var(--text)">SOC dashboards and executive reporting</div><div style="font-size:11px;color:var(--text3);margin-top:2px">Alert volume, MTTR, coverage, top-entity dashboards; scheduled executive summary report</div></td><td><div class="resource-pills"><span class="res-pill pill-se">SE</span></div></td><td>4</td></tr>
+        <tr><td><div style="font-size:12px;font-weight:500;color:var(--text)">Alert routing and notification configuration</div><div style="font-size:11px;color:var(--text3);margin-top:2px">Email, Slack connector, ticketing integration; severity-based routing; on-call escalation rules</div></td><td><div class="resource-pills"><span class="res-pill pill-se">SE</span></div></td><td>3</td></tr>
+        <tr><td><div style="font-size:12px;font-weight:500;color:var(--text)">Project management and stakeholder reporting</div><div style="font-size:11px;color:var(--text3);margin-top:2px">Weekly status reports, risk tracking, scope change management across all phases</div></td><td><div class="resource-pills"><span class="res-pill pill-pm">PM</span></div></td><td>2</td></tr>
+
+        <tr class="phase-header"><td colspan="2">Phase 4 — Testing, UAT &amp; Handover</td><td>12 MD</td></tr>
+        <tr><td><div style="font-size:12px;font-weight:500;color:var(--text)">End-to-end system testing</div><div style="font-size:11px;color:var(--text3);margin-top:2px">Data flow validation per source, alert trigger tests, role access verification</div></td><td><div class="resource-pills"><span class="res-pill pill-se">SE</span></div></td><td>4</td></tr>
+        <tr><td><div style="font-size:12px;font-weight:500;color:var(--text)">UAT with IAS security team</div><div style="font-size:11px;color:var(--text3);margin-top:2px">Analyst walkthrough, feedback collection, fine-tuning based on UAT findings</div></td><td><div class="resource-pills"><span class="res-pill pill-pm">PM</span><span class="res-pill pill-se">SE</span></div></td><td>4</td></tr>
+        <tr><td><div style="font-size:12px;font-weight:500;color:var(--text)">Documentation and knowledge transfer</div><div style="font-size:11px;color:var(--text3);margin-top:2px">SOC runbook, admin guide, architecture as-built, 2× KT sessions with IAS team</div></td><td><div class="resource-pills"><span class="res-pill pill-pm">PM</span><span class="res-pill pill-se">SE</span></div></td><td>4</td></tr>
+
+        <tr class="total-row">
+          <td colspan="2" style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--text)">Total Estimated Effort</td>
+          <td style="font-size:16px">68 MD</td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="font-size:11px;color:var(--text2);margin-top:14px;padding:10px 14px;background:var(--surface2);border-radius:var(--r);line-height:1.7">
+      <strong>Team composition:</strong> 1 Project Manager (30% allocation) + 2 Senior Security Engineers (100% allocation during active phases). Total elapsed time: approximately 10 weeks with the proposed team. Buffer of 10% is recommended for scope variations and IAS environment dependencies.
+    </div>
+  </div>
+</div>
+
+<!-- 8. TIMELINE -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <span class="section-title">Project Timeline Estimation</span>
+    <span class="section-rule"></span>
+  </div>
+  <div class="box">
+    <div class="summary-strip" style="margin-top:0;margin-bottom:24px">
+      <div class="summary-cell"><div class="summary-val">10</div><div class="summary-lbl">Weeks duration</div></div>
+      <div class="summary-cell"><div class="summary-val">68</div><div class="summary-lbl">Total man-days</div></div>
+      <div class="summary-cell"><div class="summary-val">3</div><div class="summary-lbl">Team members</div></div>
+      <div class="summary-cell"><div class="summary-val">4</div><div class="summary-lbl">Project phases</div></div>
+    </div>
+
+    <div class="label" style="margin-bottom:16px">Week-by-Week Schedule (10 weeks)</div>
+    <div class="timeline-wrap">
+      <div class="timeline" id="tlContainer"></div>
+    </div>
+
+    <div class="tl-milestones" style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+      <div class="tl-milestone"><div class="tl-m-dot" style="background:#6B38B8"></div>Infra Go-Live (End W2)</div>
+      <div class="tl-milestone"><div class="tl-m-dot" style="background:#1A5C96"></div>All Sources Connected (End W6)</div>
+      <div class="tl-milestone"><div class="tl-m-dot" style="background:#1F6B3A"></div>Detection Live (End W8)</div>
+      <div class="tl-milestone"><div class="tl-m-dot" style="background:#CC6600"></div>UAT Sign-off (End W9)</div>
+      <div class="tl-milestone"><div class="tl-m-dot" style="background:#A82020"></div>Handover (End W10)</div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <div>Xtremax · Security Advisory Division · Confidential</div>
+  <div>IAS SIEM Solution Proposal · v1.0 Draft · <span id="dateStr2"></span></div>
+</div>
+</div>
+
+<script>
+const d = new Date().toLocaleDateString('en-GB',{year:'numeric',month:'short',day:'numeric'});
+document.getElementById('docDate').textContent = d;
+document.getElementById('dateStr2').textContent = d;
+
+const COLS = 10; // weeks
+const rows = [
+  { label:'W1 · Project Kickoff & Access Setup',         start:0, dur:1, color:'#6B38B8', phase:'P1' },
+  { label:'W1–2 · Elastic Cloud Deployment',             start:0, dur:2, color:'#6B38B8', phase:'P1' },
+  { label:'W2 · EC2 Forwarder + S3/SQS + RBAC',         start:1, dur:1, color:'#6B38B8', phase:'P1' },
+  { label:'W3–4 · AWS Log Sources Integration',          start:2, dur:2, color:'#1A5C96', phase:'P2' },
+  { label:'W3–5 · Endpoint Agent Deployment (100)',      start:2, dur:3, color:'#1A5C96', phase:'P2' },
+  { label:'W4–5 · Network Devices (10) + On-Prem (20)', start:3, dur:2, color:'#1A5C96', phase:'P2' },
+  { label:'W5–6 · SaaS & In-House App Integration',     start:4, dur:2, color:'#1A5C96', phase:'P2' },
+  { label:'W6–7 · Detection Rules & MITRE Mapping',     start:5, dur:2, color:'#1F6B3A', phase:'P3' },
+  { label:'W7–8 · UEBA / ML + Dashboards + Alerting',   start:6, dur:2, color:'#1F6B3A', phase:'P3' },
+  { label:'W8 · PM: Status Reports & Governance',        start:7, dur:1, color:'#8C5C08', phase:'P3' },
+  { label:'W9 · System Testing & End-to-End Validation', start:8, dur:1, color:'#CC6600', phase:'P4' },
+  { label:'W9–10 · UAT with IAS Security Team',          start:8, dur:2, color:'#CC6600', phase:'P4' },
+  { label:'W10 · Documentation & Knowledge Transfer',    start:9, dur:1, color:'#A82020', phase:'P4' },
+];
+
+const phaseColors = { P1:'#F0EAF9', P2:'#E8F0F9', P3:'#E8F5EE', P4:'#FBF0E8' };
+const phaseBorders = { P1:'#C4A8E0', P2:'#90B8DC', P3:'#8CC8A4', P4:'#E8B888' };
+
+const container = document.getElementById('tlContainer');
+
+// header
+const hdr = document.createElement('div');
+hdr.style.cssText = 'display:grid;grid-template-columns:260px 1fr;gap:0;margin-bottom:6px';
+const blank = document.createElement('div');
+const wkHdr = document.createElement('div');
+wkHdr.style.cssText = 'display:grid;grid-template-columns:repeat(10,1fr);gap:2px';
+for(let i=1;i<=10;i++){
+  const w = document.createElement('div');
+  w.style.cssText = 'text-align:center;font-family:"DM Mono",monospace;font-size:9px;color:#9A9894;padding-bottom:4px';
+  w.textContent = 'W'+i;
+  wkHdr.appendChild(w);
+}
+hdr.appendChild(blank);
+hdr.appendChild(wkHdr);
+container.appendChild(hdr);
+
+// rows
+rows.forEach(r => {
+  const row = document.createElement('div');
+  row.style.cssText = 'display:grid;grid-template-columns:260px 1fr;gap:0;margin-bottom:4px;align-items:center';
+
+  const lbl = document.createElement('div');
+  lbl.style.cssText = 'font-size:11px;color:#5A5854;padding-right:12px;line-height:1.3;text-align:right';
+  lbl.textContent = r.label;
+
+  const track = document.createElement('div');
+  track.style.cssText = 'display:grid;grid-template-columns:repeat(10,1fr);gap:2px;height:24px;align-items:center';
+
+  for(let i=0;i<10;i++){
+    const cell = document.createElement('div');
+    cell.style.cssText = 'height:24px;border-radius:4px;';
+    if(i >= r.start && i < r.start + r.dur){
+      cell.style.background = r.color;
+      cell.style.opacity = '0.85';
+      if(i === r.start){
+        cell.style.borderRadius = r.dur===1?'4px':'4px 0 0 4px';
+        if(r.dur===1) cell.style.borderRadius='4px';
+      } else if(i === r.start+r.dur-1){
+        cell.style.borderRadius = '0 4px 4px 0';
+      } else {
+        cell.style.borderRadius = '0';
+      }
+    } else {
+      cell.style.background = '#F0EEE9';
+      cell.style.border = '1px solid #E8E5DF';
+    }
+    track.appendChild(cell);
+  }
+
+  row.appendChild(lbl);
+  row.appendChild(track);
+  container.appendChild(row);
+});
+
+// phase legend
+const legRow = document.createElement('div');
+legRow.style.cssText = 'display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid #E8E5DF';
+const phases = [
+  {color:'#6B38B8',label:'Phase 1: Foundation & Infrastructure'},
+  {color:'#1A5C96',label:'Phase 2: Log Source Integration'},
+  {color:'#1F6B3A',label:'Phase 3: Detection, UEBA & Dashboards'},
+  {color:'#CC6600',label:'Phase 4: Testing & Handover'},
+];
+phases.forEach(p => {
+  const item = document.createElement('div');
+  item.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:11px;color:#5A5854';
+  item.innerHTML = `<span style="width:14px;height:14px;border-radius:3px;background:${p.color};opacity:.85;flex-shrink:0;display:inline-block"></span>${p.label}`;
+  legRow.appendChild(item);
+});
+container.appendChild(legRow);
+</script>
+</body>
+</html>
